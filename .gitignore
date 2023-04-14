@@ -1,0 +1,7 @@
+build/
+lake-packages/
+doc/book
+
+x.json
+y.json
+x.txt

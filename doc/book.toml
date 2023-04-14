@@ -1,0 +1,21 @@
+[book]
+authors = ["Jürgen Bergmann"]
+language = "en"
+multilingual = false
+src = "src"
+title = "Time"
+
+[build]
+build-dir = "../build/doc/book"
+create-missing = true
+
+[output.html]
+additional-css = ["alectryon.css", "pygments.css"]
+additional-js = ["alectryon.js"]
+
+[output.html.fold]
+enable = true
+level = 0
+
+[output.html.playground.boring-prefixes]
+lean = "# "
