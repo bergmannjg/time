@@ -176,7 +176,7 @@ structure ZonedTime where
 
 [Parse](../Time/Format/Parse.html#Time.parse) a time value (i.e. instance of
 [Time.ParseTime](../Time/Format/Parse/Class.html#Time.ParseTime))
-given a format string.
+given a [format](../Time/Specifier.html) string.
 
 ```lean
 #eval (parse .defaultTimeLocale "%Y-%m-%dT%H:%M:%S" "2023-02-12T12:24:30"

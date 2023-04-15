@@ -81,9 +81,9 @@ inductive Specifier
   | u
   /-- day of week number, `0` (= Sunday) - `6` (= Saturday) -/
   | w
-  /-- day of week, short form (`snd` from`Time.wDays` `locale`), `Sun` - `Sat` -/
+  /-- day of week, short form (`snd` from `Time.TimeLocale.wDays` `locale`), `Sun` - `Sat` -/
   | a
-  /-- day of week, long form (`fst` from`Time.wDays` `locale`), `Sunday` - `Saturday` -/
+  /-- day of week, long form (`fst` from `Time.TimeLocale.wDays` `locale`), `Sunday` - `Saturday` -/
   | A
   /-- year, no padding. Note `%0Y` and `%_Y` pad to four chars -/
   | Y
@@ -95,9 +95,9 @@ inductive Specifier
   | g
   /-- century, no padding. Note `%0C` and `%_C` pad to two chars -/
   | C
-  /-- month name, long form (`fst` from`Time.months` `locale`), `January` - `December` -/
+  /-- month name, long form (`fst` from `Time.TimeLocale.months` `locale`), `January` - `December` -/
   | B
-  /-- month name, short form (`snd` from`Time.months` `locale`), `Jan` - `Dec` -/
+  /-- month name, short form (`snd` from `Time.TimeLocale.months` `locale`), `Jan` - `Dec` -/
   | b
   /--  month of year, 0-padded to two chars, `01` - `12` -/
   | m

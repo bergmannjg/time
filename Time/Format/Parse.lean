@@ -8,7 +8,7 @@ namespace Time
 
 open Lean Parsec
 
-/-- Parses a time value (i.e. instance of ParseTime) given a format string -/
+/-- Parses a time value (i.e. instance of ParseTime) given a format string (`Time.Specifier`) -/
 def parse {α : Type} {m : Type -> Type v} [Monad m] [MonadFail m α] [ParseTime α] (l :
     TimeLocale) (fmt : String) (s : String) : m α := do
   match (parseTime l fmt : Parsec α) s.mkIterator with
