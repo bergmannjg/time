@@ -71,6 +71,7 @@ script buildDocs (args) do
     exec "rm" #["-rf", "build/doc/book"]
     execInDir "Time"
     processFile "Time"
+    exec "lake" #["env", "./lake-packages/doc-gen4/build/bin/doc-gen4", "genCore"]
     exec "lake" #["env", "./lake-packages/doc-gen4/build/bin/doc-gen4", "index"]
     exec "mdbook" #["build", "doc"]
   else
