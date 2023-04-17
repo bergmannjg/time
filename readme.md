@@ -15,7 +15,6 @@ see [time library doc](https://bergmannjg.github.io/time/book/time.html)
 
 * reset all: rm -rf build && rm -rf lake-packages
 * update: lake update
-* link missing directory: cd lake-packages/ && ln -s mathlib4/ mathlib
 * create cache: lake exe cache get
 * build: lake build
 * build docs: lake -Kenv=dev update && lake run buildDocs

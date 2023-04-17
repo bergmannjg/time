@@ -5,11 +5,12 @@ package time {
   precompileModules := if get_config? env = some "noprecompile" then false else true
 }
 
-require mathlib4 from git "https://github.com/leanprover-community/mathlib4"
+require mathlib from git "https://github.com/leanprover-community/mathlib4"
   @ "ea4e0dd0dd8021d1677b63fbbe5eab18e5186318"
 
 meta if get_config? env = some "dev" then
-require «doc-gen4» from  git "https://github.com/leanprover/doc-gen4" @ "main"
+require «doc-gen4» from  git "https://github.com/leanprover/doc-gen4"
+  @ "b9421b9a12b148d9279a881cce227affdb09ed08"
 
 @[default_target]
 lean_lib Time

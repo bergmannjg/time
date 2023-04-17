@@ -8,12 +8,6 @@
     "name": "CMark",
     "inputRev?": "main"}},
   {"git":
-   {"url": "https://github.com/leanprover-community/mathlib4",
-    "subDir?": null,
-    "rev": "ea4e0dd0dd8021d1677b63fbbe5eab18e5186318",
-    "name": "mathlib4",
-    "inputRev?": "ea4e0dd0dd8021d1677b63fbbe5eab18e5186318"}},
-  {"git":
    {"url": "https://github.com/leanprover/lake",
     "subDir?": null,
     "rev": "9e00151251d3e550f1ef4b24e59fd0d0419b0602",
@@ -24,13 +18,19 @@
     "subDir?": null,
     "rev": "b9421b9a12b148d9279a881cce227affdb09ed08",
     "name": "doc-gen4",
-    "inputRev?": "main"}},
+    "inputRev?": "b9421b9a12b148d9279a881cce227affdb09ed08"}},
   {"git":
    {"url": "https://github.com/mhuisi/lean4-cli",
     "subDir?": null,
     "rev": "5a858c32963b6b19be0d477a30a1f4b6c120be7e",
     "name": "Cli",
     "inputRev?": "nightly"}},
+  {"git":
+   {"url": "https://github.com/leanprover-community/mathlib4",
+    "subDir?": null,
+    "rev": "ea4e0dd0dd8021d1677b63fbbe5eab18e5186318",
+    "name": "mathlib",
+    "inputRev?": "ea4e0dd0dd8021d1677b63fbbe5eab18e5186318"}},
   {"git":
    {"url": "https://github.com/gebner/quote4",
     "subDir?": null,

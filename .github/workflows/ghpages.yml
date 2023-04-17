@@ -44,9 +44,6 @@ jobs:
       - name: Build Time
         run: |
           lake update
-          cd lake-packages
-          ln -s mathlib4/ mathlib
-          cd ..
           lake exe cache get
           lake build
       - name: Build Doc
