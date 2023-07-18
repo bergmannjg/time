@@ -20,19 +20,19 @@ instance : Inhabited Date where
 /--  Convert to proleptic Gregorian calendar. -/
 def toGregorian (date : Day) : Date :=
   let dt := toOrdinalDate date
-  let (m, d) := dayOfYearToMonthAndDay (isLeapYear dt.year) dt.dayOfYear
+  let (m, d) := dayOfYearToMonthAndDay dt.dayOfYear
   ⟨dt.year, m, d⟩
 
 /-- Convert from proleptic Gregorian calendar. -/
 def fromGregorianDate (dt : Date) : Day :=
   let dy := monthAndDayToDayOfYear (isLeapYear dt.Year) dt.Month dt.Day
-  fromOrdinalDate ⟨dt.Year, dy⟩
+  fromOrdinalDayOfYear dt.Year dy
 
 /-- Convert from proleptic Gregorian calendar.
 Invalid values will be clipped to the correct range, month first, then day. -/
 def fromGregorian (year : Int) (month : Int) (day : Int) : Day :=
   let dy := monthAndDayToDayOfYear (isLeapYear year) month day
-  fromOrdinalDate ⟨year, dy⟩
+  fromOrdinalDayOfYear year dy
 
 /-- Convert from proleptic Gregorian calendar. Invalid values give result none. -/
 def fromGregorianValid (year : Int) (month : Int) (day : Int) : Option Day := do

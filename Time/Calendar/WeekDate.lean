@@ -32,7 +32,7 @@ def firstDayOfWeekOnAfter (dw : DayOfWeek) (d : Day) : Day :=
   Day.addDays (dayOfWeekDiff dw <| DayOfWeek.dayOfWeek d) d
 
 def firstDayOfWeekCalendar (wt : FirstWeekType) (dow : DayOfWeek) (year : Int) : Day :=
-  let jan1st := fromOrdinalDate ⟨year, ⟨1, by simp⟩⟩
+  let jan1st := fromOrdinalDate ⟨year, firstDayOfYear year⟩
   match wt with
   | .FirstWholeWeek => firstDayOfWeekOnAfter dow jan1st
   | .FirstMostWeek => firstDayOfWeekOnAfter dow <| Day.addDays (-3) jan1st

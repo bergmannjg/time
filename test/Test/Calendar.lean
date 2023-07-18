@@ -28,11 +28,12 @@ example : toGregorian ⟨50449⟩ == ⟨1997, ⟨1, (by simp)⟩, ⟨1, (by simp
 example : toGregorian (fromGregorianDate dt_2023_2_3) == ⟨2023, ⟨2, (by simp)⟩, ⟨3, (by simp)⟩⟩
   := by rfl
 
-example : toOrdinalDate default == ⟨1, ⟨1, by simp⟩⟩ := by rfl
+example : toOrdinalDate default == ⟨1, .common ⟨1, by simp⟩⟩ := by rfl
 
-example : toOrdinalDate ⟨0⟩  == ⟨1858, ⟨321, by simp⟩⟩ := by rfl
+example : toOrdinalDate ⟨0⟩  == ⟨1858, .common ⟨321, by simp⟩⟩ := by rfl
 
-example : (toOrdinalDate <| fromOrdinalDate ⟨2023, ⟨50, by simp⟩⟩) == ⟨2023, ⟨50, by simp⟩⟩ := by rfl
+example : (toOrdinalDate <| fromOrdinalDate ⟨2023, .common ⟨50, by simp⟩⟩)
+  == ⟨2023, .common ⟨50, by simp⟩⟩ := by rfl
 
 def dt_2023_1_17 : Date := { Year := 2023, Month := ⟨1, (by simp)⟩, Day := ⟨17, (by simp)⟩ }
 
@@ -56,6 +57,18 @@ example : (fromSundayStartWeekValid 2023 7 0 |> Option.map (λ dt => toGregorian
 example : Gregorian.addMonthsClip 1 (fromGregorian 2005 1 30) == fromGregorian 2005 2 28 := by rfl
 
 example : Gregorian.addMonthsRollOver 1 (fromGregorian 2005 1 30) == fromGregorian 2005 3 2 := by rfl
+
+example : (toOrdinalDate <| fromGregorian 2004 2 29) ==
+  ⟨2004, .leap ⟨60, And.intro (by simp) (by simp)⟩⟩ := by rfl
+
+example : (toOrdinalDate <| fromGregorian 2004 12 31) ==
+  ⟨2004, .leap ⟨366, And.intro (by simp) (by simp)⟩⟩ := by rfl
+
+example : (toOrdinalDate <| fromGregorian 2006 2 28) ==
+  ⟨2006, .common ⟨59, And.intro (by simp) (by simp)⟩⟩ := by rfl
+
+example : (toOrdinalDate <| fromGregorian 2006 12 31) ==
+  ⟨2006, .common ⟨365, And.intro (by simp) (by simp)⟩⟩ := by rfl
 
 example : Gregorian.addYearsClip 2 (fromGregorian 2004 2 29) == fromGregorian 2006 2 28 := by rfl
 

@@ -1,4 +1,5 @@
 import Mathlib.Tactic.NormNum
+import Time.Calendar.OrdinalDate
 import Time.Calendar.Private
 
 namespace Time
@@ -45,12 +46,14 @@ private def findMonthDay (monthLengths : List (Nat × Nat)) (m : Nat) (yd : Nat)
         findMonthDay ns (m + 1) (yd - n) hmonth' hdays' hy'
   | _ => (⟨1, (by simp)⟩, ⟨1, (by simp)⟩)
 
-def dayOfYearToMonthAndDay (isLeap : Bool) (yd : Set.Icc 1 366)
+def dayOfYearToMonthAndDay (yd : DayOfYear)
     : Set.Icc 1 12 × Set.Icc 1 31 :=
+  let isLeap := match yd with | .common _ => false | .leap _ => true
+  let d : Set.Icc 1 366 := yd
   let ml := monthLengths isLeap
   have hmonth : ∀ a ∈ ml, 1 ≤ a.1 ∧ a.1 <= 12 := monthLengths_month_le_12 isLeap
   have hdays : ∀ a ∈ ml, a.2 <= 31 := monthLengths_days_le_31 isLeap
-  findMonthDay ml 1 yd.val hmonth hdays yd.property.left
+  findMonthDay ml 1 d.val hmonth hdays d.property.left
 
 /-- The length of a given month in the Gregorian or Julian calendars. -/
 def monthLength' (isLeap : Bool) (month': Fin 12) :=

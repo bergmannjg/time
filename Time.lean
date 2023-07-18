@@ -1,11 +1,11 @@
 import Time.ZeroPad
 import Time.Fixed
 import Time.Specifier
+import Time.Calendar.Days
+import Time.Calendar.OrdinalDate
 import Time.Calendar.Private
 import Time.Calendar.MonthDay
 import Time.Calendar.CalendarDiffDays
-import Time.Calendar.Days
-import Time.Calendar.OrdinalDate
 import Time.Calendar.Gregorian
 import Time.Calendar.Week
 import Time.Calendar.WeekDate

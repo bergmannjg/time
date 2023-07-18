@@ -1,55 +1,72 @@
 import Mathlib.Tactic.NormNum
+import Mathlib.Init.Algebra.Order
 import Std.Data.Nat.Lemmas
+import Std.Data.Int.Lemmas
 import Time.Calendar.Days
 import Time.Calendar.Private
 
 namespace Time
 
+inductive DayOfYear where
+  | common : Set.Icc 1 365 -> DayOfYear
+  | leap : Set.Icc 1 366 -> DayOfYear
+  deriving Repr, BEq
+
+instance : Coe DayOfYear (Set.Icc 1 366) where
+  coe
+    | .common d => ⟨d.val, And.intro (d.property.left) (Nat.le_step d.property.right)⟩
+    | .leap d => d
+
 /-- ISO 8601 Ordinal Date  -/
 structure OrdinalDate where
   year : Int
-  dayOfYear : Set.Icc 1 366
+  dayOfYear : DayOfYear
   deriving Repr, BEq
 
-def toDayOfYear (d': Int) (hd1 : 0 ≤ d') (hd2 : d' < 3*365 + 366) : Set.Icc 1 366 :=
+def dayOfYear (dayOfYear: DayOfYear) : Nat :=
+  match dayOfYear with
+  | .common d => d.val
+  | .leap d => d.val
+
+/-- Is this year a leap year according to the proleptic Gregorian calendar? -/
+def isLeapYear (year : Int) :=
+  (Int.mod year 4 == 0) && ((Int.mod year 400 == 0) || not (Int.mod year 100 == 0))
+
+def toDayOfYear (year: Int) (d': Int) (hd1 : 0 ≤ d') (hd2 : d' < 3*365 + 366) : DayOfYear :=
   if h : d' / 365 ≤ 3
   then
-    have : d' % 365 = d' - (d' / 365) * 365 := by rw [Int.mul_comm]; apply Int.emod_def
-
-    -- can use d' % 365 instead of d' - (d' / 365) * 365
     let yd' := d' % 365 + 1
-
     let yd := Int.toNat yd'
 
     have h1 : 0 < yd := by
-      have ha : 0 <= (d' % 365) := by simp [Int.emod_nonneg _]
+      have ha : 0 <= d' % 365 := by simp [Int.emod_nonneg _]
       have hb : 0 < yd' := Int.lt_add_one_iff.mpr ha
       exact ((Int.toNat_lt_toNat hb).mpr hb)
 
-    have h2 : yd <= 366 := by
-      have : d' % 365 < 365 := by simp [Int.emod_lt_of_pos _]
-      have ha : yd' <= 365 := by aesop
-      have hb : yd' <= 366 := Int.le_trans ha (by simp)
+    have h2 : yd <= 365 := by
+      have ha : d' % 365 < 365 := by simp [Int.emod_lt_of_pos _]
+      have hb : yd' <= 365 := by simp [Int.add_one_le_iff.mpr ha]
       exact Int.toNat_le_toNat hb
 
-    ⟨yd, And.intro h1 h2⟩
+    if isLeapYear year
+    then .leap ⟨yd, And.intro h1 (Nat.le_step h2)⟩
+    else .common ⟨yd, And.intro h1 h2⟩
   else
-    let d : Nat := Int.toNat d'
+    let yd' := d' - 3*365 + 1
+    let yd := Int.toNat yd'
 
-    let yd := d - 3 * 365 + 1
-    have h1 : 0 < yd := by aesop
+    have h1 : 0 < yd := by
+      have ha : 3*365 < d' / 365  * 365 := by simp [not_le.mp h]
+      have hb : d' / 365 * 365 ≤ d' := by simp [Int.ediv_mul_le _]
+      have hc : 3*365 < d' := Int.le_trans ha hb
+      have hd : 0 < yd' := Int.add_pos (Int.sub_pos_of_lt hc) (by simp)
+      exact ((Int.toNat_lt_toNat hd).mpr hd)
 
     have h2 : yd ≤ 366 := by
-      have ha : 3 * 365 < d' / 365  * 365 := by aesop
-      have hb : 3 * 365 ≤ d' / 365  * 365 := Int.le_of_lt ha
-      have hc : d' / 365 * 365 ≤ d' := by simp [Int.ediv_mul_le _]
-      have : 3*365 ≤ d' := Int.le_trans hb hc
-      have hd : 3*365 ≤ d := by aesop
-      have he : d < 3*365 + 366 := by aesop
-      have : d - 3*365 < 366 := Nat.sub_lt_left_of_lt_add hd he
-      aesop
+      have ha : d' - 3*365 < 366 := Int.sub_right_lt_of_lt_add hd2
+      exact Int.toNat_le_toNat (Int.add_one_le_of_lt ha)
 
-    ⟨yd, And.intro h1 h2⟩
+    .leap ⟨yd, And.intro h1 h2⟩
 
 /-- from modified Julian day to year and day of year -/
 def toOrdinalDate (mjd : Day) : OrdinalDate :=
@@ -67,19 +84,14 @@ def toOrdinalDate (mjd : Day) : OrdinalDate :=
   have h1 : 0 <= d' := by simp [Int.emod_nonneg _]
   have h2 : d' < 3*365 + 366 := by
     have ha : d' < 1461 := by simp [Int.emod_lt_of_pos _]
-    simp_all only [ge_iff_le]
     exact ha
-
-  let yd := toDayOfYear d' h1 h2
 
   let y := min (d' / 365) 3
   let year := quadcent * 400 + cent * 100 + quad * 4 + y + 1
 
-  ⟨year, yd⟩
+  let yd := toDayOfYear year d' h1 h2
 
-/-- Is this year a leap year according to the proleptic Gregorian calendar? -/
-def isLeapYear (year : Int) :=
-  (Int.mod year 4 == 0) && ((Int.mod year 400 == 0) || not (Int.mod year 100 == 0))
+  ⟨year, yd⟩
 
 theorem ite_ge {α : Type} (f : α → Bool) (v : α) (a b c : Nat) (h₁ : c <= a) (h₂ : c <= b):
     c <= if (f v) then a else b := by
@@ -112,11 +124,19 @@ private def toModifiedJulianDay (year : Int) (dayOfYear : Nat) : Int :=
   dayOfYear + (365 * y) + ( y / 4) - (y / 100) + ( y / 400)
     + ((default : Day).modifiedJulianDay -  1)
 
+def firstDayOfYear (year : Int) : DayOfYear :=
+    if isLeapYear year then .leap ⟨1, (by simp)⟩ else .common ⟨1, (by simp)⟩
+
+/--  Convert from ISO 8601 Ordinal Date format.
+Invalid day numbers will be clipped to the correct range (1 to 365 or 366). -/
+def fromOrdinalDayOfYear (year : Int) (d : Set.Icc 1 366) : Day :=
+  let day' := clipDayOfYear .One year d.val
+  { modifiedJulianDay := toModifiedJulianDay year day' }
+
 /--  Convert from ISO 8601 Ordinal Date format.
 Invalid day numbers will be clipped to the correct range (1 to 365 or 366). -/
 def fromOrdinalDate (dt : OrdinalDate) : Day :=
-  let day' := clipDayOfYear .One dt.year dt.dayOfYear
-  { modifiedJulianDay := toModifiedJulianDay dt.year day' }
+  fromOrdinalDayOfYear dt.year dt.dayOfYear
 
 /--  Convert from ISO 8601 Ordinal Date format. -/
 def fromOrdinalDateValid (year : Int) (day : Int) : Option Day := do
@@ -130,7 +150,7 @@ are week 0 (as @%W@ in 'Data.Time.Format.formatTime'). -/
 def fromMondayStartWeekValid (year : Int) (w : Int) (d : Int) : Option Day := do
   let d' ←  Private.clipValid 1 7 d (by norm_num1)
   -- first day of the year
-  let firstDay := fromOrdinalDate ⟨year, ⟨1, (by simp)⟩⟩
+  let firstDay := fromOrdinalDate ⟨year, firstDayOfYear year⟩
   -- 0-based week of year
   let zbFirstMonday := (5 - firstDay.modifiedJulianDay) % 7
   -- 0-based week number
@@ -149,7 +169,7 @@ year are week 0 (as @%U@ in 'Data.Time.Format.formatTime'). -/
 def fromSundayStartWeekValid (year : Int) (w : Int) (d : Int) : Option Day := do
   let d' ←  Private.clipValid 0 6 d (by norm_num1)
   -- first day of the year
-  let firstDay := fromOrdinalDate ⟨year, ⟨1, (by simp)⟩⟩
+  let firstDay := fromOrdinalDate ⟨year, firstDayOfYear year⟩
   -- 0-based week of year
   let zbFirstSunday := (4 - firstDay.modifiedJulianDay) % 7
   -- 0-based week number
