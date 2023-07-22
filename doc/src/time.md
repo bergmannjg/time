@@ -74,6 +74,27 @@ structure Day where
 -- { modifiedJulianDay := 59987 }
 ```
 
+## OrdinalDate
+
+[OrdinalDate](../Time/Calendar/OrdinalDate.html#Time.OrdinalDate) is an
+ISO 8601 [Ordinal Date](https://en.wikipedia.org/wiki/ISO_8601#Ordinal_dates).
+
+```lean
+inductive DayOfYear where
+  | common : Set.Icc 1 365 -> DayOfYear
+  | leap : Set.Icc 1 366 -> DayOfYear
+
+structure OrdinalDate where
+  year : Int
+  dayOfYear : DayOfYear
+```
+
+```lean
+-- ⊢ Day → OrdinalDate
+#eval toOrdinalDate { modifiedJulianDay := 59987 }
+-- { year := 2023, dayOfYear := Time.DayOfYear.common 43 }
+```
+
 ## Date
 
 The [Date](../Time/Calendar/Gregorian.html#Time.Date) is a calendar date in the proleptic Gregorian calendar.

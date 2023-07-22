@@ -11,6 +11,37 @@ Missing modules
 
 see [time library doc](https://bergmannjg.github.io/time/book/time.html)
 
+### From Haskell to Lean
+
+Take the function *toOrdinalDate*, which computes the ISO 8601 ordinal date given a modified Julian day.
+
+In Haskell [toOrdinalDate](https://hackage.haskell.org/package/time-1.12.2/docs/Data-Time-Calendar-OrdinalDate.html) has the type
+
+```haskell
+type Year = Integer
+type DayOfYear = Int
+toOrdinalDate :: Day -> (Year, DayOfYear)
+```
+
+and computes the year and the day of year.
+
+In Lean [toOrdinalDate](https://bergmannjg.github.io/time/Time/Calendar/OrdinalDate.html#Time.toOrdinalDate) has the type
+
+```lean
+inductive DayOfYear where
+  | common : Set.Icc 1 365 -> DayOfYear
+  | leap : Set.Icc 1 366 -> DayOfYear
+
+structure OrdinalDate where
+  year : Int
+  dayOfYear : DayOfYear
+
+def toOrdinalDate : Day → OrdinalDate
+```
+
+and computes the year and the day of year and gives a proof that day of year is an element
+of the corresposnding interval.
+
 ## Build
 
 * reset all: rm -rf build && rm -rf lake-packages
