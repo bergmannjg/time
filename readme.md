@@ -48,5 +48,5 @@ of the corresposnding interval.
 * update: lake update
 * create cache: lake exe cache get
 * build: lake build
-* build docs: lake -Kenv=dev update && lake run buildDocs
-* run server: cd build/doc/ && python3 -m http.server
+* run test: cd test && lake exe test
+* build docs: lake -Kenv=dev update && lake -Kenv=dev build Time:docs

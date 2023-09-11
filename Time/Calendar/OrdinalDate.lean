@@ -1,5 +1,4 @@
 import Mathlib.Tactic.NormNum
-import Mathlib.Init.Algebra.Order
 import Std.Data.Nat.Lemmas
 import Std.Data.Int.Lemmas
 import Time.Calendar.Days

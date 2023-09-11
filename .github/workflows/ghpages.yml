@@ -49,8 +49,7 @@ jobs:
       - name: Build Doc
         run: |
           lake -Kenv=dev update
-          lake -Kenv=dev build Time.Calendar.Days:docs
-          lake run buildDocs
+          lake -Kenv=dev build Time:docs
       - name: Build book
         run: mdbook build doc
       - name: Setup Pages
