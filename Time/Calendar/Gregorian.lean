@@ -15,7 +15,7 @@ structure Date where
   deriving Repr, BEq
 
 instance : Inhabited Date where
-  default := ⟨1, ⟨1, (by simp)⟩, ⟨1, (by simp)⟩⟩
+  default := ⟨1, ⟨1, (by simp_arith)⟩, ⟨1, (by simp_arith)⟩⟩
 
 /--  Convert to proleptic Gregorian calendar. -/
 def toGregorian (date : Day) : Date :=
@@ -43,7 +43,7 @@ namespace Gregorian
 
 /-- The number of days in a given month according to the proleptic Gregorian calendar. -/
 def monthLength (year: Int) (month : Int) : Int :=
-  let month' := clip' 1 12 month (by simp)
+  let month' := clip' 1 12 month (by simp_arith)
   let month'' : Fin 12 := month'
   ((monthLengths (isLeapYear year)).get month'').2
 

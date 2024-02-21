@@ -43,7 +43,7 @@ def toDayOfYear (year: Int) (d': Int) (hd1 : 0 ≤ d') (hd2 : d' < 3*365 + 366) 
       exact ((Int.toNat_lt_toNat hb).mpr hb)
 
     have h2 : yd <= 365 := by
-      have ha : d' % 365 < 365 := by simp [Int.emod_lt_of_pos _]
+      have ha : d' % 365 < 365 := by simp_arith [Int.emod_lt_of_pos _]
       have hb : yd' <= 365 := by simp [Int.add_one_le_iff.mpr ha]
       exact Int.toNat_le_toNat hb
 
@@ -55,7 +55,7 @@ def toDayOfYear (year: Int) (d': Int) (hd1 : 0 ≤ d') (hd2 : d' < 3*365 + 366) 
     let yd := Int.toNat yd'
 
     have h1 : 0 < yd := by
-      have ha : 3*365 < d' / 365  * 365 := by simp [not_le.mp h]
+      have ha : 3*365 < d' / 365  * 365 := by simp_arith [not_le.mp h]
       have hb : d' / 365 * 365 ≤ d' := by simp [Int.ediv_mul_le _]
       have hc : 3*365 < d' := Int.le_trans ha hb
       have hd : 0 < yd' := Int.add_pos (Int.sub_pos_of_lt hc) (by simp)
@@ -82,7 +82,7 @@ def toOrdinalDate (mjd : Day) : OrdinalDate :=
 
   have h1 : 0 <= d' := by simp [Int.emod_nonneg _]
   have h2 : d' < 3*365 + 366 := by
-    have ha : d' < 1461 := by simp [Int.emod_lt_of_pos _]
+    have ha : d' < 1461 := by simp_arith [Int.emod_lt_of_pos _]
     exact ha
 
   let y := min (d' / 365) 3
@@ -124,7 +124,7 @@ private def toModifiedJulianDay (year : Int) (dayOfYear : Nat) : Int :=
     + ((default : Day).modifiedJulianDay -  1)
 
 def firstDayOfYear (year : Int) : DayOfYear :=
-    if isLeapYear year then .leap ⟨1, (by simp)⟩ else .common ⟨1, (by simp)⟩
+    if isLeapYear year then .leap ⟨1, (by simp_arith)⟩ else .common ⟨1, (by simp_arith)⟩
 
 /--  Convert from ISO 8601 Ordinal Date format.
 Invalid day numbers will be clipped to the correct range (1 to 365 or 366). -/

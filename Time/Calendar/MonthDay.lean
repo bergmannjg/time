@@ -11,20 +11,20 @@ def monthLengths (isleap : Bool) :=
     (6, 30), (7, 31), (8, 31), (9, 30), (10, 31), (11, 30), (12, 31)]
 
 theorem monthLengths_length_eq_12 (isleap : Bool) : (monthLengths isleap).length == 12 := by
-  cases isleap <;> norm_num
+  cases isleap <;> simp_arith
 
 theorem monthLengths_month_le_12 (isleap : Bool)
   : ∀ a ∈ (monthLengths isleap), 1 ≤ a.1 ∧ a.1 ≤ 12 := by
-  cases isleap <;> simp
+  cases isleap <;> simp_arith
 
 theorem monthLengths_days_ge_28 (isleap : Bool) : ∀ a ∈ (monthLengths isleap), 28 <= a.2 := by
-  cases isleap <;> simp
+  cases isleap <;> simp_arith
 
 theorem monthLengths_days_le_31 (isleap : Bool) : ∀ a ∈ (monthLengths isleap), a.2 <= 31 := by
-  cases isleap <;> norm_num
+  cases isleap <;> simp_arith
 
 theorem monthLengths_mem_in_icc (isleap : Bool) : ∀ a ∈ (monthLengths isleap), a.2 ∈ Set.Icc 28 31
-  := by cases isleap <;> norm_num
+  := by cases isleap <;> simp_arith
 
 private def findMonthDay (monthLengths : List (Nat × Nat)) (m : Nat) (yd : Nat)
     (hmonth : ∀ a ∈ monthLengths, 1 ≤ a.1 ∧ a.1 <= 12)
@@ -44,7 +44,7 @@ private def findMonthDay (monthLengths : List (Nat × Nat)) (m : Nat) (yd : Nat)
         have hdays' : ∀ a ∈ ns, a.2 <= 31 := (List.forall_mem_cons.mp hdays).right
         have hy' : 0 < yd - n := by simp_all only [not_le, ge_iff_le, tsub_pos_iff_lt]
         findMonthDay ns (m + 1) (yd - n) hmonth' hdays' hy'
-  | _ => (⟨1, (by simp)⟩, ⟨1, (by simp)⟩)
+  | _ => (⟨1, (by simp_arith)⟩, ⟨1, (by simp_arith)⟩)
 
 def dayOfYearToMonthAndDay (yd : DayOfYear)
     : Set.Icc 1 12 × Set.Icc 1 31 :=
@@ -86,9 +86,9 @@ theorem monthAndDayToDayOfYear_gt_zero_of_month_gt (month day k : Int)
       let x : Int := 12 * 2
       have h1 : x + 362 < 367 * 2 := by norm_num
       have h2 : x + 362 < 367 * month := by
-        simp [Int.lt_trans h1 (Int.mul_lt_mul_of_pos_left hm (by simp))]
+        simp [Int.lt_trans h1 (Int.mul_lt_mul_of_pos_left hm (by simp_arith))]
       have h3 : x <= y := by simp [Int.le_of_lt (Int.lt_sub_right_of_add_lt h2)]
-      exact (Int.le_ediv_iff_mul_le (by simp only)).mpr h3
+      exact (Int.le_ediv_iff_mul_le (by simp_arith only)).mpr h3
     have h3 : 2 + k <= y / 12 + k := by
       exact Int.add_le_add_right h2 k
     simp [Int.le_trans h1 h3]
@@ -98,9 +98,9 @@ theorem monthAndDayToDayOfYear_gt_zero_of_month_gt (month day k : Int)
 theorem monthAndDayToDayOfYear_le (month day k : Int)
     (hm : month ≤ 12) (hk : k = -2 ∨ k = -1) (hd2 : day ≤ 31)
     : ((367 * month - 362) / 12 + k) + day ≤ 366 := by
-  have h1 : 367 * month ≤ 367 * 12 := Int.mul_le_mul_of_nonneg_left hm (by simp)
+  have h1 : 367 * month ≤ 367 * 12 := Int.mul_le_mul_of_nonneg_left hm (by simp_arith)
   have h2 : 367 * month - 362 ≤ 367 * 12 - 362 := Int.sub_le_sub_right h1 _
-  have h3 : (367 * month - 362) / 12 ≤ (367 * 12 - 362) / 12 := Int.ediv_le_ediv (by simp) h2
+  have h3 : (367 * month - 362) / 12 ≤ (367 * 12 - 362) / 12 := Int.ediv_le_ediv (by simp_arith) h2
   apply Or.elim hk
   · intro hq
     have h4 : (367 * month - 362) / 12 + k ≤ (367 * 12 - 362) / 12 - 2 := by aesop
@@ -144,7 +144,8 @@ private def monthAndDayToDayOfYearClipped_month_gt (isLeap : Bool) (month' : Non
 
   have hx1 : 0 < x := by
     have h1 : 2 <  month := Int.ofNat_lt.mpr h
-    have h2 : -2 ≤ if isLeap then -1 else -2 := by aesop
+    have h2 : -2 ≤ if isLeap then -1 else -2 := by split <;> simp_arith
+
     have h3 : 0 < day := by
       have ha : 0 < day' := by exact hd1
       exact Int.ofNat_lt.2 ha
@@ -181,7 +182,7 @@ theorem days_le_31 (isLeap : Bool) (m : Fin 12) (day : NonemptyIcc 1 (monthLengt
 
 /-- Convert month and day in the Gregorian or Julian calendars to day of year. -/
 def monthAndDayToDayOfYear (isLeap : Bool) (month : Int) (day : Int) :  Set.Icc 1 366 :=
-  let month' := clip' 1 12 month (by simp)
+  let month' := clip' 1 12 month (by simp_arith)
   let month'' : Fin 12 := month'
   let day' := clip' 1 (monthLength' isLeap month'') day (monthLength'_ge_1 isLeap month'')
 
@@ -191,7 +192,7 @@ def monthAndDayToDayOfYear (isLeap : Bool) (month : Int) (day : Int) :  Set.Icc 
 /-- Convert month and day in the Gregorian or Julian calendars to day of year option. -/
 def monthAndDayToDayOfYearValid (isLeap : Bool) (month : Int) (day : Int)
     : Option  $ Set.Icc 1  366 := do
-  let month' ← clipValid' 1 12 month (by simp)
+  let month' ← clipValid' 1 12 month (by simp_arith)
   let month'' : Fin 12 :=  month'
   let day' ← clipValid' 1 (monthLength' isLeap month'') day (monthLength'_ge_1 isLeap month'')
 

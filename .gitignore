@@ -1,4 +1,5 @@
 build/
+.lake/
 lake-packages/
 doc/book
 Playgound/

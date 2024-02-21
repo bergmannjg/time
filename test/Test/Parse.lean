@@ -7,7 +7,7 @@ open Lean Parsec
 
 def parseDate? (fmt : String) (s : String) : Option Date := parse TimeLocale.deDETimeLocale fmt s
 
-def dtDate : Date := { Year := 2023, Month := ⟨2, (by simp)⟩, Day := ⟨12, (by simp)⟩ }
+def dtDate : Date := { Year := 2023, Month := ⟨2, (by simp_arith)⟩, Day := ⟨12, (by simp_arith)⟩ }
 
 example : (toGregorian <| fromGregorianDate dtDate) == dtDate := by rfl
 
@@ -31,8 +31,8 @@ def parseTimeOfDay? (fmt : String) (s : String) : Option TimeOfDay :=
   parse TimeLocale.defaultTimeLocale fmt s
 
 def dtTimeOfDay (nanoSecs : Nat) : Option TimeOfDay :=
-    some { Hour := ⟨12, (by simp)⟩, Minute := ⟨24, (by simp)⟩,
-           Second := TimeOfDay.toSecond 30 nanoSecs (by simp) (by simp)}
+    some { Hour := ⟨12, (by simp_arith)⟩, Minute := ⟨24, (by simp_arith)⟩,
+           Second := TimeOfDay.toSecond 30 nanoSecs (by simp_arith) (by simp_arith)}
 
 example : parseTimeOfDay? "%H:%M:%S" "12:24:30" == dtTimeOfDay 0 := by native_decide
 
@@ -53,7 +53,7 @@ def parseLocalTime? (fmt : String) (s : String) : Option LocalTime :=
 
 def dtLocalTime : Option LocalTime :=
   some ⟨fromGregorianDate dtDate,
-    ⟨12, (by simp)⟩, ⟨24, (by simp)⟩, TimeOfDay.toSecond 30 0 (by simp) (by simp)⟩
+    ⟨12, (by simp_arith)⟩, ⟨24, (by simp_arith)⟩, TimeOfDay.toSecond 30 0 (by simp_arith) (by simp_arith)⟩
 
 example : parseLocalTime? "%Y%m%d%H%M%S" "20230212122430" == dtLocalTime := by native_decide
 
@@ -66,8 +66,8 @@ def parseZonedTime? (fmt : String) (s : String) : Option ZonedTime :=
   parse TimeLocale.defaultTimeLocale fmt s
 
 def dtZonedTime : Option ZonedTime :=
-  some ⟨⟨fromGregorianDate dtDate, ⟨12, (by simp)⟩, ⟨24, (by simp)⟩,
-    TimeOfDay.toSecond 30 0 (by simp) (by simp)⟩, ⟨60,false,""⟩⟩
+  some ⟨⟨fromGregorianDate dtDate, ⟨12, (by simp_arith)⟩, ⟨24, (by simp_arith)⟩,
+    TimeOfDay.toSecond 30 0 (by simp_arith) (by simp_arith)⟩, ⟨60,false,""⟩⟩
 
 example : parseZonedTime? "%Y-%m-%dT%H:%M:%S%Ez" "2023-02-12T12:24:30+01:00" == dtZonedTime := by
   native_decide

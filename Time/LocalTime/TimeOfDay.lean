@@ -26,7 +26,7 @@ instance : ToString TimeOfDay where
   toString a := s!"tod : ({a.Hour}, {a.Minute}, {a.Second})"
 
 instance : Inhabited TimeOfDay where
-  default := ⟨⟨0, (by simp)⟩ , ⟨0, (by simp)⟩, ⟨Fixed.zero, (by simp)⟩⟩
+  default := ⟨⟨0, (by simp)⟩ , ⟨0, (by simp)⟩, ⟨Fixed.zero, (by simp_arith)⟩⟩
 
 namespace TimeOfDay
 
@@ -52,7 +52,7 @@ def timeOfDayToTime (tod : TimeOfDay) : DiffTime :=
   DiffTime.fromSecNsec ((tod.Hour * 60 + tod.Minute) * 60 + tod.Second.val.numerator) d
 
 def timeToDaysAndTimeOfDay (secsOfTime : DiffTime) : Int × TimeOfDay :=
-  let (m, ms) := Fixed.divMod' secsOfTime.val Second.sixty (by simp)
+  let (m, ms) := Fixed.divMod' secsOfTime.val Second.sixty (by simp_arith)
   let (h, hm) := divMod' m 60 (by simp)
   let (days , dh) := divMod' h 24 (by simp)
   (days, ⟨ dh, hm, ms⟩)
@@ -73,7 +73,7 @@ def localToUTCTimeOfDay (zone : TimeZone) (tod : TimeOfDay) : Int × TimeOfDay :
   utcToLocalTimeOfDay (TimeZone.minutesToTimeZone (Neg.neg (zone.timeZoneMinutes))) tod
 
 def toSecond (secs : Int) (nanoSecs : Nat) (h1: 0 ≤ secs) (h2: secs < 60) : Ico.Second :=
-  if h : 0 = secs then ⟨Second.zero, (by simp)⟩
+  if h : 0 = secs then ⟨Second.zero, (by simp_arith)⟩
   else
     have h1' : 0 < secs := Int.lt_iff_le_and_ne.mpr (And.intro h1 (by simpa))
     ⟨Fixed.toFixed secs nanoSecs,

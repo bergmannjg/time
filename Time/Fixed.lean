@@ -58,7 +58,7 @@ theorem pow_gt_zero : ∀ {p : ℕ}, 0 < pow p := by
   simp [pow]
 
 theorem pow_gt_zero' : ∀ {p : ℕ}, 0 < (pow p : Int) := by
-  simp [pow]
+  simp_arith [pow]
 
 def toFixed (num : Int) (denom : Nat) : Fixed p :=
   let val := Int.natAbs num * (pow p) + (clip denom (pow p) (pow_gt_zero))
