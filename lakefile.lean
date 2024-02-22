@@ -20,10 +20,6 @@ lean_lib Test {
   srcDir := "test"
 }
 
-lean_exe runLinter where
-  root := `scripts.runLinter
-  supportInterpreter := true
-
 target localtime.o pkg : FilePath := do
   let oFile := pkg.buildDir / "native/" / "localtime.o"
   let srcJob ← inputFile <| pkg.dir / "native/" / "localtime.cpp"

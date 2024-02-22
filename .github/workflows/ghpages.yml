@@ -2,8 +2,8 @@ name: CI
 
 on:
   # Runs on pushes targeting the default branch
-  # push:
-  #  branches: ["main"]
+  push:
+    branches: ["main"]
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
@@ -27,7 +27,7 @@ jobs:
       - name: Install elan
         run: |
           set -o pipefail
-          curl -sSfL https://github.com/leanprover/elan/releases/download/v1.4.2/elan-x86_64-unknown-linux-gnu.tar.gz | tar xz
+          curl -sSfL https://github.com/leanprover/elan/releases/download/v3.0.0/elan-x86_64-unknown-linux-gnu.tar.gz | tar xz
           ./elan-init -y --default-toolchain none
           echo "$HOME/.elan/bin" >> $GITHUB_PATH
       - name: Install Alectryon
@@ -48,8 +48,8 @@ jobs:
           lake build
       - name: Build Doc
         run: |
-          lake -Kenv=dev update
-          lake -Kenv=dev build Time:docs
+          lake -R -Kenv=dev update
+          lake -R -Kenv=dev build Time:docs
       - name: Build book
         run: mdbook build doc
       - name: Setup Pages

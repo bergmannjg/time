@@ -44,9 +44,7 @@ of the corresposnding interval.
 
 ## Build
 
-* reset all: rm -rf build && rm -rf lake-packages
 * update: lake update
 * create cache: lake exe cache get
 * build: lake build
-* run test: cd test && lake exe test
-* build docs: lake -Kenv=dev update && lake -Kenv=dev build Time:docs
+* build docs: lake -R -Kenv=dev update && lake -R -Kenv=dev build Time:docs
