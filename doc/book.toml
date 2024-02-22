@@ -6,7 +6,7 @@ src = "src"
 title = "Time"
 
 [build]
-build-dir = "../build/doc/book"
+build-dir = "../.lake/build/doc/book"
 create-missing = true
 
 [output.html]
