@@ -57,7 +57,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v1
         with:
-          path: './lake/build/doc'
+          path: './.lake/build/doc'
 
   deploy:
     needs: build
