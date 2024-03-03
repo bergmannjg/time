@@ -35,12 +35,14 @@ inductive DayOfYear where
 structure OrdinalDate where
   year : Int
   dayOfYear : DayOfYear
+  isValid : match dayOfYear with
+            | .common _ => isLeapYear year = false
+            | .leap _ => isLeapYear year = true
 
 def toOrdinalDate : Day → OrdinalDate
 ```
 
-and computes the year and the day of year and gives a proof that day of year is an element
-of the corresposnding interval.
+and computes the year and the day of year and gives a proof that ordinal date is a valid date.
 
 ## Build
 

@@ -87,12 +87,15 @@ inductive DayOfYear where
 structure OrdinalDate where
   year : Int
   dayOfYear : DayOfYear
+  isValid : match dayOfYear with
+            | .common _ => isLeapYear year = false
+            | .leap _ => isLeapYear year = true
 ```
 
 ```lean
 -- ⊢ Day → OrdinalDate
 #eval toOrdinalDate { modifiedJulianDay := 59987 }
--- { year := 2023, dayOfYear := Time.DayOfYear.common 43 }
+-- { year := 2023, dayOfYear := Time.DayOfYear.common 43, isValid := __ }
 ```
 
 ## Date
@@ -104,12 +107,13 @@ structure Date where
   Year : Int
   Month : Set.Icc 1 12
   Day : Set.Icc 1 31
+  IsValid : ∃ m ∈ monthLengths (isLeapYear Year), m.1 = Month ∧ Day ≤ m.2
 ```
 
 ```lean
 -- ⊢ Day → Date
 #eval toGregorian { modifiedJulianDay := 59987 }
--- { Year := 2023, Month := 2, Day := 12 }
+-- { Year := 2023, Month := 2, Day := 12, IsValid := _ }
 ```
 
 ## TimeOfDay

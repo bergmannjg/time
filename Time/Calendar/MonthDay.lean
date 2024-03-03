@@ -10,8 +10,160 @@ def monthLengths (isleap : Bool) :=
   [ (1, 31), (2, if isleap then 29 else 28), (3, 31), (4, 30), (5, 31),
     (6, 30), (7, 31), (8, 31), (9, 30), (10, 31), (11, 30), (12, 31)]
 
+def monthLengths' (isleap : Bool) :=
+  (monthLengths isleap).lookup
+
+/--  Date in proleptic Gregorian calendar. -/
+structure Date where
+  Year : Int
+  Month : Set.Icc 1 12
+  Day : Set.Icc 1 31
+  IsValid : ∃ m ∈ monthLengths (isLeapYear Year), m.1 = Month ∧ Day ≤ m.2
+  deriving Repr
+
+instance : BEq Date where
+  beq a b := decide (Eq a.Year b.Year) && decide (Eq a.Month b.Month) && decide (Eq a.Day b.Day)
+
+instance : Inhabited Date where
+  default := ⟨1, ⟨1, (by simp_arith)⟩, ⟨1, (by simp_arith)⟩, (by simp_arith)⟩
+
+def monthLengths_sum (isleap : Bool) : Nat :=
+  (monthLengths isleap).foldl (fun acc m => acc + m.2) 0
+
+theorem monthLengths_sum_eq (isleap : Bool) :
+  monthLengths_sum isleap == if isleap then 366 else 365 := by
+  cases isleap <;> simp_arith
+
 theorem monthLengths_length_eq_12 (isleap : Bool) : (monthLengths isleap).length == 12 := by
   cases isleap <;> simp_arith
+
+theorem monthLengths_length_gt_0 (isleap : Bool) : 0 < (monthLengths isleap).length := by
+  cases isleap <;> simp_arith
+
+theorem monthLengths_month_in (isleap : Bool)
+  : ∀ a ∈ (monthLengths isleap), 1 ≤ a.1 ∧ a.1 ≤ 12 := by
+  cases isleap <;> simp_arith
+
+theorem monthLengths_days_in (isleap : Bool)
+  : ∀ a ∈ (monthLengths isleap), 1 ≤ a.2 ∧ a.2 ≤ 31 := by
+  cases isleap <;> simp_arith
+
+theorem list_foldl_init_add (l : List α) (init v : Nat) (f : α → Nat)
+  : List.foldl (fun acc v => f v + acc) init l + v
+    = List.foldl (fun acc v => f v + acc) (init + v) l := by
+  induction l generalizing init with
+  | nil =>
+    unfold List.foldl
+    simp_all
+  | cons h t ih =>
+    unfold List.foldl
+    simp [*]
+    have : List.foldl (fun acc v => f v + acc) (f h + init + v) t
+              = List.foldl (fun acc v => f v + acc) ((f h + init) + v) t := by
+      simp [ih]
+    have hy : List.foldl (fun acc v => f v + acc) ((f h + init) + v) t
+              = List.foldl (fun acc v => f v + acc) (f h + (init + v)) t := by
+      have : (f h + init) + v = f h + (init + v) := by simp_arith
+      rw [this]
+    rw [hy]
+
+private def findValidMonthDay (year : Int) (l : List (ℕ × ℕ)) (v sum : Nat)
+    (h1 : l.foldl (fun acc v => v.2 + acc) 0 = sum) (h2 : v ≤ sum) (h3 : 1 ≤ v)
+    (h4 : ∃ s : List (ℕ × ℕ), monthLengths (isLeapYear year) = s ++ l) (_ : l ≠ [])
+    (h6 : ∀ a ∈ l, 1 ≤ a.1 ∧ a.1 ≤ 12)
+    (h7 : ∀ a ∈ l, 1 ≤ a.2 ∧ a.2 ≤ 31)
+    : Date :=
+  let isLeap := isLeapYear year
+  match l with
+  | b :: l' =>
+    if h : v ≤ b.2
+    then
+      ⟨year, ⟨b.1, by simp [h6]⟩, ⟨v, by
+          simp [h7]
+          have hx : b.2 ≤ 31 := by simp [h7]
+          exact (And.intro h3 (Nat.le_trans h hx))⟩, by
+        use b
+        obtain ⟨s, h4'⟩ := h4
+        simp_all [List.mem_append.mpr _]⟩
+    else
+      let sum' := sum - b.2
+      let v' := v - b.2
+      have h' : b.2 < v := Nat.lt_of_not_ge h
+      have h3' : 0 < v' := Nat.zero_lt_sub_of_lt h'
+      have h2' : v' ≤ sum' := by
+        have hsum : sum' = sum - b.2 := by simp
+        rw [hsum]
+        have hv : v' = v - b.2 := by simp
+        rw [hv]
+        apply Nat.sub_le_sub_right h2 b.2
+      have h1' : l'.foldl (fun acc v => v.2 + acc) 0 = sum' := by
+        unfold List.foldl at h1
+        have hx : List.foldl (fun acc v => v.2 + acc) 0 l' + b.2
+                  = List.foldl (fun acc v => v.2 + acc) (b.2 + 0) l' := by
+          simp [list_foldl_init_add l' 0 b.2 _]
+        rw [← hx] at h1
+        simp_all
+        have hx' : sum = List.foldl (fun acc v => v.2 + acc) 0 l' + b.2 := by
+          simp_all
+        simp [Nat.sub_eq_of_eq_add hx']
+      have h4' : ∃ s' : List (ℕ × ℕ), monthLengths isLeap = s' ++ l' := by
+          obtain ⟨s, h4'⟩ := h4
+          use s ++ [b]
+          simp_all
+      have h5' : l' ≠ [] := by
+        have hx : 0 < sum' := Nat.lt_of_lt_of_le h3' h2'
+        have : 0 < l'.foldl (fun acc v => v.2 + acc) 0 := by
+          rw [h1']
+          simp_all [hx]
+        match hm : l' with
+        | [] => simp_all
+        | _ :: _ => simp_all
+      have h6' : ∀ a ∈ l', 1 ≤ a.1 ∧ a.1 ≤ 12 := (List.forall_mem_cons.mp h6).right
+      have h7' : ∀ a ∈ l', 1 ≤ a.2 ∧ a.2 ≤ 31 := (List.forall_mem_cons.mp h7).right
+      findValidMonthDay year l' v' sum' h1' h2' h3' h4' h5' h6' h7'
+
+private def findMonthDayCommon (year : Int) (yd : Set.Icc 1 365) (h : (isLeapYear year) = false)
+    : Date :=
+  findValidMonthDay year (monthLengths (isLeapYear year)) yd 365
+      (by
+        have : monthLengths_sum false == 365 := monthLengths_sum_eq false
+        unfold monthLengths_sum at this
+        simp_all
+        exact this)
+      (by simp [yd.property.right])
+      (by simp [yd.property.left])
+      ⟨[], rfl⟩
+      (by simp [List.length_pos.mp (monthLengths_length_gt_0 (isLeapYear year))])
+      (monthLengths_month_in (isLeapYear year))
+      (monthLengths_days_in (isLeapYear year))
+
+private def findMonthDayLeap (year : Int) (yd : Set.Icc 1 366) (h : (isLeapYear year) = true)
+    : Date :=
+  findValidMonthDay year (monthLengths (isLeapYear year)) yd 366
+      (by
+        have : monthLengths_sum true == 366 := monthLengths_sum_eq true
+        unfold monthLengths_sum at this
+        simp_all
+        exact this)
+      (by simp [yd.property.right])
+      (by simp [yd.property.left])
+      ⟨[], rfl⟩
+      (by simp [List.length_pos.mp (monthLengths_length_gt_0 (isLeapYear year))])
+      (monthLengths_month_in (isLeapYear year))
+      (monthLengths_days_in (isLeapYear year))
+
+def ordinalDateToDate (dt : OrdinalDate) : Date :=
+  match h : dt.dayOfYear with
+  | .common yd => findMonthDayCommon dt.year yd (by
+      have hx : match dt.dayOfYear with
+            | .common _ => isLeapYear dt.year = false
+            | .leap _ => isLeapYear dt.year = true := dt.isValid
+      split at hx <;> simp_all)
+  | .leap yd => findMonthDayLeap dt.year yd (by
+      have hx : match dt.dayOfYear with
+            | .common _ => isLeapYear dt.year = false
+            | .leap _ => isLeapYear dt.year = true := dt.isValid
+      split at hx <;> simp_all)
 
 theorem monthLengths_month_le_12 (isleap : Bool)
   : ∀ a ∈ (monthLengths isleap), 1 ≤ a.1 ∧ a.1 ≤ 12 := by
@@ -25,35 +177,6 @@ theorem monthLengths_days_le_31 (isleap : Bool) : ∀ a ∈ (monthLengths isleap
 
 theorem monthLengths_mem_in_icc (isleap : Bool) : ∀ a ∈ (monthLengths isleap), a.2 ∈ Set.Icc 28 31
   := by cases isleap <;> simp_arith
-
-private def findMonthDay (monthLengths : List (Nat × Nat)) (m : Nat) (yd : Nat)
-    (hmonth : ∀ a ∈ monthLengths, 1 ≤ a.1 ∧ a.1 <= 12)
-    (hdays : ∀ a ∈ monthLengths, a.2 <= 31) (hy : 1 <= yd)
-    :  Set.Icc 1 12 × Set.Icc 1 31 :=
-  match monthLengths with
-  | ((ml, n) :: ns) =>
-      if h1 : yd <= n
-      then
-        have hm : 1 ≤ ml ∧ ml ≤ 12 := by simp_all only [List.mem_cons, forall_eq_or_imp,
-          Prod.forall, and_self]
-        have hn : n <= 31 := by simp_all only [List.mem_cons, forall_eq_or_imp]
-        have hn' : yd <= 31 := Nat.le_trans h1 hn
-        (⟨ml, hm⟩, ⟨yd, And.intro hy hn'⟩)
-      else
-        have hmonth' : ∀ a ∈ ns, 1 ≤ a.1 ∧ a.1 <= 12 := (List.forall_mem_cons.mp hmonth).right
-        have hdays' : ∀ a ∈ ns, a.2 <= 31 := (List.forall_mem_cons.mp hdays).right
-        have hy' : 0 < yd - n := by simp_all only [not_le, ge_iff_le, tsub_pos_iff_lt]
-        findMonthDay ns (m + 1) (yd - n) hmonth' hdays' hy'
-  | _ => (⟨1, (by simp_arith)⟩, ⟨1, (by simp_arith)⟩)
-
-def dayOfYearToMonthAndDay (yd : DayOfYear)
-    : Set.Icc 1 12 × Set.Icc 1 31 :=
-  let isLeap := match yd with | .common _ => false | .leap _ => true
-  let d : Set.Icc 1 366 := yd
-  let ml := monthLengths isLeap
-  have hmonth : ∀ a ∈ ml, 1 ≤ a.1 ∧ a.1 <= 12 := monthLengths_month_le_12 isLeap
-  have hdays : ∀ a ∈ ml, a.2 <= 31 := monthLengths_days_le_31 isLeap
-  findMonthDay ml 1 d.val hmonth hdays d.property.left
 
 /-- The length of a given month in the Gregorian or Julian calendars. -/
 def monthLength' (isLeap : Bool) (month': Fin 12) :=

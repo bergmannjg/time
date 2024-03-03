@@ -7,7 +7,8 @@ open Lean Parsec
 
 def parseDate? (fmt : String) (s : String) : Option Date := parse TimeLocale.deDETimeLocale fmt s
 
-def dtDate : Date := { Year := 2023, Month := ⟨2, (by simp_arith)⟩, Day := ⟨12, (by simp_arith)⟩ }
+def dtDate : Date := { Year := 2023, Month := ⟨2, (by simp_arith)⟩,
+                       Day := ⟨12, (by simp_arith)⟩, IsValid := (by simp_arith) }
 
 example : (toGregorian <| fromGregorianDate dtDate) == dtDate := by rfl
 

@@ -7,21 +7,9 @@ namespace Time
 
 open Private
 
-/--  Date in proleptic Gregorian calendar. -/
-structure Date where
-  Year : Int
-  Month : Set.Icc 1 12
-  Day : Set.Icc 1 31
-  deriving Repr, BEq
-
-instance : Inhabited Date where
-  default := ⟨1, ⟨1, (by simp_arith)⟩, ⟨1, (by simp_arith)⟩⟩
-
 /--  Convert to proleptic Gregorian calendar. -/
 def toGregorian (date : Day) : Date :=
-  let dt := toOrdinalDate date
-  let (m, d) := dayOfYearToMonthAndDay dt.dayOfYear
-  ⟨dt.year, m, d⟩
+  ordinalDateToDate (toOrdinalDate date)
 
 /-- Convert from proleptic Gregorian calendar. -/
 def fromGregorianDate (dt : Date) : Day :=
@@ -52,7 +40,7 @@ private def rolloverMonths (ym : Int × Int) : Int × Int  :=
   (y + ((m - 1) / 12), ((m - 1) % 12) + 1)
 
 private def addMonths (n : Int) (day : Day) : Int × Int × Int :=
-  let ⟨y, m, d⟩  := toGregorian day
+  let ⟨y, m, d, _⟩ := toGregorian day
   let (y', m') := rolloverMonths (y, m + n)
   (y', m', d)
 
@@ -87,8 +75,8 @@ def addDurationRollOver (cd : CalendarDiffDays) (day : Day) :=
 
 /-- Calendrical difference, with as many whole months as possible -/
 def diffDurationClip (day2 : Day) (day1 : Day) : CalendarDiffDays :=
-    let ⟨y1, m1, d1⟩  := toGregorian day1
-    let ⟨y2, m2, d2⟩   := toGregorian day2
+    let ⟨y1, m1, d1, _⟩  := toGregorian day1
+    let ⟨y2, m2, d2, _⟩   := toGregorian day2
     let ym1 := y1 * 12 + m1
     let ym2 := y2 * 12 + m2
     let ymdiff := ym2 - ym1
@@ -112,8 +100,8 @@ private partial def findpos (day2 : Day) (day1 : Day) (mdiff : Int) : CalendarDi
 
 /-- Calendrical difference, with as many whole months as possible. -/
 def diffDurationRollOver (day2 : Day) (day1 : Day) : CalendarDiffDays :=
-    let ⟨y1, m1, _⟩  := toGregorian day1
-    let ⟨y2, m2, _⟩  := toGregorian day2
+    let ⟨y1, m1, _, _⟩  := toGregorian day1
+    let ⟨y2, m2, _, _⟩  := toGregorian day2
     let ym1 := y1 * 12 + m1
     let ym2 := y2 * 12 + m2
     let ymdiff := ym2 - ym1
