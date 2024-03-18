@@ -102,9 +102,10 @@ private def findValidMonthDay (year : Int) (l : List (ℕ × ℕ)) (v sum : Nat)
                   = List.foldl (fun acc v => v.2 + acc) (b.2 + 0) l' := by
           simp [list_foldl_init_add l' 0 b.2 _]
         rw [← hx] at h1
-        simp_all
+        --simp_all
         have hx' : sum = List.foldl (fun acc v => v.2 + acc) 0 l' + b.2 := by
           simp_all
+        simp [sum']
         simp [Nat.sub_eq_of_eq_add hx']
       have h4' : ∃ s' : List (ℕ × ℕ), monthLengths isLeap = s' ++ l' := by
           obtain ⟨s, h4'⟩ := h4
@@ -277,16 +278,16 @@ private def monthAndDayToDayOfYearClipped_month_gt (isLeap : Bool) (month' : Non
   let x' := Int.toNat x
 
   have hx1' : 0 < x' := by
-    simp_all only [not_le, Int.lt_toNat, Nat.cast_zero]
+    simp_all only [x', not_le, Int.lt_toNat, Nat.cast_zero]
 
   have hx2 : x ≤ 366 := by
-    have hk : k = -2 ∨ k = -1 := by aesop
+    have hk : k = -2 ∨ k = -1 := by cases isLeap <;> simp [k]
     have hm : month ≤ 12 := Int.ofNat_le_ofNat_of_le month'.icc.property.right
     have hd2' : day ≤ 31 := Int.ofNat_le_ofNat_of_le hd2
     exact monthAndDayToDayOfYear_le month day k hm hk hd2'
 
   have hx2' : x' ≤ 366 := by
-    simp_all only [Int.lt_toNat, Nat.cast_zero, Int.toNat_le, Nat.cast_ofNat]
+    simp_all only [x', Int.lt_toNat, Nat.cast_zero, Int.toNat_le, Nat.cast_ofNat]
 
   ⟨x', And.intro hx1' hx2'⟩
 

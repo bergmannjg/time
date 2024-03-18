@@ -97,14 +97,14 @@ lemma le_c {c b cent : Int} (hb₁ : 0 ≤ b) (hcent₀ : cent = min (b / 36524)
     split at hcent₀
     · have hx : 2 * 36524 ≤ b := (Int.le_ediv_iff_mul_le (by simp_arith)).mp (by simp_all)
       calc
-        0 ≤ b - 2 * 36524 := by simp [Int.sub_le_sub_right _ _]; simp [hx]
+        0 ≤ b - 2 * 36524 := by simp [Int.sub_le_sub_right _ _]; simpa [hx]
         _ = c := by rw [hc]
     · contradiction
   | 3 =>
     have h1 : 3 ≤ b / 36524 := (Int.le_min.mp (le_of_eq hcent₀)).left
     have hx : 3 * 36524 ≤ b := (Int.le_ediv_iff_mul_le (by simp_arith)).mp (by simp_all)
     calc
-      0 ≤ b - 3 * 36524 := by simp [Int.sub_le_sub_right _ _]; simp [hx]
+      0 ≤ b - 3 * 36524 := by simp [Int.sub_le_sub_right _ _]; simpa [hx]
       _ = c := by rw [hc]
 
 lemma c_lt {c b cent : Int} (hcent₀ : cent = min (b / 36524) 3 )
@@ -135,7 +135,7 @@ lemma c_lt {c b cent : Int} (hcent₀ : cent = min (b / 36524) 3 )
       have hb : c = b - 2*36524 := by simp [hm, hc]
       have hc : b - 2*36524 < 36524 := by apply (Int.sub_lt_sub_right ha (2*36524))
       rw [hb]
-      simp [hc]
+      simpa [hc]
     · contradiction
 
 lemma c_le {c b cent : Int} (hb₂ : b < 146097) (hcent₀ : cent = min (b / 36524) 3 )
@@ -192,10 +192,11 @@ lemma year_emod_100_non_zero {qc cent q : Int} (year : Int)
   (h1: year = qc * 400 + cent * 100 + q * 4 + 4) (hle : 0 ≤ q)  (h2 : q < 24) : year % 100 ≠ 0 := by
   rw [Int.add_assoc] at h1
   have h2 : q * 4 + 4 < 100 := by
-    have ha : q * 4 + 4 < 24 * 4 + 4 := by simp_all
-    have : 24 * 4 + 4 = (100 : Int) := by simp_arith
-    rw [this] at ha
-    simp [ha]
+    have ha : q * 4 + 4 < 24 * 4 + 4 := by
+      apply (Int.add_lt_add_right)
+      apply (Int.mul_lt_mul_of_pos_right h2 _)
+      simp
+    simpa [ha]
   have h3 : (qc * 400 + cent * 100) % 100 = 0 := by
     have : (400 : Int) = 4 * 100 := by simp_arith
     rw [this]
@@ -204,9 +205,7 @@ lemma year_emod_100_non_zero {qc cent q : Int} (year : Int)
   have ha : 4 ≤ q * 4 + 4 := by
     have : 0 ≤ q * 4 := by
       simp [@Int.mul_nonneg q 4 hle (by simp_arith)]
-      simp [hle]
     simp [Int.le_add_of_nonneg_left this]
-    simp [hle]
   have hb : 0 < q * 4 + 4 := Int.lt_of_lt_of_le (by simp) ha
   have h4 : (0 + (q * 4 + 4)) % 100 = q * 4 + 4 := by
     simp [Int.emod_eq_of_lt (Int.le_of_lt hb) h2]
@@ -257,7 +256,7 @@ def toOrdinalDate (mjd : Day) : OrdinalDate :=
   have hb₄ : b ≤ 146096 := Int.le_of_lt_add_one
         (by (have : (146096 + 1 : Int) = 146097 := by simp_arith); rw [this]; simp [hb₂])
   have hcent₁ : 0 ≤ cent := Int.le_min.mpr (And.intro hb₃ (by simp_arith))
-  have hcent₂ : cent < 4 := by simp_arith [Int.min_eq_right _]
+  have hcent₂ : cent < 4 := by simp [cent]
   have hc₁ : 0 ≤ c := le_c hb₁ (by simp) hcent₁ hcent₂ (by simp)
   have hc₂ : c ≤ 36524 := c_le hb₂ (by simp) hcent₁ hcent₂ (by simp)
   have hquad₁ : 0 ≤ quad := Int.le_ediv_of_mul_le (by simp_arith)
@@ -294,8 +293,10 @@ def toOrdinalDate (mjd : Day) : OrdinalDate :=
       have ha : 4*365 ≤ d' := not_lt.mp h
       have hb : d' ≤ 4*365 := by
         have ha : (3*365:Int) + 366 = 4*365 + 1 := by simp_arith
-        have hb : d' < 4*365 + 1 := ha ▸ h2
-        simp [Int.le_of_lt_add_one hb]
+        have hc : d' < 4*365 + 1 := ha ▸ h2
+        simp [Int.le_of_lt_add_one hc]
+        apply Int.le_of_lt_add_one
+        simp [hd']
       simp [Int.le_antisymm ha hb]
 
     let yd : Nat := d'.toNat - 3*365 + 1
@@ -354,7 +355,7 @@ def firstDayOfYearDate (year : Int) : OrdinalDate :=
   let isValid : match firstDay with
             | .common _ => isLeapYear year = false
             | .leap _ => isLeapYear year = true := by
-    simp_arith
+    simp [firstDay]
     split
     · rename_i heq
       split at heq <;> try simp_all
