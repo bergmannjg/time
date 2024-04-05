@@ -44,7 +44,6 @@ jobs:
       - name: Build Time
         run: |
           lake update
-          lake exe cache get
           lake build
       - name: Build Doc (with ad hoc solution for old leanInk version)
         run: |
