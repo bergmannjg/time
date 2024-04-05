@@ -1,7 +1,7 @@
 import Time
 
 open Time
-open Lean Parsec Private
+open Lean Parsec Clip
 
 /-- see https://heasarc.gsfc.nasa.gov/cgi-bin/Tools/xTime/xTime.pl-/
 
@@ -46,7 +46,7 @@ example : fromWeekDate 2023 3 2 == fromGregorianDate dt_2023_1_17 := by rfl
 
 example : fromWeekDateValid 2023 3 2 == some (fromGregorianDate dt_2023_1_17) := by rfl
 
-example : (NonemptyIcc.toFin <| clip' 1 12 3 (by simp_arith)) == (Fin.ofNat 2 : Fin 12) := by rfl
+example : (NonemptyIcc.toFin <| clipToNonemptyIcc 1 12 3 (by simp_arith)) == (Fin.ofNat 2 : Fin 12) := by rfl
 
 def dt_2023_2_12 : Date := { Year := 2023, Month := ⟨2, (by simp_arith)⟩,
                              Day := ⟨12, (by simp_arith)⟩, IsValid := (by simp_arith) }

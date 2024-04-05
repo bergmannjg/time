@@ -19,7 +19,7 @@ instance : ToISO8601 Date where
 instance : ToISO8601 TimeOfDay where
   toISO8601 a :=
     let second := s!"{toZeroPadded a.Second.val.numerator 2}{Fixed.denominatorToString a.Second.val}"
-    s!"{toZeroPadded a.Hour 2}:{toZeroPadded a.Minute 2}:{second}"
+    s!"{toZeroPadded a.Hour.val 2}:{toZeroPadded a.Minute.val 2}:{second}"
 
 instance : ToISO8601 LocalTime where
   toISO8601 a := s!"{toISO8601 <| toGregorian a.localDay}T{toISO8601 a.localTimeOfDay}"

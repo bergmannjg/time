@@ -9,9 +9,12 @@ example : TimeOfDay.divMod 9 6 == (1, 3) := by rfl
 
 example : divMod (.toFixed 9 0 : Fixed 3) (.toFixed 6 0) == (1, ⟨3000⟩) := by rfl
 
-example : (divMod' (.toFixed 90 0 : Fixed 3) (.toFixed 60 0) (by simp_arith)
-            : Int × (Set.Ico zero (toFixed 60 0)))
-          == (1, ⟨⟨30000⟩, (by simp_arith)⟩) := by rfl
+example : (divMod' (.toFixed 90 0 : Fixed 3) (.toFixed 60 0) (zero_lt_toFixed _ _ _ (by omega))
+            : Int × (Time.Ico zero (toFixed 60 0)))
+          == (1, ⟨(toFixed 30 0), And.intro
+                (zero_le_toFixed _ _ _ (by omega))
+                (toFixed_lt_toFixed _ _ _ _ _ (by omega) (by omega))
+              ⟩) := by rfl
 
 example : (toFixed 10 500 : Fixed 3) == ⟨10500⟩ := by rfl
 

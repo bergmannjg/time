@@ -1,8 +1,9 @@
-import Mathlib.Tactic.NormNum
+import Time.Data.Int.Order
 import Time.LocalTime.TimeZone
 import Time.Clock.DiffTime
-import Time.Calendar.Private
+import Time.Calendar.Clip
 import Std
+import Std.Data.Int.DivMod
 
 namespace Time
 
@@ -14,45 +15,54 @@ def sixty : Fixed 9 := Fixed.toFixed 60 0
 
 end Second
 
-abbrev Ico.Second := Set.Ico Second.zero Second.sixty
+theorem zero_lt_sixty : Second.zero < Second.sixty := by
+  unfold Second.zero Second.sixty
+  simp_all [Fixed.zero_lt_toFixed _ _ _ _]
+
+abbrev Ico.Second := Time.Ico Second.zero Second.sixty
 
 structure TimeOfDay where
-  Hour : Set.Ico 0 24
-  Minute : Set.Ico 0 60
+  Hour : Time.Ico 0 24
+  Minute : Time.Ico 0 60
   Second : Ico.Second
   deriving Repr, BEq
 
 instance : ToString TimeOfDay where
-  toString a := s!"tod : ({a.Hour}, {a.Minute}, {a.Second})"
+  toString a := s!"tod : ({a.Hour.val}, {a.Minute.val}, {a.Second.val})"
 
 instance : Inhabited TimeOfDay where
-  default := ⟨⟨0, (by simp)⟩ , ⟨0, (by simp)⟩, ⟨Fixed.zero, (by simp_arith)⟩⟩
+  default := ⟨
+    ⟨0, (by simp)⟩ ,
+    ⟨0, (by simp)⟩,
+    ⟨Second.zero, And.intro (LeRefl.le_refl Fixed.zero) zero_lt_sixty⟩
+  ⟩
 
 namespace TimeOfDay
 
 def divMod (n : Int) (d : Nat) : Int × Int :=
   (n / d, n % d)
 
-private def toIco (v : Int) (a b : Nat) (h1 : a ≤ v) (h2 : v < b) (hb : 0 < b) : Set.Ico a b :=
+private def toIco (v : Int) (a b : Nat) (h1 : a ≤ v) (h2 : v < b) (h3 : 0 < b) : Time.Ico a b :=
   let v' := v.toNat
   have h1' : a ≤ v' := Int.toNat_le_toNat h1
-  have h2' : v' < b := (Int.toNat_lt_toNat (Int.ofNat_lt.mpr hb)).mpr h2
+  have h2' : v' < b := Int.toNat_lt_toNat h2 (by omega)
 
   ⟨v', And.intro h1' h2'⟩
 
-private def divMod' (n : Int) (d : Nat) (hd : 0 < d) : Int ×  Set.Ico 0 d :=
+private def divMod' (n : Int) (d : Nat) (hd : 0 < d) : Int ×  Time.Ico 0 d :=
   let mod := n % d
-  have h1 : 0 ≤ mod := Int.emod_nonneg n (Int.coe_nat_ne_zero.mpr (Nat.pos_iff_ne_zero.mp hd))
-  have h2 : mod < d := Int.emod_lt_of_pos n (Int.coe_nat_pos.mpr hd)
+  have h1 : 0 ≤ mod := Int.emod_nonneg n (by omega)
+  have h2 : mod < d := Int.emod_lt_of_pos n (by omega)
 
   (n / d, toIco mod 0 d h1 h2 hd)
 
 def timeOfDayToTime (tod : TimeOfDay) : DiffTime :=
   let (_, _, d) := tod.Second.val.numeratorDenominator
-  DiffTime.fromSecNsec ((tod.Hour * 60 + tod.Minute) * 60 + tod.Second.val.numerator) d
+  DiffTime.fromSecNsec ((tod.Hour.val * 60 + tod.Minute.val) * 60 + tod.Second.val.numerator) d
 
 def timeToDaysAndTimeOfDay (secsOfTime : DiffTime) : Int × TimeOfDay :=
-  let (m, ms) := Fixed.divMod' secsOfTime.val Second.sixty (by simp_arith)
+  let (m, ms) := Fixed.divMod' secsOfTime.val Second.sixty
+    (by unfold Second.sixty; simp_all [Fixed.zero_lt_toFixed _ _ _ _])
   let (h, hm) := divMod' m 60 (by simp)
   let (days , dh) := divMod' h 24 (by simp)
   (days, ⟨ dh, hm, ms⟩)
@@ -62,9 +72,9 @@ def timeToTimeOfDay  (secsOfTime : DiffTime) : TimeOfDay :=
 
 -- Convert a time of day in UTC to a time of day in some timezone, together with a day adjustment.
 def utcToLocalTimeOfDay (zone : TimeZone) (tod : TimeOfDay) : Int × TimeOfDay :=
-  let m' := tod.Minute + zone.timeZoneMinutes
+  let m' := tod.Minute.val + zone.timeZoneMinutes
   let (_, hm') := divMod' m' 60 (by simp)
-  let h' := tod.Hour + (m' / 60)
+  let h' := tod.Hour.val + (m' / 60)
   let (days , dh') := divMod' h' 24 (by simp)
   ( days, ⟨ dh', hm', tod.Second⟩ )
 
@@ -73,7 +83,7 @@ def localToUTCTimeOfDay (zone : TimeZone) (tod : TimeOfDay) : Int × TimeOfDay :
   utcToLocalTimeOfDay (TimeZone.minutesToTimeZone (Neg.neg (zone.timeZoneMinutes))) tod
 
 def toSecond (secs : Int) (nanoSecs : Nat) (h1: 0 ≤ secs) (h2: secs < 60) : Ico.Second :=
-  if h : 0 = secs then ⟨Second.zero, (by simp_arith)⟩
+  if h : 0 = secs then ⟨Second.zero, And.intro (LeRefl.le_refl Fixed.zero) zero_lt_sixty⟩
   else
     have h1' : 0 < secs := Int.lt_iff_le_and_ne.mpr (And.intro h1 (by simpa))
     ⟨Fixed.toFixed secs nanoSecs,
@@ -82,7 +92,5 @@ def toSecond (secs : Int) (nanoSecs : Nat) (h1: 0 ≤ secs) (h2: secs < 60) : Ic
         (Fixed.toFixed_lt_toFixed 9 secs nanoSecs 60 0 h1 h2)
     ⟩
 
-def toSecond' (s : Private.NonemptyIco 0 60) : Ico.Second :=
-  toSecond s.ico.val 0
-    (Int.ofNat_le_ofNat_of_le s.ico.property.left)
-    (Int.ofNat_lt_ofNat_of_lt s.ico.property.right)
+def toSecond' (s : NonemptyIco 0 60) : Ico.Second :=
+  toSecond s.ico.val 0 (Int.ofNat_le.2 s.ico.property.left) (Int.ofNat_lt.2 s.ico.property.right)

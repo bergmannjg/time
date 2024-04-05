@@ -1,5 +1,4 @@
-import Mathlib.Tactic.NormNum
-import Time.Calendar.Private
+import Time.Calendar.Clip
 import Time.Calendar.Days
 import Time.Calendar.OrdinalDate
 import Time.Calendar.Week
@@ -7,7 +6,7 @@ import Std
 
 namespace Time
 
-open Private
+open Clip
 
 /-- FirstWeekType
 
@@ -58,7 +57,7 @@ Invalid week and day values will be clipped to the correct range. -/
 def fromWeekCalendar (wt : FirstWeekType) (ws : DayOfWeek) (y : Int) (wy : Int) (dw : DayOfWeek)
    : Day :=
   let d1 := firstDayOfWeekCalendar wt ws y
-  let wy' := clip 1 53 wy (by norm_num1)
+  let wy' := clip 1 53 wy (by omega)
   let d1s := firstDayOfWeekCalendar wt ws (y + 1)
   let day := getday wy' d1 ws dw
   if wy' == 53 then if day >= d1s then getday 52 d1 ws dw else day else day
@@ -84,5 +83,5 @@ def fromWeekDate (y : Int) (wy : Int) (dw : Int) : Day :=
 
 Invalid week and day values will be clipped to the correct range. -/
 def fromWeekDateValid (y : Int) (wy : Int) (dwr : Int) : Option Day := do
-  let dw ← clipValid 1 7 dwr (by norm_num1)
+  let dw ← clip? 1 7 dwr (by omega)
   fromWeekCalendarValid .FirstMostWeek .Monday y wy (DayOfWeek.toDayOfWeek dw)

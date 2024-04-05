@@ -1,4 +1,3 @@
-import Mathlib.Tactic.NormNum
 import Lean.Data.Parsec
 import Time.Format.Parse.Class
 import Time.Calendar.WeekDate
@@ -196,27 +195,27 @@ def makeDayComponent (l : TimeLocale) (c : Specifier) (s : String) : Option <| L
     | none => return []
   | .m =>
     let raw ← readMaybe s
-    let a ← Private.clipValid 1 12 raw (by norm_num1)
+    let a ← Clip.clip? 1 12 raw (by omega)
     return [.DCYearMonth a]
   | .d =>
     let raw ← readMaybe s
-    let a ← Private.clipValid 1 31 raw (by norm_num1)
+    let a ← Clip.clip? 1 31 raw (by omega)
     return [.DCMonthDay a]
   | .V =>
     let raw ← readMaybe s
-    let a ← Private.clipValid 1 53 raw (by norm_num1)
+    let a ← Clip.clip? 1 53 raw (by omega)
     return [.DCYearWeek WeekType.ISOWeek  a]
   | .U =>
     let raw ← readMaybe s
-    let a ← Private.clipValid 0 53 raw (by norm_num1)
+    let a ← Clip.clip? 0 53 raw (by omega)
     return [.DCYearWeek WeekType.SundayWeek  a]
   | .W =>
     let raw ← readMaybe s
-    let a ← Private.clipValid 0 53 raw (by norm_num1)
+    let a ← Clip.clip? 0 53 raw (by omega)
     return [.DCYearWeek WeekType.MondayWeek  a]
   | .u =>
     let raw ← readMaybe s
-    let a ← Private.clipValid 1 7 raw (by norm_num1)
+    let a ← Clip.clip? 1 7 raw (by omega)
     return [.DCWeekDay  a]
   | .a => do
     match indexOf? (·.2 == s) l.wDays with
@@ -232,11 +231,11 @@ def makeDayComponent (l : TimeLocale) (c : Specifier) (s : String) : Option <| L
     | none => return []
   | .w =>
     let raw ← readMaybe s
-    let a ← Private.clipValid 0 6 raw (by norm_num1)
+    let a ← Clip.clip? 0 6 raw (by omega)
     return [.DCWeekDay  a]
   | .j =>
     let raw ← readMaybe s
-    let a ← Private.clipValid 1 366 raw (by norm_num1)
+    let a ← Clip.clip? 1 366 raw (by omega)
     return [.DCYearDay a]
   | _ => return [] where
   indexOf? {α : Type} (p : α -> Bool) (l : List α) : Option Int :=
@@ -293,25 +292,25 @@ instance : ParseTime TimeOfDay where
       match pair.1 with
       | .H => do
         let raw ← readMaybe pair.2
-        let a ← Private.clipValid'' 0 24 raw (by norm_num1)
+        let a ← Clip.clipToNonemptyIco? 0 24 raw (by omega)
         some { tod with Hour := a }
       | .M => do
         let raw ← readMaybe pair.2
-        let a ← Private.clipValid'' 0 60 raw (by norm_num1)
+        let a ← Clip.clipToNonemptyIco? 0 60 raw (by omega)
         some { tod with Minute := a }
       | .S => do
         let raw ← readMaybe pair.2
-        let a ← Private.clipValid'' 0 60 raw (by norm_num1)
+        let a ← Clip.clipToNonemptyIco? 0 60 raw (by omega)
         some { tod with Second := TimeOfDay.toSecond' a }
       | .q => do
         let n : Int ← readMaybe pair.2
         let val := tod.Second.val + (Fixed.toFixed 0 n.toNat : Fixed 9)
-        let second ← Private.clipValid''' Second.zero Second.sixty val
+        let second ← Clip.clipToIco? Second.zero Second.sixty val
         some { tod with Second := second }
       | .Q => do
         let n : Int ← readMaybe (zeroRPad pair.2 9)
         let val := tod.Second.val + (Fixed.toFixed 0 n.toNat : Fixed 9)
-        let second ← Private.clipValid''' Second.zero Second.sixty val
+        let second ← Clip.clipToIco? Second.zero Second.sixty val
         some { tod with Second := second }
       | _ => some tod
 

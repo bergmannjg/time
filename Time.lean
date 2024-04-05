@@ -2,8 +2,8 @@ import Time.ZeroPad
 import Time.Fixed
 import Time.Specifier
 import Time.Calendar.Days
+import Time.Calendar.Clip
 import Time.Calendar.OrdinalDate
-import Time.Calendar.Private
 import Time.Calendar.MonthDay
 import Time.Calendar.CalendarDiffDays
 import Time.Calendar.Gregorian

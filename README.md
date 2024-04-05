@@ -29,8 +29,8 @@ In Lean [toOrdinalDate](https://bergmannjg.github.io/time/Time/Calendar/OrdinalD
 
 ```lean
 inductive DayOfYear where
-  | common : Set.Icc 1 365 -> DayOfYear
-  | leap : Set.Icc 1 366 -> DayOfYear
+  | common : Time.Icc 1 365 -> DayOfYear
+  | leap : Time.Icc 1 366 -> DayOfYear
 
 structure OrdinalDate where
   year : Int

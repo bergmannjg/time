@@ -1,4 +1,4 @@
-import Mathlib.Data.Set.Intervals.Basic
+import Time.Interval
 
 namespace Time
 
@@ -16,17 +16,13 @@ export ToZeroPadded (toZeroPadded)
 instance : ToZeroPadded Int where
   toZeroPadded n i := zeroLPad (toString (if n < 0 then Neg.neg n else n)) i
 
-instance  {a : Int} : ToZeroPadded (Set.Ici a) where
-  toZeroPadded n i := zeroLPad (toString (if n.val < 0 then Neg.neg n.val else n.val)) i
-
-instance  {a : Nat} : ToZeroPadded (Set.Ici a) where
+instance  {a b : Nat} : ToZeroPadded (Time.Icc a b) where
   toZeroPadded n i := zeroLPad (toString n.val) i
 
-instance  {a b : Nat} : ToZeroPadded (Set.Icc a b) where
+/-
+instance  {a b : α} [ToString α] : ToZeroPadded (Time.Ico a b) where
   toZeroPadded n i := zeroLPad (toString n.val) i
-
-instance  {a b : α} [Preorder α] [ToString α] : ToZeroPadded (Set.Ico a b) where
-  toZeroPadded n i := zeroLPad (toString n.val) i
+-/
 
 instance : ToZeroPadded Nat where
   toZeroPadded n i := zeroLPad (toString n) i

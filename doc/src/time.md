@@ -81,8 +81,8 @@ ISO 8601 [Ordinal Date](https://en.wikipedia.org/wiki/ISO_8601#Ordinal_dates).
 
 ```lean
 inductive DayOfYear where
-  | common : Set.Icc 1 365 -> DayOfYear
-  | leap : Set.Icc 1 366 -> DayOfYear
+  | common : Time.Icc 1 365 -> DayOfYear
+  | leap : Time.Icc 1 366 -> DayOfYear
 
 structure OrdinalDate where
   year : Int
@@ -100,13 +100,13 @@ structure OrdinalDate where
 
 ## Date
 
-The [Date](../Time/Calendar/Gregorian.html#Time.Date) is a calendar date in the proleptic Gregorian calendar.
+The [Date](../Time/Calendar/MonthDay.html#Time.Date) is a calendar date in the proleptic Gregorian calendar.
 
 ```lean
 structure Date where
   Year : Int
-  Month : Set.Icc 1 12
-  Day : Set.Icc 1 31
+  Month : Time.Icc 1 12
+  Day : Time.Icc 1 31
   IsValid : ∃ m ∈ monthLengths (isLeapYear Year), m.1 = Month ∧ Day ≤ m.2
 ```
 
@@ -124,9 +124,9 @@ of a second up to a resolution of one nanosecond.
 
 ```lean
 structure TimeOfDay where
-  Hour : Set.Ico 0 24
-  Minute : Set.Ico 0 60
-  Second : Set.Ico ⟨0⟩ ⟨60000000000⟩
+  Hour : Time.Ico 0 24
+  Minute : Time.Ico 0 60
+  Second : Time.Ico ⟨0⟩ ⟨60000000000⟩
 ```
 
 ```lean

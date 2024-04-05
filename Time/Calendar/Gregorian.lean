@@ -5,7 +5,7 @@ import Time.Calendar.CalendarDiffDays
 
 namespace Time
 
-open Private
+open Clip
 
 /--  Convert to proleptic Gregorian calendar. -/
 def toGregorian (date : Day) : Date :=
@@ -13,7 +13,7 @@ def toGregorian (date : Day) : Date :=
 
 /-- Convert from proleptic Gregorian calendar. -/
 def fromGregorianDate (dt : Date) : Day :=
-  let dy := monthAndDayToDayOfYear (isLeapYear dt.Year) dt.Month dt.Day
+  let dy := monthAndDayToDayOfYear (isLeapYear dt.Year) dt.Month.val dt.Day.val
   fromOrdinalDayOfYear dt.Year dy
 
 /-- Convert from proleptic Gregorian calendar.
@@ -25,13 +25,13 @@ def fromGregorian (year : Int) (month : Int) (day : Int) : Day :=
 /-- Convert from proleptic Gregorian calendar. Invalid values give result none. -/
 def fromGregorianValid (year : Int) (month : Int) (day : Int) : Option Day := do
   let day ← monthAndDayToDayOfYearValid (isLeapYear year) month day
-  fromOrdinalDateValid year (day)
+  fromOrdinalDateValid year (day.val)
 
 namespace Gregorian
 
 /-- The number of days in a given month according to the proleptic Gregorian calendar. -/
 def monthLength (year: Int) (month : Int) : Int :=
-  let month' := clip' 1 12 month (by simp_arith)
+  let month' := clipToNonemptyIcc 1 12 month (by simp_arith)
   let month'' : Fin 12 := month'
   ((monthLengths (isLeapYear year)).get month'').2
 
@@ -41,8 +41,8 @@ private def rolloverMonths (ym : Int × Int) : Int × Int  :=
 
 private def addMonths (n : Int) (day : Day) : Int × Int × Int :=
   let ⟨y, m, d, _⟩ := toGregorian day
-  let (y', m') := rolloverMonths (y, m + n)
-  (y', m', d)
+  let (y', m') := rolloverMonths (y, m.val + n)
+  (y', m', d.val)
 
 /-- Add months, with days past the last day of the month clipped to the last day.
 For instance, 2005-01-30 + 1 month = 2005-02-28. -/
@@ -77,17 +77,17 @@ def addDurationRollOver (cd : CalendarDiffDays) (day : Day) :=
 def diffDurationClip (day2 : Day) (day1 : Day) : CalendarDiffDays :=
     let ⟨y1, m1, d1, _⟩  := toGregorian day1
     let ⟨y2, m2, d2, _⟩   := toGregorian day2
-    let ym1 := y1 * 12 + m1
-    let ym2 := y2 * 12 + m2
+    let ym1 := y1 * 12 + m1.val
+    let ym2 := y2 * 12 + m2.val
     let ymdiff := ym2 - ym1
     let ymAllowed :=
         if day2 >= day1
             then
-                if d2 >= d1
+                if d2.val >= d1.val
                     then ymdiff
                     else ymdiff - 1
             else
-                if d2 <= d1
+                if d2.val <= d1.val
                     then ymdiff
                     else ymdiff + 1
     let dayAllowed := addDurationClip ⟨ymAllowed, 0⟩ day1
@@ -102,8 +102,8 @@ private partial def findpos (day2 : Day) (day1 : Day) (mdiff : Int) : CalendarDi
 def diffDurationRollOver (day2 : Day) (day1 : Day) : CalendarDiffDays :=
     let ⟨y1, m1, _, _⟩  := toGregorian day1
     let ⟨y2, m2, _, _⟩  := toGregorian day2
-    let ym1 := y1 * 12 + m1
-    let ym2 := y2 * 12 + m2
+    let ym1 := y1 * 12 + m1.val
+    let ym2 := y2 * 12 + m2.val
     let ymdiff := ym2 - ym1
     let findneg (mdiff : Int) : CalendarDiffDays :=
         let dayAllowed := addDurationRollOver ⟨mdiff, 0⟩ day1
