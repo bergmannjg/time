@@ -45,10 +45,9 @@ jobs:
         run: |
           lake update
           lake build
-      - name: Build Doc (with ad hoc solution for old leanInk version)
+      - name: Build Doc
         run: |
           lake -R -Kenv=dev update
-          grep -q 'nightly-2022-12-16' .lake/packages/leanInk/lean-toolchain && sed -i 's/_resolveTacticList ctx aux tree/_resolveTacticList none aux tree/' .lake/packages/leanInk/LeanInk/Analysis/InfoTreeTraversal.lean
           lake -R -Kenv=dev build Time:docs
       - name: Build book
         run: mdbook build doc

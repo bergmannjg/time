@@ -64,55 +64,6 @@ private def toDayOfYear (year: Int) (d': Int) : OrdinalDate :=
   then ⟨year, .leap ⟨yd, And.intro h1 (Nat.le_step h2)⟩, (by simp_all)⟩
   else ⟨year, .common ⟨yd, And.intro h1 h2⟩, (by simp_all)⟩
 
-theorem le_c {c b cent : Int} (hb₁ : 0 ≤ b) (hcent₀ : cent = min (b / 36524) 3 )
-  (hcent₁ : 0 ≤ cent) (hcent₂ : cent < 4) (hc : c = b - (cent * 36524))
-    : 0 ≤ c := by
-  match hm : cent with
-  | 0 =>
-    rw [Int.min_def] at hcent₀
-    split at hcent₀
-    · simp [hb₁, hc, hm]
-    · contradiction
-  | 1 =>
-    rw [Int.min_def] at hcent₀
-    split at hcent₀
-    · omega
-    · contradiction
-  | 2 =>
-    rw [Int.min_def] at hcent₀
-    split at hcent₀
-    · omega
-    · contradiction
-  | 3 => omega
-
-theorem c_lt {c b cent : Int} (hcent₀ : cent = min (b / 36524) 3 )
-  (hcent₁ : 0 ≤ cent) (hcent₂ : cent < 3) (hc : c = b - (cent * 36524)) : c < 36524 := by
-  match hm : cent with
-  | 0 =>
-    rw [Int.min_def] at hcent₀
-    split at hcent₀
-    · omega
-    · contradiction
-  | 1 =>
-    rw [Int.min_def] at hcent₀
-    split at hcent₀
-    · omega
-    · contradiction
-  | 2 =>
-    rw [Int.min_def] at hcent₀
-    split at hcent₀
-    · omega
-    · contradiction
-
-theorem c_le {c b cent : Int} (hb₂ : b < 146097) (hcent₀ : cent = min (b / 36524) 3 )
-  (_ : 0 ≤ cent) (_ : cent < 4) (hc : c = b - (cent * 36524)) : c ≤ 36524 := by
-  omega
-
-theorem cent_eq_of_c_eq {cent : Int} (c b : Int) (hcent₀ : cent = min (b / 36524) 3 )
-  (hcent₁ : 0 ≤ cent) (hcent₂ : cent < 4) (hc : c = b - (cent * 36524)) (hceq : c = 36524)
-    : cent = 3 := by
-  omega
-
 theorem year_emod_4_zero {qc cent q : Int} (year : Int)
   (h: year = qc * 400 + cent * 100 + q * 4 + 4) : year % 4 = 0 := by
   omega
@@ -180,11 +131,11 @@ def toOrdinalDate (mjd : Day) : OrdinalDate :=
       rw [hyd, hx]
       simp_arith
 
-    have h1 : 0 < yd := by simp_arith
-    have h2 : yd ≤ 366 := Nat.le_of_eq hy
+    have h1 : 0 < yd := by omega
+    have h2 : yd ≤ 366 := by omega
 
     let year := quadcent * 400 + cent * 100 + quad * 4 + 4
-    have hyear : year = quadcent * 400 + cent * 100 + quad * 4 + 4 := by simp
+    have hyear : year = quadcent * 400 + cent * 100 + quad * 4 + 4 := by omega
     ⟨year, .leap ⟨yd, And.intro h1 h2⟩,
           (by simp [isLeapYear_of_sum year hyear hquad₁ hquad₂ (hcent₃ hx)])⟩
 

@@ -5,7 +5,10 @@ package time {
   precompileModules := if get_config? env = some "noprecompile" then false else true
 }
 
-require std from git "https://github.com/leanprover/std4" @ "v4.7.0-rc2"
+require std from git "https://github.com/leanprover/std4" @ "v4.7.0"
+
+meta if get_config? env = some "dev" then
+require leanInk from git "https://github.com/hargonix/LeanInk" @ "doc-gen"
 
 meta if get_config? env = some "dev" then
 require «doc-gen4» from  git "https://github.com/leanprover/doc-gen4" @ "main"

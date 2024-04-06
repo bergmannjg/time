@@ -47,6 +47,5 @@ and computes the year and the day of year and gives a proof that ordinal date is
 ## Build
 
 * update: lake update
-* create cache: lake exe cache get
 * build: lake build
 * build docs: lake -R -Kenv=dev update && lake -R -Kenv=dev build Time:docs
