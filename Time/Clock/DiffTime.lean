@@ -3,18 +3,24 @@ import Time.Fixed
 
 namespace Time
 
+/-- digits of nano second -/
+def Nano := 9
+
 /-- This is a length of time in nsecs, as measured by a clock.  -/
 structure DiffTime where
-  val : Fixed 9
+  val : Fixed Nano
   deriving Repr, BEq
 
 namespace DiffTime
 
-def fromSecNsec (sec : Int) (nsec : Nat) : DiffTime := ⟨Fixed.toFixed sec nsec⟩
+def fromSecNsec (sign : Sign) (sec : Nat) (nsec : Nat) : DiffTime :=
+  ⟨Fixed.toFixed sign sec (Fixed.toDenominator nsec Nano)⟩
 
-def fromSec (sec : Int) : DiffTime := ⟨Fixed.toFixed sec 0⟩
+def fromSec (sec : Int) : DiffTime := ⟨Fixed.toFixed (Fixed.toSign sec) (Int.natAbs sec) default⟩
 
-def toSec (dt : DiffTime) : Int := Fixed.numerator dt.val
+def toSec (dt : DiffTime) : Int :=
+  let p := Fixed.toParts dt.val
+  match p.sign with | .Neg =>  -p.numerator | .Nonneg => p.numerator
 
 instance : ToString DiffTime where toString a := s!"{a.val}"
 

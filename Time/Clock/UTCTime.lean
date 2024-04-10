@@ -25,7 +25,7 @@ def nominalDay := 86400 -- secs of day
 
 def toUTCTime (now : IO.FS.SystemTime) : UTCTime :=
   let (ndays, secsOfDay) := ((now.sec / nominalDay) + systemEpochDay, now.sec % nominalDay)
-  ⟨⟨ndays⟩, DiffTime.fromSecNsec secsOfDay now.nsec.toNat⟩
+  ⟨⟨ndays⟩, DiffTime.fromSecNsec Sign.Nonneg secsOfDay.toNat now.nsec.toNat⟩
 
 def toDiffTime (utc : UTCTime) : DiffTime :=
   DiffTime.fromSec (utc.utctDay.modifiedJulianDay * nominalDay) + utc.utctDayTime

@@ -1,15 +1,37 @@
 import Std.Data.Int.Order
+import Std.Data.Int.DivMod
 import Time.ZeroPad
-import Time.Interval
+import Time.Data.Int.Order
 
 namespace Time
 
 /--  fixed-point representation of a fractional number -/
-structure Fixed (precision : Nat) where
+@[ext] structure Fixed (precision : Nat) where
   val : Int
   deriving Repr, BEq, DecidableEq
 
+inductive Sign where
+  | Nonneg
+  | Neg
+  deriving Repr, BEq, DecidableEq
+
+/--  denominator of Fixed p -/
+structure Fixed.Denominator (precision : Nat) where
+  val : Nat
+  lt : val < 10 ^ precision
+  deriving Repr, BEq, DecidableEq
+
+/--  parts of Fixed p -/
+structure Fixed.Parts (precision : Nat) where
+  sign : Sign
+  numerator : Nat
+  denominator : Nat
+  lt : denominator < 10 ^ precision
+  deriving Repr, BEq, DecidableEq
+
 def Fixed.zero : (Fixed p) := ⟨0⟩
+
+def Fixed.Denominator.zero : (Fixed.Denominator p) := ⟨0, (Int.pos_pow_of_pos _ (by omega))⟩
 
 instance : Inhabited (Fixed p) where
   default := Fixed.zero
@@ -23,133 +45,56 @@ instance {p} : LE (Fixed p) where
 instance {p} : LeRefl (Fixed p) where
   le_refl a := LeRefl.le_refl a.val
 
+instance : Inhabited (Fixed.Denominator p) where
+  default := Fixed.Denominator.zero
+
+instance {p} : LT (Fixed.Denominator p) where
+  lt a b := LT.lt a.val b.val
+
+instance {p} : LE (Fixed.Denominator p) where
+  le a b := LE.le a.val b.val
+
+instance {p} : LeRefl (Fixed.Denominator p) where
+  le_refl a := LeRefl.le_refl a.val
+
 namespace Fixed
-
-inductive Sign where
-  | Nonneg
-  | Neg
-  deriving Repr, BEq
-
-def toSign (n : Int) : Sign :=
-  if n < 0 then Sign.Neg else Sign.Nonneg
-
-def ico_p_zero (p : Nat) (hp : 0 < p) : Time.Ico 0 p :=
-  ⟨0, And.intro (Nat.le_refl 0) hp⟩
-
-private def clip (n : Nat) (p : Nat) (hp : 0 < p) : Time.Ico 0 p :=
-  if h : 0 < n then
-    if h1 : n ≥ p then
-      clip (n / 10) p hp
-    else
-      ⟨n, And.intro (Nat.le_of_lt h) (Nat.lt_of_not_le h1)⟩
-  else
-    ico_p_zero p hp
-  decreasing_by exact Nat.div_lt_self h (by decide)
-
-private def pow (p : Nat) := Nat.pow 10 p
-
-private theorem pow_gt_zero : ∀ {p : Nat}, 0 < pow p := by
-  unfold Fixed.pow Nat.pow
-  intro p
-  induction p
-  case zero => split <;> simp_all
-  case succ n ih =>
-    split at ih <;> simp_all
-    omega
-
-private theorem pow_gt_zero' : ∀ {p : Nat}, 0 < (pow p : Int) := by
-  simp [Int.ofNat]
-  simp [pow_gt_zero]
-
-def toFixed (num : Int) (denom : Nat) : Fixed p :=
-  let val := Int.natAbs num * (pow p) + (clip denom (pow p) (pow_gt_zero)).val
-  ⟨if num < 0 then Int.negOfNat val else Int.ofNat val⟩
-
-private theorem toFixed_eq_toFixed_eval (p : Nat) (n : Int) (denom : Nat) (h : 0 ≤ n)
-  : (toFixed n denom : Fixed p) = ⟨n * (pow p) + (clip denom (pow p) (pow_gt_zero)).val⟩ := by
-  simp [toFixed]
-  split
-  · have h' : n < 0 := by simpa
-    exact absurd h' (Int.not_lt.2 h)
-  · simp
-    have : (Int.natAbs n) = n := by omega
-    simp_all
 
 def neg (f : Fixed p) : Fixed p :=
   ⟨-f.val⟩
 
-private theorem toFixed_eq_zero (p : Nat) : (toFixed 0 0 : Fixed p) = Fixed.zero := by
-  unfold Fixed.toFixed Fixed.zero
-  split <;> simp_all
-  unfold Fixed.clip ico_p_zero
-  simp
+def toParts (f : Fixed p) : Fixed.Parts p :=
+  let n := f.val.natAbs
+  let pow_p := 10 ^ p
+  let n' := n / pow_p
+  have h1 : 0 < (pow_p : Int) := Int.ofNat_lt.mpr (Int.pos_pow_of_pos _ (by omega))
+  have h2 : n % pow_p < pow_p := Int.toNat_lt_toNat (Int.emod_lt_of_pos n h1) h1
+  ⟨if f.val < 0 then .Neg else .Nonneg, n', n % pow_p, h2⟩
 
-theorem toFixed_lt_toFixed (p : Nat) (n : Int) (n_denom : Nat) (m : Int) (m_denom : Nat)
-    (hn : 0 ≤ n) (hnm : n < m) :
-    (toFixed n n_denom : Fixed p) < (toFixed m m_denom : Fixed p) := by
-  have hm : 0 ≤ m := Int.le_of_lt <| Int.lt_of_le_of_lt hn hnm
-  rw [toFixed_eq_toFixed_eval _ _ _ hn, toFixed_eq_toFixed_eval  _ _ _ hm]
+def toFixed (sign : Sign) (num : Nat) (denom : Fixed.Denominator p) : Fixed p :=
+  ⟨match sign with
+  | .Neg => Int.negOfNat (num * (10 ^ p) + denom.val)
+  | .Nonneg => num * (10 ^ p) + denom.val⟩
 
-  let pow_p := pow p
-  let ico_n := clip n_denom pow_p pow_gt_zero
-  let ico_m := clip m_denom pow_p pow_gt_zero
+def Parts.fromParts (parts : Fixed.Parts p) : Fixed p :=
+  toFixed parts.sign parts.numerator ⟨parts.denominator, parts.lt⟩
 
-  have h1 : n * pow_p + ico_n < (n + 1) * pow_p := by
-    have h1 : ico_n.val < pow_p := ico_n.property.right
-    have h2 : n * pow_p + pow_p = (n + 1) * pow_p := by
-      simp [Int.add_mul]
-    have h3 : n * pow_p + ico_n.val < n * pow_p + pow_p :=
-      Int.add_lt_add_of_le_of_lt (Int.le_refl (n * pow_p)) (Int.ofNat_lt.mpr h1)
-    rw [← h2]
-    exact h3
+def toSign (n : Int) : Sign :=
+  if n < 0 then Sign.Neg else Sign.Nonneg
 
-  have h2 : (n + 1) * pow_p ≤ m * pow_p := by
-    simp [Int.mul_le_mul_of_nonneg_right (Int.add_one_le_of_lt hnm) (Int.le_of_lt pow_gt_zero')]
-
-  have h3 : m * pow_p ≤ m * pow_p + ico_m.val := by omega
-
-  exact Int.lt_of_lt_of_le (Int.lt_of_lt_of_le h1 h2) h3
-
-theorem zero_lt_toFixed (p : Nat) (m : Int) (m_denom : Nat) (hnm : 0 < m)
-    : Fixed.zero < (toFixed m m_denom : Fixed p) := by
-  have : toFixed 0 0 < (toFixed m m_denom : Fixed p) :=
-    toFixed_lt_toFixed p _ _ m m_denom (by omega) hnm
-  rw [← toFixed_eq_zero p]
-  simp [this]
-
-theorem toFixed_le_toFixed_of_lt (p : Nat) (n : Int) (n_denom : Nat) (m : Int) (m_denom : Nat)
-    (hn : 0 ≤ n) (hnm : n < m) :
-    (toFixed n n_denom : Fixed p) ≤ (toFixed m m_denom : Fixed p) := by
-  have h1 : (toFixed n n_denom : Fixed p).val
-      < (toFixed m m_denom : Fixed p).val :=
-    toFixed_lt_toFixed p n n_denom m m_denom hn hnm
-  have h2 : (toFixed n n_denom : Fixed p).val
-      ≤ (toFixed m m_denom : Fixed p).val := by
-    simp [Int.le_of_lt h1]
-  exact h2
-
-theorem zero_le_toFixed (p : Nat) (m : Int) (m_denom : Nat) (hnm : 0 < m)
-    : Fixed.zero ≤ (toFixed m m_denom : Fixed p) := by
-  have : toFixed 0 0 < (toFixed m m_denom : Fixed p) :=
-    toFixed_lt_toFixed p _ _ m m_denom (by omega) hnm
-  have : toFixed 0 0 ≤ (toFixed m m_denom : Fixed p) := by
-    have h : (toFixed 0 0 : Fixed p).val
-        ≤ (toFixed m m_denom : Fixed p).val := by
-      simp [Int.le_of_lt this]
-    exact h
-  rw [← toFixed_eq_zero p]
-  simp [this]
-
-private def divMod'' (n : Int) (p : Nat) : Int × Nat :=
-  let (n', d') := (n / p, n % p)
-  ⟨n', d'.toNat⟩
-
-def numeratorDenominator (f : Fixed p) : Sign × Int × Nat :=
-  ⟨if f.val < 0 then .Neg else .Nonneg, divMod'' f.val.natAbs (pow p)⟩
-
-def numerator (f : Fixed p) : Int :=
-  let (_, n, _) := numeratorDenominator f
-  n
+/-- remove trailing digits untill n < 10 ^ p -/
+def toDenominator (n : Nat) (p : Nat) : Fixed.Denominator p :=
+  have h : 0 < 10 ^ p := Int.pos_pow_of_pos _ (by omega)
+  let s := clip_denom n (10 ^ p) h
+  ⟨s.val, s.property⟩
+  where clip_denom (n : Nat) (p : Nat) (hp : 0 < p) : { n // n < p } :=
+    if h : 0 < n then
+      if h1 : n ≥ p then
+        clip_denom (n / 10) p hp
+      else
+        ⟨n, Nat.lt_of_not_le h1⟩
+    else
+      ⟨0, hp⟩
+    decreasing_by exact Nat.div_lt_self h (by decide)
 
 def denominatorValueToString (d : Int) (p : Nat) : String :=
     let dropped := (toZeroPadded d p).toSubstring.dropRightWhile (λ c => c == '0')
@@ -157,12 +102,12 @@ def denominatorValueToString (d : Int) (p : Nat) : String :=
     if s != "" then "." ++ s else s
 
 def denominatorToString (f : Fixed p) : String :=
-    let (_, _, d) := numeratorDenominator f
+    let ⟨_, _, d, _⟩  := toParts f
     denominatorValueToString d p
 
 instance : ToString (Fixed p) where
-  toString a :=
-    let (s, n, d) := numeratorDenominator a
+  toString f :=
+    let ⟨s, n, d, _⟩  := toParts f
     let sign := if s == .Neg then "-" else ""
     if d != 0 then s!"{sign}{n}{denominatorValueToString d p}" else s!"{n}"
 
@@ -172,32 +117,182 @@ def sub (dt1 dt2 : Fixed p) : Fixed p :=
 def add (dt1 dt2 : Fixed p) : Fixed p :=
   ⟨dt1.val + dt2.val⟩
 
-def divMod (n : Fixed p) (d : Fixed p) : Int × Fixed p :=
-  (n.val / d.val, ⟨n.val % d.val⟩)
-
 instance : Sub (Fixed p) where
   sub := sub
 
 instance : Add (Fixed p) where
   add := add
 
-def toIco (v : Fixed p) (a b : Fixed p) (h1 : a ≤ v) (h2 : v < b) : Time.Ico a b :=
-  ⟨v, And.intro h1 h2⟩
-
 def Int.toFixed (n : Int) (p : Nat) : Fixed p := ⟨n⟩
 
-def divMod' (n : Fixed p) (d : Fixed p) (hd : zero < d) : Int × (Time.Ico zero d) :=
-  let n' := n.val / d.val
-  let mod := n.val % d.val
+def div (dt1 dt2 : Fixed p) : Int :=
+  dt1.val / dt2.val
 
-  have : 0 < d.val := by simpa
-  have h0 : d.val ≠ 0 := by omega
-  have h1 : 0 < d.val := by omega
+instance : HDiv (Fixed p) (Fixed p) Int where
+  hDiv := div
 
-  have h2 : 0 ≤ mod := Int.emod_nonneg n.val h0
-  have h3 : mod < d.val := Int.emod_lt_of_pos n.val h1
+def mul (a : Int) (f: Fixed p) : Fixed p :=
+  ⟨a * f.val⟩
 
-  have h1' : Fixed.zero ≤ ⟨mod⟩  := by simpa
-  have h2' : ⟨mod⟩ < d := by simpa
+instance : HMul Int (Fixed p) (Fixed p) where
+  hMul := mul
 
-  (n', toIco ⟨mod⟩ zero d h1' h2')
+def mod (dt1 dt2 : Fixed p) : Fixed p :=
+  ⟨dt1.val % dt2.val⟩
+
+instance : Mod (Fixed p) where
+  mod := mod
+
+@[simp] theorem ofFixed_lt {a b : Fixed p} : a < b ↔ a.val < b.val :=
+  ⟨fun h => by unfold LT.lt instLTFixed at h; apply h,
+  fun h => by unfold LT.lt instLTFixed; simpa⟩
+
+@[simp] theorem ofFixed_ne {a b : Fixed p} : a ≠ b ↔ a.val ≠ b.val :=
+  ⟨fun h => by simp [Fixed.ext_iff] at h; simpa,
+  fun h => by simp [Fixed.ext_iff]; simpa⟩
+
+theorem ne_of_lt {a b : Fixed p} (h : a < b) : a ≠ b := by
+  exact ofFixed_ne.2 <| Int.ne_of_lt <| ofFixed_lt.1 h
+
+theorem emod_nonneg (a : Fixed p) {b : Fixed p} (h : b ≠ ⟨0⟩) : ⟨0⟩ ≤ a % b := by
+  have : 0 ≤ a.val % b.val := Int.emod_nonneg a.val (ofFixed_ne.1 h)
+  simpa
+
+theorem emod_lt_of_pos (a : Fixed p) {b : Fixed p} (h : ⟨0⟩ < b) : a % b < b := by
+  have : a.val % b.val < b.val := Int.emod_lt_of_pos a.val (ofFixed_lt.1 h)
+  simpa
+
+theorem emod_add_ediv (a b : Fixed p) : a % b + (a / b) * b = a := by
+  simp [instModFixed, instHDivFixedInt, instAddFixed]
+  unfold Fixed.add Fixed.mod Fixed.div
+  simp [Fixed.ext_iff]
+  exact Int.emod_add_ediv' a.val b.val
+
+/-- toMod computes n % d : { m : Fixed p // zero ≤ m ∧ m < d } -/
+def toMod (n d : Fixed p) (h : zero < d) : { m // zero ≤ m ∧ m < d } :=
+  ⟨(n % d), And.intro
+    (Fixed.emod_nonneg n (Ne.symm <| ne_of_lt <| ofFixed_lt.1 h))
+    (Fixed.emod_lt_of_pos n h)⟩
+
+private theorem toFixed_eq_zero (p : Nat)
+    : (toFixed Sign.Nonneg 0 default : Fixed p) = Fixed.zero := by
+  unfold Fixed.toFixed Fixed.zero instInhabitedDenominator Fixed.Denominator.zero
+  split <;> simp_all
+
+private theorem toFixed_of_ge_zero (p : Nat) (n : Nat) (denom :  Fixed.Denominator p)
+    : (toFixed Sign.Nonneg n denom : Fixed p) = ⟨n * (10 ^ p) + denom.val⟩ := by
+  unfold toFixed
+  split <;> try simp_all
+
+private theorem toFixed_of_lt_zero (p : Nat) (n : Nat) (denom :  Fixed.Denominator p)
+    : (toFixed Sign.Neg n denom : Fixed p) =
+    ⟨Int.negOfNat (Int.natAbs  n * (10 ^ p) + denom.val)⟩  := by
+  unfold toFixed
+  split <;> simp_all
+
+private theorem pos_pow_of_pos_cast {n : Nat} (m : Nat) (h : 0 < n) : 0 < (n:Int) ^ m := by
+  have hp : 0 < n ^ m := @Int.pos_pow_of_pos n m h
+  have : ((n ^ m : Nat) : Int) = (n : Int) ^ m := Int.natCast_pow n m
+  rw [← this]
+  exact Int.ofNat_le.mpr hp
+
+theorem toFixed_lt_toFixed (p : Nat) (n : Nat) (n_denom : Fixed.Denominator p)
+    (m : Nat) (m_denom : Fixed.Denominator p) (hnm : n < m) :
+    (toFixed Sign.Nonneg n n_denom : Fixed p) < (toFixed Sign.Nonneg m m_denom : Fixed p) := by
+  rw [toFixed_of_ge_zero _ _ _, toFixed_of_ge_zero  _ _ _]
+  simp
+
+  have h1 : (n : Int) * (10 ^ p) + n_denom.val < (n + 1) * (10 ^ p) :=
+  by
+    have h1 : (n : Int) * (10 ^ p) + (10 ^ p) = (n + 1) * (10 ^ p) := by simp [Int.add_mul]
+    have h2 : (n : Int) * (10 ^ p) + n_denom.val < n * (10 ^ p) + (10 ^ p) := by
+      have : (n_denom.val : Int) < (10 ^ p : Int) := by
+        have : ((10 ^ p : Nat) : Int) = (10 : Int) ^ p := Int.natCast_pow 10 p
+        rw [←this]
+        exact Int.ofNat_lt.2 n_denom.lt
+      refine Int.add_lt_add_left (this) ((n : Int) * 10 ^ p)
+    rw [← h1]
+    exact h2
+
+  have h2 : ((n : Int) + 1) * (10 ^ p) ≤ m * (10 ^ p) := by
+    have : (0 : Int) ≤ (10 : Int) ^ p := Int.le_of_lt <| @pos_pow_of_pos_cast 10 p (by omega)
+    refine Int.mul_le_mul (by omega) (Int.le_of_eq (by simp)) this (by omega)
+
+  have h3 : (m : Int) * (10 ^ p) ≤ m * (10 ^ p) + m_denom.val := by omega
+
+  exact Int.lt_of_lt_of_le (Int.lt_of_lt_of_le h1 h2) h3
+
+theorem zero_lt_toFixed (p : Nat) (m : Nat) (m_denom : Fixed.Denominator p) (h : 0 < m)
+    : Fixed.zero < (toFixed Sign.Nonneg m m_denom : Fixed p) := by
+  have : toFixed Sign.Nonneg 0 default < (toFixed Sign.Nonneg m m_denom : Fixed p) :=
+    toFixed_lt_toFixed p _ _ m m_denom h
+  rw [← toFixed_eq_zero p]
+  simp [this]
+
+theorem toFixed_le_toFixed_of_lt (p : Nat) (n : Nat) (n_denom : Fixed.Denominator p)
+    (m : Nat) (m_denom : Fixed.Denominator p) (hnm : n < m) :
+    (toFixed Sign.Nonneg n n_denom : Fixed p) ≤ (toFixed Sign.Nonneg m m_denom : Fixed p) := by
+  have h1 : (toFixed Sign.Nonneg n n_denom : Fixed p).val
+      < (toFixed Sign.Nonneg m m_denom : Fixed p).val :=
+    toFixed_lt_toFixed p n n_denom m m_denom hnm
+  have h2 : (toFixed Sign.Nonneg n n_denom : Fixed p).val
+      ≤ (toFixed Sign.Nonneg m m_denom : Fixed p).val := by
+    simp [Int.le_of_lt h1]
+  exact h2
+
+theorem zero_le_toFixed (p : Nat) (m : Nat) (m_denom : Fixed.Denominator p) (hnm : 0 < m)
+    : Fixed.zero ≤ (toFixed Sign.Nonneg m m_denom : Fixed p) := by
+  have : toFixed Sign.Nonneg 0 default < (toFixed Sign.Nonneg m m_denom : Fixed p) :=
+    toFixed_lt_toFixed p _ _ m m_denom hnm
+  have : toFixed Sign.Nonneg 0 default ≤ (toFixed Sign.Nonneg m m_denom : Fixed p) := by
+    have h : (toFixed Sign.Nonneg 0 default : Fixed p).val
+        ≤ (toFixed Sign.Nonneg m m_denom : Fixed p).val := by
+      simp [Int.le_of_lt this]
+    exact h
+  rw [← toFixed_eq_zero p]
+  simp [this]
+
+private theorem le_of_div_pow (val : Int) (p : Nat) (h : 0 ≤ val)
+    : 0 ≤ val / (((10 ^ p) : Nat) : Int) := by
+  have : 0 ≤ (((10 ^ p) : Nat) : Int) :=
+    Int.le_of_lt <| Int.ofNat_lt.mpr <| Int.pos_pow_of_pos _ (by omega)
+  rw [← Int.div_eq_ediv h this]
+  simp [Int.div_nonneg h this]
+
+theorem fixed_eq_toParts_fromParts (f : Fixed p) : f = f.toParts.fromParts := by
+  unfold Fixed.toParts Parts.fromParts toFixed
+  split <;> simp_all
+  · rename_i h
+    have h0 : f.val < 0 := Classical.byContradiction h
+    unfold Int.negOfNat
+    split <;> simp_all
+    · rename_i heq
+      unfold Int.natAbs at heq
+      split at heq <;> simp_all
+      · omega
+      · rename_i n _
+        have : Nat.succ n / 10 ^ p * 10 ^ p + Nat.succ n % 10 ^ p = Nat.succ n := by
+          rw [Nat.mul_comm]
+          apply Nat.div_add_mod (Nat.succ n) (10 ^ p)
+        rw [this] at heq
+        contradiction
+    · rename_i m heq
+      have : Int.natAbs f.val / 10 ^ p * 10 ^ p + Int.natAbs f.val % 10 ^ p = Int.natAbs f.val := by
+        rw [Nat.mul_comm]
+        apply Nat.div_add_mod (Int.natAbs f.val) (10 ^ p)
+      rw [this] at heq
+      have hm : f.val = -(m + 1 : Int) := by omega
+      have hf : Int.negSucc m = f.val := by rw [hm, (Int.negSucc_eq m)]
+      rw [hf]
+  · rename_i h
+    have : ¬¬f.val < 0 ↔ f.val < 0 := Classical.not_not
+    rw [← this] at h
+    have h : ¬f.val < 0 := Classical.byContradiction h
+    have hf : Int.natAbs f.val = f.val := by omega
+    rw [hf]
+    have : ((10 ^ p : Nat) : Int) = (10 : Int) ^ p := Int.natCast_pow 10 p
+    rw [this]
+    have : f.val / (10 ^ p : Int) * 10 ^ p + f.val % (10 ^ p) = f.val := by
+      rw [Int.add_comm]
+      exact Int.emod_add_ediv' f.val (10 ^ p)
+    rw [this]

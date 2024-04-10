@@ -34,8 +34,8 @@ structure DiffTime where
 ```
 
 ```lean
--- ⊢ ℤ → ℕ → DiffTime
-#eval DiffTime.fromSecNsec 1680959011 928622514
+-- ⊢ Sign → ℕ → ℕ → DiffTime
+#eval DiffTime.fromSecNsec Sign.Nonneg 1680959011 928622514
 -- { val := { val := 1680959011928622514 } }
 ```
 

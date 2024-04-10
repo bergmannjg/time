@@ -139,8 +139,8 @@ def timeParseTimeSpecifier (l : TimeLocale) (mpad : Option ParseNumericPadding) 
   -- second of minute
   | .S => digits ParseNumericPadding.ZeroPadding 2
   -- nanosecond of second
-  | .q => digits' .PostPadding .ZeroPadding true 9
-  | .Q => attempt (pchar '.' *> digits' .PostPadding .NoPadding true 9) <|> return ""
+  | .q => digits' .PostPadding .ZeroPadding true Nano
+  | .Q => attempt (pchar '.' *> digits' .PostPadding .NoPadding true Nano) <|> return ""
   -- time zone
   | .z => numericTZ
   | .Ez => numericTZ
@@ -304,12 +304,12 @@ instance : ParseTime TimeOfDay where
         some { tod with Second := TimeOfDay.toSecond' a }
       | .q => do
         let n : Int ← readMaybe pair.2
-        let val := tod.Second.val + (Fixed.toFixed 0 n.toNat : Fixed 9)
+        let val := tod.Second.val + (Fixed.toFixed Sign.Nonneg 0 (Fixed.toDenominator n.toNat Nano) : Fixed Nano)
         let second ← Clip.clipToIco? Second.zero Second.sixty val
         some { tod with Second := second }
       | .Q => do
-        let n : Int ← readMaybe (zeroRPad pair.2 9)
-        let val := tod.Second.val + (Fixed.toFixed 0 n.toNat : Fixed 9)
+        let n : Int ← readMaybe (zeroRPad pair.2 Nano)
+        let val := tod.Second.val + (Fixed.toFixed Sign.Nonneg 0 (Fixed.toDenominator n.toNat Nano) : Fixed Nano)
         let second ← Clip.clipToIco? Second.zero Second.sixty val
         some { tod with Second := second }
       | _ => some tod
