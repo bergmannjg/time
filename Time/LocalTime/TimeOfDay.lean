@@ -30,13 +30,6 @@ structure TimeOfDay where
 instance : ToString TimeOfDay where
   toString a := s!"tod : ({a.Hour.val}, {a.Minute.val}, {a.Second.val})"
 
-instance : Inhabited TimeOfDay where
-  default := ⟨
-    ⟨0, (by simp)⟩ ,
-    ⟨0, (by simp)⟩,
-    ⟨Second.zero, And.intro (LeRefl.le_refl Fixed.zero) zero_lt_sixty⟩
-  ⟩
-
 namespace TimeOfDay
 
 private def toIco (v : Int) (a b : Nat) (h1 : a ≤ v) (h2 : v < b) (h3 : 0 < b) : Time.Ico a b :=
@@ -95,3 +88,40 @@ def toSecond (secs : Int) (nanoSecs : Nat) (h1: 0 ≤ secs) (h2: secs < 60) : Ic
 
 def toSecond' (s : NonemptyIco 0 60) : Ico.Second :=
   toSecond s.ico.val 0 (Int.ofNat_le.2 s.ico.property.left) (Int.ofNat_lt.2 s.ico.property.right)
+
+namespace Time.Notation
+
+/-- TimeOfDay syntactic category -/
+declare_syntax_cat time
+/-- TimeOfDay from numeric literals hour, minute, second and nanosecond -/
+syntax num noWs ":" noWs num noWs ":" noWs scientific : time
+/-- TimeOfDay from numeric literals hour, minute and second -/
+syntax num noWs ":" noWs num (noWs ":" noWs num)? : time
+syntax "time%" time : term
+
+/--
+  `time% hour:minute:second` is notation for
+  `Time.TimeOfDay.mk ⟨hour, by omega⟩ ⟨minute, by omega⟩ (Time.TimeOfDay.toSecond second 0 (by omega) (by omega))`
+  for the numeric literals hour, minute and second.
+-/
+macro_rules
+| `(time% $h:num:$m:num:$s:scientific) =>
+    let (mantissa, exponentSign, decimalExponent) := s.getScientific
+    if !exponentSign
+    then Lean.Macro.throwError "exponentSign expected"
+    else
+    if decimalExponent > Nano
+    then Lean.Macro.throwError s!"expected decimalExponent ≤ {Nano}"
+    else
+      let sec := mantissa / (10^decimalExponent)
+      let nsec := (mantissa % (10^decimalExponent)) * (10^(Nano-decimalExponent))
+      `(Time.TimeOfDay.mk ⟨$h, by omega⟩ ⟨$m, by omega⟩
+        (Time.TimeOfDay.toSecond $(Lean.Quote.quote sec) $(Lean.Quote.quote nsec) (by omega) (by omega)))
+| `(time% $h:num:$m:num$[:$s:num]?) =>
+    `(Time.TimeOfDay.mk ⟨$h, by omega⟩ ⟨$m, by omega⟩
+      (Time.TimeOfDay.toSecond $(s.getD (Lean.Quote.quote 0)) 0 (by omega) (by omega)))
+
+end Time.Notation
+
+instance : Inhabited TimeOfDay where
+  default := time% 0:0:0

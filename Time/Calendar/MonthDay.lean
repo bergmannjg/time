@@ -22,11 +22,30 @@ structure Date where
   IsValid : ∃ m ∈ monthLengths (isLeapYear Year), m.1 = Month.val ∧ Day.val ≤ m.2
   deriving Repr
 
+namespace Time.Notation
+
+/-- Date syntactic category -/
+declare_syntax_cat date
+/-- Date from numeric literals year, month and day -/
+syntax num noWs "-" noWs num noWs "-" noWs num : date
+syntax "date%" date : term
+
+/--
+  `date% year-month-day` is notation for
+  `Time.Date.mk year ⟨month, by omega⟩ ⟨day, by omega⟩ (by native_decide)`
+  for the numeric literals year, month and day.
+-/
+macro_rules
+| `(date% $y:num-$m:num-$d:num) =>
+    `(Time.Date.mk $y ⟨$m, by omega⟩ ⟨$d, by omega⟩ (by native_decide))
+
+end Time.Notation
+
 instance : BEq Date where
   beq a b := decide (Eq a.Year b.Year) && decide (Eq a.Month.val b.Month.val) && decide (Eq a.Day.val b.Day.val)
 
 instance : Inhabited Date where
-  default := ⟨1, ⟨1, (by simp_arith)⟩, ⟨1, (by simp_arith)⟩, (by simp_arith)⟩
+  default := date% 1-1-1
 
 def monthLengths_sum (isleap : Bool) : Nat :=
   (monthLengths isleap).foldl (fun acc m => acc + m.2) 0

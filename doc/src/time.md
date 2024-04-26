@@ -114,6 +114,10 @@ structure Date where
 -- ⊢ Day → Date
 #eval toGregorian { modifiedJulianDay := 59987 }
 -- { Year := 2023, Month := 2, Day := 12, IsValid := _ }
+
+open Time.Notation
+#eval date# 2023-2-12
+-- { Year := 2023, Month := 2, Day := 12, IsValid := _ }
 ```
 
 ## TimeOfDay
@@ -132,6 +136,10 @@ structure TimeOfDay where
 ```lean
 -- ⊢ DiffTime → TimeOfDay
 #eval TimeOfDay.timeToTimeOfDay { val := { val := 47011928622514  } }
+-- { Hour := 13, Minute := 3, Second := { val := 31928622514 } }
+
+open Time.Notation
+#eval time# 13:3:31.928622514
 -- { Hour := 13, Minute := 3, Second := { val := 31928622514 } }
 ```
 
@@ -164,13 +172,10 @@ structure LocalTime where
 ```
 
 ```lean
--- ⊢ TimeZone → UTCTime → LocalTime
-#eval LocalTime.utcToLocalTime
-  { timeZoneMinutes := 120, timeZoneSummerOnly := true, timeZoneName := "CEST" }
-  { utctDay := { modifiedJulianDay := 60042 },
-    utctDayTime := { val := { val := 47011928622514  } } }
--- { localDay := { modifiedJulianDay := 60042 },
---   localTimeOfDay := { Hour := 15, Minute := 3, Second := { val := 31928622514 } } }
+-- ⊢ LocalTime
+#eval (⟨Time.fromGregorianDate (date% 2024-2-10), time% 12:30⟩ : LocalTime)
+-- { localDay := { modifiedJulianDay := 60350 },
+--   localTimeOfDay := { Hour := 12, Minute := 30, Second := { val := 0 } } }
 ```
 
 ## ZonedTime

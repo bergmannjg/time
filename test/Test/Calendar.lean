@@ -1,18 +1,16 @@
 import Time
 
 open Time
+open Time.Notation
 open Lean Parsec Clip
 
 /-- see https://heasarc.gsfc.nasa.gov/cgi-bin/Tools/xTime/xTime.pl-/
 
-def dt_1858_11_17 : Date := { Year := 1858, Month := ⟨11, (by simp_arith)⟩,
-                              Day := ⟨17, (by simp_arith)⟩, IsValid := (by simp_arith) }
+def dt_1858_11_17 : Date := date% 1858-11-17
 
-def dt_1997_1_1 : Date := { Year := 1997, Month := ⟨1, (by simp_arith)⟩,
-                            Day := ⟨1, (by simp_arith)⟩, IsValid := (by simp_arith) }
+def dt_1997_1_1 : Date := date% 1997-1-1
 
-def dt_2023_2_3 : Date := { Year := 2023, Month := ⟨2, (by simp_arith)⟩,
-                            Day := ⟨3, (by simp_arith)⟩, IsValid := (by simp_arith) }
+def dt_2023_2_3 : Date := date% 2023-2-3
 
 example : fromGregorianDate default == (default : Day) := by rfl
 
@@ -26,11 +24,9 @@ example : fromGregorian 1997 1 1 == ⟨50449⟩ := by rfl
 
 example : fromGregorianValid 1997 1 1 == some ⟨50449⟩ := by rfl
 
-example : toGregorian ⟨50449⟩
-          == ⟨1997, ⟨1, (by simp_arith)⟩, ⟨1, (by simp_arith)⟩, (by simp_arith)⟩ := by rfl
+example : toGregorian ⟨50449⟩ == dt_1997_1_1 := by rfl
 
-example : toGregorian (fromGregorianDate dt_2023_2_3)
-          == ⟨2023, ⟨2, (by simp_arith)⟩, ⟨3, (by simp_arith)⟩, (by simp_arith)⟩ := by rfl
+example : toGregorian (fromGregorianDate dt_2023_2_3) == dt_2023_2_3 := by rfl
 
 example : toOrdinalDate default == ⟨1, .common ⟨1, by simp_arith⟩, (by simp_arith)⟩ := by rfl
 
@@ -39,8 +35,7 @@ example : toOrdinalDate ⟨0⟩  == ⟨1858, .common ⟨321, by simp_arith⟩, b
 example : (toOrdinalDate <| fromOrdinalDate ⟨2023, .common ⟨50, by simp_arith⟩, (by simp_arith)⟩)
   == ⟨2023, .common ⟨50, by simp_arith⟩, (by simp_arith)⟩ := by rfl
 
-def dt_2023_1_17 : Date := { Year := 2023, Month := ⟨1, (by simp_arith)⟩,
-                             Day := ⟨17, (by simp_arith)⟩, IsValid := (by simp_arith) }
+def dt_2023_1_17 : Date := date% 2023-1-17
 
 example : fromWeekDate 2023 3 2 == fromGregorianDate dt_2023_1_17 := by rfl
 
@@ -48,8 +43,7 @@ example : fromWeekDateValid 2023 3 2 == some (fromGregorianDate dt_2023_1_17) :=
 
 example : (NonemptyIcc.toFin <| clipToNonemptyIcc 1 12 3 (by simp_arith)) == (Fin.ofNat 2 : Fin 12) := by rfl
 
-def dt_2023_2_12 : Date := { Year := 2023, Month := ⟨2, (by simp_arith)⟩,
-                             Day := ⟨12, (by simp_arith)⟩, IsValid := (by simp_arith) }
+def dt_2023_2_12 : Date := date% 2023-2-12
 
 example : (fromWeekDateValid 2023 6 7 |> Option.map (λ dt => toGregorian dt))
   == some dt_2023_2_12 := by rfl
