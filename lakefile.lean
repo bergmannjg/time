@@ -5,7 +5,7 @@ package time {
   precompileModules := if get_config? env = some "noprecompile" then false else true
 }
 
-require std from git "https://github.com/leanprover/std4" @ "v4.7.0"
+require std from git "https://github.com/leanprover/std4" @ "v4.8.0-rc1"
 
 meta if get_config? env = some "dev" then
 require leanInk from git "https://github.com/hargonix/LeanInk" @ "doc-gen"
@@ -24,10 +24,10 @@ lean_lib Test {
 target localtime.o pkg : FilePath := do
   let oFile := pkg.buildDir / "native/" / "localtime.o"
   let srcJob ← inputFile <| pkg.dir / "native/" / "localtime.cpp"
-  let flags := #["-I", (← getLeanIncludeDir).toString, "-fPIC"]
-  buildO "localtime.cpp" oFile srcJob flags #[] "c++"
+  let flags := #["-I", (← getLeanIncludeDir).toString]
+  buildO oFile srcJob  flags #["-fPIC"] "c++"
 
 extern_lib libleanlocaltime pkg := do
   let name := nameToStaticLib "leanlocaltime"
-  let localtime ← fetch <| pkg.target ``localtime.o
+  let localtime ← localtime.o.fetch
   buildStaticLib (pkg.nativeLibDir / name) #[localtime]

@@ -39,14 +39,20 @@ instance : Inhabited (Fixed p) where
 instance {p} : LT (Fixed p) where
   lt a b := LT.lt a.val b.val
 
+theorem lt_def (a b : Fixed p) : (a < b) = LT.lt a.val b.val := rfl
+
 instance {p} : LE (Fixed p) where
   le a b := LE.le a.val b.val
 
 instance {p} : LeRefl (Fixed p) where
   le_refl a := LeRefl.le_refl a.val
 
+theorem le_def (a b : Fixed p) : (a ≤ b) = LE.le a.val b.val := rfl
+
 instance : Inhabited (Fixed.Denominator p) where
   default := Fixed.Denominator.zero
+
+theorem inhabited_def : (default : Fixed.Denominator p) = Fixed.Denominator.zero := rfl
 
 instance {p} : LT (Fixed.Denominator p) where
   lt a b := LT.lt a.val b.val
@@ -120,8 +126,12 @@ def add (dt1 dt2 : Fixed p) : Fixed p :=
 instance : Sub (Fixed p) where
   sub := sub
 
+theorem sub_def (a b : Fixed p) : a - b = sub a b := rfl
+
 instance : Add (Fixed p) where
   add := add
+
+theorem add_def (a b : Fixed p) : a + b = add a b := rfl
 
 def Int.toFixed (n : Int) (p : Nat) : Fixed p := ⟨n⟩
 
@@ -131,11 +141,15 @@ def div (dt1 dt2 : Fixed p) : Int :=
 instance : HDiv (Fixed p) (Fixed p) Int where
   hDiv := div
 
+theorem div_def (a b : Fixed p) : a / b = div a b := rfl
+
 def mul (a : Int) (f: Fixed p) : Fixed p :=
   ⟨a * f.val⟩
 
 instance : HMul Int (Fixed p) (Fixed p) where
   hMul := mul
+
+theorem mul_def (a : Int) (b : Fixed p) : a * b = mul a b := rfl
 
 def mod (dt1 dt2 : Fixed p) : Fixed p :=
   ⟨dt1.val % dt2.val⟩
@@ -143,9 +157,11 @@ def mod (dt1 dt2 : Fixed p) : Fixed p :=
 instance : Mod (Fixed p) where
   mod := mod
 
+theorem mod_def (a b : Fixed p) : a % b = mod a b := rfl
+
 @[simp] theorem ofFixed_lt {a b : Fixed p} : a < b ↔ a.val < b.val :=
-  ⟨fun h => by unfold LT.lt instLTFixed at h; apply h,
-  fun h => by unfold LT.lt instLTFixed; simpa⟩
+  ⟨fun h => by simp only [LT.lt] at h; apply h,
+  fun h => by simp only [LT.lt]; simpa⟩
 
 @[simp] theorem ofFixed_ne {a b : Fixed p} : a ≠ b ↔ a.val ≠ b.val :=
   ⟨fun h => by simp [Fixed.ext_iff] at h; simpa,
@@ -163,8 +179,8 @@ theorem emod_lt_of_pos (a : Fixed p) {b : Fixed p} (h : ⟨0⟩ < b) : a % b < b
   simpa
 
 theorem emod_add_ediv (a b : Fixed p) : a % b + (a / b) * b = a := by
-  simp [instModFixed, instHDivFixedInt, instAddFixed]
-  unfold Fixed.add Fixed.mod Fixed.div
+  simp [mod_def, div_def, add_def]
+  simp [Fixed.add, Fixed.mod, Fixed.div]
   simp [Fixed.ext_iff]
   exact Int.emod_add_ediv' a.val b.val
 
@@ -176,19 +192,16 @@ def toMod (n d : Fixed p) (h : zero < d) : { m // zero ≤ m ∧ m < d } :=
 
 private theorem toFixed_eq_zero (p : Nat)
     : (toFixed Sign.Nonneg 0 default : Fixed p) = Fixed.zero := by
-  unfold Fixed.toFixed Fixed.zero instInhabitedDenominator Fixed.Denominator.zero
-  split <;> simp_all
+  simp [Fixed.toFixed, Fixed.zero, inhabited_def, Fixed.Denominator.zero]
 
 private theorem toFixed_of_ge_zero (p : Nat) (n : Nat) (denom :  Fixed.Denominator p)
     : (toFixed Sign.Nonneg n denom : Fixed p) = ⟨n * (10 ^ p) + denom.val⟩ := by
-  unfold toFixed
-  split <;> try simp_all
+  simp [toFixed]
 
 private theorem toFixed_of_lt_zero (p : Nat) (n : Nat) (denom :  Fixed.Denominator p)
     : (toFixed Sign.Neg n denom : Fixed p) =
     ⟨Int.negOfNat (Int.natAbs  n * (10 ^ p) + denom.val)⟩  := by
-  unfold toFixed
-  split <;> simp_all
+  simp [toFixed]
 
 private theorem pos_pow_of_pos_cast {n : Nat} (m : Nat) (h : 0 < n) : 0 < (n:Int) ^ m := by
   have hp : 0 < n ^ m := @Int.pos_pow_of_pos n m h
@@ -260,14 +273,13 @@ private theorem le_of_div_pow (val : Int) (p : Nat) (h : 0 ≤ val)
   simp [Int.div_nonneg h this]
 
 theorem fixed_eq_toParts_fromParts (f : Fixed p) : f = f.toParts.fromParts := by
-  unfold Fixed.toParts Parts.fromParts toFixed
+  simp [Fixed.toParts, Parts.fromParts, toFixed]
   split <;> simp_all
   · rename_i h
-    have h0 : f.val < 0 := Classical.byContradiction h
-    unfold Int.negOfNat
-    split <;> simp_all
+    simp [Int.negOfNat]
+    split <;> try simp_all
     · rename_i heq
-      unfold Int.natAbs at heq
+      simp [Int.natAbs] at heq
       split at heq <;> simp_all
       · omega
       · rename_i n _
@@ -287,7 +299,6 @@ theorem fixed_eq_toParts_fromParts (f : Fixed p) : f = f.toParts.fromParts := by
   · rename_i h
     have : ¬¬f.val < 0 ↔ f.val < 0 := Classical.not_not
     rw [← this] at h
-    have h : ¬f.val < 0 := Classical.byContradiction h
     have hf : Int.natAbs f.val = f.val := by omega
     rw [hf]
     have : ((10 ^ p : Nat) : Int) = (10 : Int) ^ p := Int.natCast_pow 10 p
