@@ -13,11 +13,6 @@ require std from git "https://github.com/leanprover/std4" @ "v4.8.0-rc1"
 @[default_target]
 lean_lib Time
 
-@[default_target]
-lean_lib Test {
-  srcDir := "test"
-}
-
 target localtime.o pkg : FilePath := do
   let oFile := pkg.buildDir / "native/" / "localtime.o"
   let srcJob ← inputFile <| pkg.dir / "native/" / "localtime.cpp"
@@ -28,3 +23,12 @@ extern_lib libleanlocaltime pkg := do
   let name := nameToStaticLib "leanlocaltime"
   let localtime ← localtime.o.fetch
   buildStaticLib (pkg.nativeLibDir / name) #[localtime]
+
+lean_lib Test where
+  srcDir := "test"
+  roots := #[`Test]
+
+@[test_runner]
+lean_exe test where
+  srcDir := "test"
+  root := `Test
