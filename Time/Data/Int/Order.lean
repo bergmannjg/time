@@ -15,10 +15,7 @@ theorem Int.toNat_le_toNat {a b : Int} (h : a ≤ b) : Int.toNat a ≤ Int.toNat
   split <;> try simp_all
   split <;> try simp_all
   rename_i n _ a
-  have h1 : ↑n < 0 := Int.lt_of_le_of_lt h (Int.negSucc_lt_zero a)
-  have : ¬↑n < 0 := by
-    have ha : 0 ≤ (↑n : Int) := by simp [Int.ofNat_zero_le n]
-    simp [Int.not_lt.mpr ha]
+  have _ : ↑n < 0 := Int.lt_of_le_of_lt h (Int.negSucc_lt_zero a)
   contradiction
 
 theorem Int.toNat_le {a : Int} {n : Nat} (h : a ≤ n) : Int.toNat a ≤ n :=

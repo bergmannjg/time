@@ -11,18 +11,18 @@ instance : LeRefl Int where
   le_refl := Int.le_refl
 
 /-- Left-closed right-closed interval -/
-def Icc {α : Type} [LE α] [LeRefl α] (a b : α) := { x : α // a ≤ x ∧ x ≤ b}
+def Icc {α : Type} [LE α] (a b : α) := { x : α // a ≤ x ∧ x ≤ b}
 
-instance {α : Type} [LE α] [LeRefl α]{a b : α} : LE (Icc a b) where
+instance {α : Type} [LE α] {a b : α} : LE (Icc a b) where
   le a b := LE.le a.val b.val
 
-instance {α : Type} [Repr α] [LE α] [LeRefl α] {a b : α} : Repr (Icc a b) where
+instance {α : Type} [Repr α] [LE α] {a b : α} : Repr (Icc a b) where
   reprPrec s _ := repr s.val
 
-instance {α : Type} [BEq α] [LE α] [LeRefl α] {a b : α} : BEq (Icc a b) where
+instance {α : Type} [BEq α] [LE α] {a b : α} : BEq (Icc a b) where
   beq a b := BEq.beq a.val b.val
 
-instance {α : Type} [BEq α] [LE α] [LeRefl α] {a b : α} : CoeOut (Time.Icc a b) α where
+instance {α : Type} [LE α] {a b : α} : CoeOut (Time.Icc a b) α where
   coe n := n.val
 
 instance {α : Type} [LE α] [LeRefl α]{a b : α}  : LeRefl (Icc a b) where
@@ -39,18 +39,18 @@ theorem nonempty {α : Type} [LE α] [LeRefl α] {a b : α} (h : a ≤ b) : None
 end Icc
 
 /-- Left-closed right-open interval -/
-def Ico {α : Type} [LE α] [LT α] [LeRefl α] (a b : α) := { x : α // a ≤ x ∧ x < b}
+def Ico {α : Type} [LE α] [LT α] (a b : α) := { x : α // a ≤ x ∧ x < b}
 
-instance {α : Type} [LE α] [LT α] [LeRefl α] {a b : α} : LE (Ico a b) where
+instance {α : Type} [LE α] [LT α] {a b : α} : LE (Ico a b) where
   le a b := LE.le a.val b.val
 
-instance {α : Type} [Repr α] [LE α] [LeRefl α] [LT α] {a b : α} : Repr (Ico a b) where
+instance {α : Type} [Repr α] [LE α] [LT α] {a b : α} : Repr (Ico a b) where
   reprPrec s _ := repr s.val
 
-instance {α : Type} [BEq α] [LE α] [LT α] [LeRefl α] {a b : α} : BEq (Ico a b) where
+instance {α : Type} [BEq α] [LE α] [LT α] {a b : α} : BEq (Ico a b) where
   beq a b := BEq.beq a.val b.val
 
-instance {α : Type} [LE α] [LT α] [LeRefl α] (a b : α)  : CoeOut (Time.Ico a b) α where
+instance {α : Type} [LE α] [LT α] (a b : α)  : CoeOut (Time.Ico a b) α where
   coe n := n.val
 
 instance {α : Type} [LE α] [LT α] [LeRefl α]{a b : α}  : LeRefl (Ico a b) where

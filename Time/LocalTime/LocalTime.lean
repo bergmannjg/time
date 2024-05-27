@@ -12,7 +12,7 @@ structure LocalTime where
   localTimeOfDay : TimeOfDay
   deriving Repr, BEq
 
-namespace Time.Notation
+namespace Notation
 
 /-- LocalTime syntactic category -/
 declare_syntax_cat datetime
@@ -34,7 +34,7 @@ macro_rules
         (Time.TimeOfDay.toSecond $(s.getD (Lean.Quote.quote 0)) 0 (by omega) (by omega))⟩
       : Time.LocalTime))
 
-end Time.Notation
+end Notation
 
 instance : ToString LocalTime where
   toString a := s!"{a.localDay}, {a.localTimeOfDay}"

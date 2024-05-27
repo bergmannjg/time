@@ -22,7 +22,7 @@ structure Date where
   IsValid : ∃ m ∈ monthLengths (isLeapYear Year), m.1 = Month.val ∧ Day.val ≤ m.2
   deriving Repr
 
-namespace Time.Notation
+namespace Notation
 
 /-- Date syntactic category -/
 declare_syntax_cat date
@@ -39,7 +39,7 @@ macro_rules
 | `(date% $y:num-$m:num-$d:num) =>
     `(Time.Date.mk $y ⟨$m, by omega⟩ ⟨$d, by omega⟩ (by native_decide))
 
-end Time.Notation
+end Notation
 
 instance : BEq Date where
   beq a b := decide (Eq a.Year b.Year) && decide (Eq a.Month.val b.Month.val) && decide (Eq a.Day.val b.Day.val)
@@ -78,9 +78,6 @@ theorem list_foldl_init_add (l : List α) (init v : Nat) (f : α → Nat)
   | cons h t ih =>
     unfold List.foldl
     simp [*]
-    have : List.foldl (fun acc v => f v + acc) (f h + init + v) t
-              = List.foldl (fun acc v => f v + acc) ((f h + init) + v) t := by
-      simp [ih]
     have hy : List.foldl (fun acc v => f v + acc) ((f h + init) + v) t
               = List.foldl (fun acc v => f v + acc) (f h + (init + v)) t := by
       have : (f h + init) + v = f h + (init + v) := by simp_arith
