@@ -1,5 +1,5 @@
-import Std.Data.Int.Order
-import Std.Data.Int.DivMod
+import Batteries.Data.Int.Order
+import Batteries.Data.Int.DivMod
 import Time.ZeroPad
 import Time.Data.Int.Order
 

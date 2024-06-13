@@ -2,8 +2,8 @@ import Time.Data.Int.Order
 import Time.LocalTime.TimeZone
 import Time.Clock.DiffTime
 import Time.Calendar.Clip
-import Std
-import Std.Data.Int.DivMod
+import Batteries
+import Batteries.Data.Int.DivMod
 
 namespace Time
 

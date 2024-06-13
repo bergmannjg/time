@@ -1,5 +1,5 @@
 import Init.Data.Int.Order
-import Std.Data.List.Lemmas
+import Batteries.Data.List.Lemmas
 import Time.Data.Int.Order
 import Time.Calendar.OrdinalDate
 

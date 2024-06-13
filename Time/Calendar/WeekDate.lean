@@ -2,7 +2,7 @@ import Time.Calendar.Clip
 import Time.Calendar.Days
 import Time.Calendar.OrdinalDate
 import Time.Calendar.Week
-import Std
+import Batteries
 
 namespace Time
 
