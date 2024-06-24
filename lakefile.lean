@@ -8,7 +8,7 @@ package time {
 meta if get_config? env = some "dev" then
 require «doc-gen4» from  git "https://github.com/leanprover/doc-gen4" @ "main"
 
-require batteries from git "https://github.com/leanprover-community/batteries" @ "v4.8.0"
+require batteries from git "https://github.com/leanprover-community/batteries" @ "v4.9.0-rc1"
 
 @[default_target]
 lean_lib Time
@@ -28,7 +28,7 @@ lean_lib Test where
   srcDir := "test"
   roots := #[`Test]
 
-@[test_runner]
+@[test_driver]
 lean_exe test where
   srcDir := "test"
   root := `Test

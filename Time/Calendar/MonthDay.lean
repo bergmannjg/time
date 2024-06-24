@@ -238,7 +238,7 @@ theorem monthAndDayToDayOfYear_le (month day k : Int)
     : ((367 * month - 362) / 12 + k) + day ≤ 366 := by
   omega
 
-private def monthAndDayToDayOfYearClipped_month_le (isLeap : Bool) (month : Nat)
+private def monthAndDayToDayOfYearClipped_month_le (_ : Bool) (month : Nat)
     (day : Nat) (hd1 : 1 <= day) (hd2 : day ≤ 31) (h : month <= 2) : Time.Icc 1 366 :=
   let k := 0
   let x := ((367 * month - 362) / 12 + k) + day

@@ -111,11 +111,6 @@ def toOrdinalDate (mjd : Day) : OrdinalDate :=
   have hquad₂ : quad ≤ 24 := by omega
   have hcent₃ (h1 : d' = 4*365) (h2 : quad = 24) : cent = 3 := by omega
 
-  have hd' : d' < 1461 := by omega
-
-  have h1 : 0 <= d' := by omega
-  have h2 : d' < 3*365 + 366 := by omega
-
   if h : d' < 4*365
   then
     let y := d' / 365
@@ -124,19 +119,9 @@ def toOrdinalDate (mjd : Day) : OrdinalDate :=
   else
     have hx : d' = 4*365 := by omega
 
-    let yd : Nat := d'.toNat - 3*365 + 1
-
-    have hy : yd = 366 := by
-      let hyd : yd = d'.toNat - 3*365 + 1 := by simp
-      rw [hyd, hx]
-      simp_arith
-
-    have h1 : 0 < yd := by omega
-    have h2 : yd ≤ 366 := by omega
-
     let year := quadcent * 400 + cent * 100 + quad * 4 + 4
     have hyear : year = quadcent * 400 + cent * 100 + quad * 4 + 4 := by omega
-    ⟨year, .leap ⟨yd, And.intro h1 h2⟩,
+    ⟨year, .leap ⟨366, (by omega)⟩,
           (by simp [isLeapYear_of_sum year hyear hquad₁ hquad₂ (hcent₃ hx)])⟩
 
 theorem ite_ge {α : Type} (f : α → Bool) (v : α) (a b c : Nat) (h₁ : c <= a) (h₂ : c <= b):
