@@ -6,16 +6,16 @@ package time {
 }
 
 meta if get_config? env = some "dev" then
-require «doc-gen4» from  git "https://github.com/leanprover/doc-gen4" @ "v4.10.0"
+require «doc-gen4» from  git "https://github.com/leanprover/doc-gen4" @ "v4.11.0-rc1"
 
-require batteries from git "https://github.com/leanprover-community/batteries" @ "v4.10.0"
+require batteries from git "https://github.com/leanprover-community/batteries" @ "v4.11.0-rc1"
 
 @[default_target]
 lean_lib Time
 
 target localtime.o pkg : FilePath := do
   let oFile := pkg.buildDir / "native/" / "localtime.o"
-  let srcJob ← inputFile <| pkg.dir / "native/" / "localtime.cpp"
+  let srcJob ← inputTextFile <| pkg.dir / "native/" / "localtime.cpp"
   let flags := #["-I", (← getLeanIncludeDir).toString]
   buildO oFile srcJob  flags #["-fPIC"] "c++"
 
