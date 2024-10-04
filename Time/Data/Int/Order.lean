@@ -1,5 +1,4 @@
 import Init.Data.Int.Order
-import Batteries.Data.Int.Order
 
 theorem Int.toNat_lt_toNat {a b : Int} (h : a < b) (hb : 0 < b) : Int.toNat a < Int.toNat b := by
   unfold Int.toNat

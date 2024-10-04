@@ -1,4 +1,4 @@
-import Lean.Data.Parsec
+import Std.Internal.Parsec
 import Time.Format.Parse.Class
 import Time.Calendar.WeekDate
 import Time.LocalTime.TimeOfDay
@@ -7,12 +7,12 @@ import Time.LocalTime.ZonedTime
 import Time.Specifier
 
 namespace Parsec
-open Lean Parsec
+open Lean Std.Internal Parsec Parsec.String
 
-def count (n : Nat) (p : Parsec α) : Parsec <| List α :=
+def count (n : Nat) (p : Parser α) : Parser <| List α :=
   List.replicate n p |>.mapM id
 
-def choice : (List <| Parsec α) -> Parsec α
+def choice : (List <| Parser α) -> Parser α
 | [] => fail ""
 | [p] => p
 | p :: ps => attempt p <|> choice ps
@@ -20,26 +20,26 @@ def choice : (List <| Parsec α) -> Parsec α
 def toNat (chars : List Char) :=
   chars.foldl (fun acc c => 10 * acc + (c.val.toNat - '0'.val.toNat)) 0
 
-def nat (n : Nat) : Parsec Nat := do
+def nat (n : Nat) : Parser Nat := do
   return toNat (← count n digit)
 
-def digits (n : Nat) : Parsec String := do
+def digits (n : Nat) : Parser String := do
   return List.asString (← count n digit)
 
-def allowChar (c : Char) : Parsec String :=
+def allowChar (c : Char) : Parser String :=
   (·.toString) <$> pchar c <|> return ""
 
 end Parsec
 
 namespace Time
 
-open Lean Parsec
+open Lean Std.Internal Parsec Parsec.String
 
 instance (α : Type) : MonadFail Option α where
   fail _ := none
 
-instance (α : Type) : MonadFail Parsec α where
-  fail s := λ it => ParseResult.error it s
+instance (α : Type) : MonadFail Parser α where
+  fail s := λ it => Parsec.ParseResult.error it s
 
 instance : ReadMaybe String where
   readMaybe s := some s
@@ -79,7 +79,7 @@ def DCYearWeek? : WeekType -> DayComponent -> Option Int
   | .MondayWeek, .DCYearWeek .MondayWeek y => some y
   | _, _ => none
 
-def allowEmptyParser : Bool -> Parsec String
+def allowEmptyParser : Bool -> Parser String
 | false => do
   let x ← many1 (digit)
   return x.toList.asString
@@ -87,7 +87,7 @@ def allowEmptyParser : Bool -> Parsec String
   let x ← many (digit)
   return x.toList.asString
 
-def parsePaddedDigits : PaddingSide -> ParseNumericPadding -> Bool -> Nat -> Parsec String
+def parsePaddedDigits : PaddingSide -> ParseNumericPadding -> Bool -> Nat -> Parser String
 | _ , ParseNumericPadding.ZeroPadding, _, n => do
     let x ← count n (digit)
     return x.asString
@@ -103,7 +103,7 @@ def parsePaddedDigits : PaddingSide -> ParseNumericPadding -> Bool -> Nat -> Par
     return x.toList.asString
 
 def timeParseTimeSpecifier (l : TimeLocale) (mpad : Option ParseNumericPadding) (s : Specifier)
-    : Parsec String :=
+    : Parser String :=
   match s with
   -- century
   | .C => allowNegativeDigits ParseNumericPadding.SpacePadding 2
@@ -149,16 +149,16 @@ def timeParseTimeSpecifier (l : TimeLocale) (mpad : Option ParseNumericPadding) 
   | .l | .I | .k | .p | .P => Parsec.fail s!"specifier 'lIkpP' only valid in format"
   where
   digits' (ps : PaddingSide) (pad : ParseNumericPadding) (allowEmpty : Bool) (n : Nat)
-      : Parsec String :=
+      : Parser String :=
     parsePaddedDigits ps (Option.getD mpad pad) allowEmpty n
-  digits (pad : ParseNumericPadding) (n : Nat) : Parsec String :=
+  digits (pad : ParseNumericPadding) (n : Nat) : Parser String :=
     digits' PaddingSide.PrePadding pad false n
-  allowNegativeDigits (pad : ParseNumericPadding) (n : Nat) : Parsec String := do
+  allowNegativeDigits (pad : ParseNumericPadding) (n : Nat) : Parser String := do
     let s1 := ← allowChar '-'
     let s2 ← digits' PaddingSide.PrePadding pad false n
     return s1 ++ s2
-  oneOf (l : List String) : Parsec String := choice <| l.map (pstring ·)
-  numericTZ : Parsec String := do
+  oneOf (l : List String) : Parser String := choice <| l.map (pstring ·)
+  numericTZ : Parser String := do
     let s ← pchar '+' <|> pchar '-'
     let h ← digits ParseNumericPadding.ZeroPadding 2
     let _ ← allowChar ':'

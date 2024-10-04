@@ -1,4 +1,4 @@
-import Lean.Data.Parsec
+import Std.Internal.Parsec
 import Time.Format.Parse.Class
 import Time.Format.Parse.Instances
 import Time.LocalTime.TimeOfDay
@@ -6,12 +6,12 @@ import Time.LocalTime.ZonedTime
 
 namespace Time
 
-open Lean Parsec
+open Lean Std.Internal Parsec.String
 
 /-- Parses a time value (i.e. instance of ParseTime) given a format string (`Time.Specifier`) -/
 def parse {α : Type} {m : Type -> Type v} [Monad m] [MonadFail m α] [ParseTime α] (l :
     TimeLocale) (fmt : String) (s : String) : m α := do
-  match (parseTime l fmt : Parsec α) s.mkIterator with
+  match (parseTime l fmt : Parser α) s.mkIterator with
   | Parsec.ParseResult.success it res =>
     if it.hasNext then fail s!"remainingBytes {it.remainingBytes}" else return res
   | Parsec.ParseResult.error _ err => fail err

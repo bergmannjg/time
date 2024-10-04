@@ -1,7 +1,7 @@
 import Batteries.Data.Nat.Lemmas
-import Batteries.Data.Int.Lemmas
-import Batteries.Data.Int.DivMod
-import Batteries.Data.Bool
+import Init.Data.Int.Lemmas
+import Init.Data.Int.DivMod
+import Init.Data.Bool
 import Time.Calendar.Days
 import Time.Calendar.Clip
 import Time.Data.Int.Order

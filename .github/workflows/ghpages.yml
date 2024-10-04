@@ -36,7 +36,7 @@ jobs:
         with:
           mdbook-version: '0.4.15'
       - name: Build and test
-        uses: leanprover/lean-action@v1-beta
+        uses: leanprover/lean-action@v1
         with:
           lint-module: Time
           use-mathlib-cache: false
