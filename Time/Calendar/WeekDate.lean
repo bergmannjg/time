@@ -48,9 +48,9 @@ def toWeekCalendar (wt : FirstWeekType) (ws : DayOfWeek) (d : Day) : Int × Int 
   let j1p := firstDayOfWeekCalendar wt ws $ Nat.pred y0.toNat
   let j1 := firstDayOfWeekCalendar wt ws y0
   let j1s := firstDayOfWeekCalendar wt ws $ Nat.succ y0.toNat
-  if d < j1 then (y0-1, 1 + (Int.div (Day.diffDays d j1p) 7), dw)
-  else if d < j1s then (y0, 1 + (Int.div (Day.diffDays d j1) 7), dw)
-  else (1 + y0, 1 + (Int.div (Day.diffDays d j1s) 7), dw)
+  if d < j1 then (y0-1, 1 + (Int.tdiv (Day.diffDays d j1p) 7), dw)
+  else if d < j1s then (y0, 1 + (Int.tdiv (Day.diffDays d j1) 7), dw)
+  else (1 + y0, 1 + (Int.tdiv (Day.diffDays d j1s) 7), dw)
 
 /-- Convert from the given kind of "week calendar". `ws` is the first day of each week.
 Invalid week and day values will be clipped to the correct range. -/
