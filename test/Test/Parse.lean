@@ -38,9 +38,9 @@ def dtTimeOfDay2 : TimeOfDay := time% 12:24:30.1234
 
 def dtTimeOfDay3 : TimeOfDay := time% 12:24:30.000000020
 
-example : dtTimeOfDay2.Second.val.val = 30123400000 := by rfl
+example : dtTimeOfDay2.Second.val.val = 30123400000 := by native_decide
 
-example : dtTimeOfDay3.Second.val.val = 30000000020 := by rfl
+example : dtTimeOfDay3.Second.val.val = 30000000020 := by native_decide
 
 example : parseTimeOfDay? "%H:%M:%S" "12:24:30" == dtTimeOfDay1 := by native_decide
 

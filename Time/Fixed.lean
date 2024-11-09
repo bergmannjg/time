@@ -269,8 +269,8 @@ private theorem le_of_div_pow (val : Int) (p : Nat) (h : 0 ≤ val)
     : 0 ≤ val / (((10 ^ p) : Nat) : Int) := by
   have : 0 ≤ (((10 ^ p) : Nat) : Int) :=
     Int.le_of_lt <| Int.ofNat_lt.mpr <| Int.pos_pow_of_pos _ (by omega)
-  rw [← Int.div_eq_ediv h this]
-  simp [Int.div_nonneg h this]
+  rw [← Int.tdiv_eq_ediv h this]
+  simp [Int.tdiv_nonneg h this]
 
 theorem fixed_eq_toParts_fromParts (f : Fixed p) : f = f.toParts.fromParts := by
   simp [Fixed.toParts, Parts.fromParts, toFixed]
@@ -283,10 +283,8 @@ theorem fixed_eq_toParts_fromParts (f : Fixed p) : f = f.toParts.fromParts := by
       split at heq <;> simp_all
       · omega
       · rename_i n _
-        have : Nat.succ n / 10 ^ p * 10 ^ p + Nat.succ n % 10 ^ p = Nat.succ n := by
-          rw [Nat.mul_comm]
-          apply Nat.div_add_mod (Nat.succ n) (10 ^ p)
-        rw [this] at heq
+        rewrite [Nat.div_mul_cancel (Nat.dvd_of_mod_eq_zero heq.2)] at heq
+        have := heq.1
         contradiction
     · rename_i m heq
       have : Int.natAbs f.val / 10 ^ p * 10 ^ p + Int.natAbs f.val % 10 ^ p = Int.natAbs f.val := by
