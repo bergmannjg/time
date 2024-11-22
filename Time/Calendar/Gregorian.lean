@@ -12,22 +12,24 @@ def toGregorian (date : Day) : Date :=
   ordinalDateToDate (toOrdinalDate date)
 
 /-- Convert from proleptic Gregorian calendar. -/
-def fromGregorianDate (dt : Date) : Day :=
-  let dy := monthAndDayToDayOfYear (isLeapYear dt.Year) dt.Month.val dt.Day.val
-  fromOrdinalDayOfYear dt.Year dy
+def fromGregorian (dt : Date) : Day :=
+  fromOrdinalDate (dateToOrdinalDate dt)
 
 /-- Convert from proleptic Gregorian calendar.
 Invalid values will be clipped to the correct range, month first, then day. -/
-def fromGregorian (year : Int) (month : Int) (day : Int) : Day :=
-  let dy := monthAndDayToDayOfYear (isLeapYear year) month day
-  fromOrdinalDayOfYear year dy
+def fromGregorianClipped (year : Int) (month : Int) (day : Int) : Day :=
+  let d := monthAndDayToDayOfYear year month day
+  fromOrdinalDate d
 
 /-- Convert from proleptic Gregorian calendar. Invalid values give result none. -/
 def fromGregorianValid (year : Int) (month : Int) (day : Int) : Option Day := do
-  let day ← monthAndDayToDayOfYearValid (isLeapYear year) month day
-  fromOrdinalDateValid year (day.val)
+  let d ← monthAndDayToDayOfYearValid year month day
+  fromOrdinalDate d
 
 namespace Gregorian
+
+def addDays (n : Int) (dt : Date) : Date :=
+  dateToOrdinalDate dt |> OrdinalDate.addDays n |> ordinalDateToDate
 
 /-- The number of days in a given month according to the proleptic Gregorian calendar. -/
 def monthLength (year: Int) (month : Int) : Int :=
@@ -48,13 +50,13 @@ private def addMonths (n : Int) (day : Day) : Int × Int × Int :=
 For instance, 2005-01-30 + 1 month = 2005-02-28. -/
 def addMonthsClip (n : Int) (day : Day) : Day :=
   let (y, m, d) := addMonths n day
-  fromGregorian y m d
+  fromGregorianClipped y m d
 
 /-- Add months, with days past the last day of the month rolling over to the next month.
 For instance, 2005-01-30 + 1 month = 2005-03-02. -/
 def addMonthsRollOver (n : Int) (day : Day) : Day :=
   let (y, m, d) := addMonths n day
-  Day.addDays (d - 1) (fromGregorian y m 1)
+  Day.addDays (d - 1) (fromGregorianClipped y m 1)
 
 /-- Add years, matching month and day, with Feb 29th clipped to Feb 28th if necessary.
 For instance, 2004-02-29 + 2 years = 2006-02-28. -/

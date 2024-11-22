@@ -11,7 +11,7 @@ def parseDate? (fmt : String) (s : String) : Option Date := parse TimeLocale.deD
 
 def dtDate : Date := date% 2023-2-12
 
-example : (toGregorian <| fromGregorianDate dtDate) == dtDate := by rfl
+example : (toGregorian <| fromGregorian dtDate) == dtDate := by rfl
 
 example : parseDate? "%Y-%m-%d" "2023-02-12" == some dtDate := by native_decide
 

@@ -16,13 +16,16 @@ inductive DayOfYear where
 instance : BEq DayOfYear where
   beq a b :=
     match a, b with
-    | .common a, .common b => a.val = b.val
-    | .leap a, .leap b => a.val = b.val
+    | .common a, .common b => a.val == b.val
+    | .leap a, .leap b => a.val == b.val
     | _, _ => false
 
-instance : Coe DayOfYear (Time.Icc 1 366) where
+instance : Coe (Time.Icc 1 365) (Time.Icc 1 366) where
+  coe d := ⟨d.val, And.intro (d.property.left) (Nat.le_step d.property.right)⟩
+
+instance instCoeDayOfYearIccOfNat : Coe DayOfYear (Time.Icc 1 366) where
   coe
-    | .common d => ⟨d.val, And.intro (d.property.left) (Nat.le_step d.property.right)⟩
+    | .common d => d
     | .leap d => d
 
 /-- Is this year a leap year according to the proleptic Gregorian calendar? -/
@@ -30,7 +33,7 @@ def isLeapYear (year : Int) :=
   (year % 4 = 0) && (year % 400 = 0 || not (year % 100 = 0))
 
 /-- ISO 8601 Ordinal Date -/
-structure OrdinalDate where
+@[ext] structure OrdinalDate where
   year : Int
   dayOfYear : DayOfYear
   isValid : match dayOfYear with
@@ -41,12 +44,18 @@ structure OrdinalDate where
 instance : BEq OrdinalDate where
   beq a b := a.year == b.year && decide (a.dayOfYear == b.dayOfYear)
 
+instance : ToString OrdinalDate where
+  toString dt :=
+    match dt.dayOfYear with
+    | .common dy => s!"{dt.year} .common {dy.val}"
+    | .leap dy => s!"{dt.year} .leap {dy.val}"
+
 def dayOfYear (dayOfYear: DayOfYear) : Nat :=
   match dayOfYear with
   | .common d => d.val
   | .leap d => d.val
 
-private def toDayOfYear (year: Int) (d': Int) : OrdinalDate :=
+def toDayOfYear (year: Int) (d': Int) : OrdinalDate :=
   let yd' := d' % 365 + 1
   let yd := Int.toNat yd'
 
@@ -77,7 +86,7 @@ theorem year_emod_100_non_zero {qc cent q : Int} (year : Int)
   (h1: year = qc * 400 + cent * 100 + q * 4 + 4) (hle : 0 ≤ q) (h2 : q < 24) : year % 100 ≠ 0 := by
   omega
 
-theorem isLeapYear_of_sum {qc cent q : Int} (year : Int)
+theorem isLeapYear_of_sum {qc cent q : Int} {year : Int}
   (h1: year = qc * 400 + cent * 100 + q * 4 + 4) (hle : 0 ≤ q) (h2 : q ≤ 24)
   (h3 : q = 24 -> cent = 3) : isLeapYear year := by
   unfold isLeapYear
@@ -96,33 +105,45 @@ theorem isLeapYear_of_sum {qc cent q : Int} (year : Int)
 
 /-- from modified Julian day to year and day of year -/
 def toOrdinalDate (mjd : Day) : OrdinalDate :=
+  /- days since january 1, year 1 -/
   let a := mjd.modifiedJulianDay - (default : Day).modifiedJulianDay
   /- there are 146097 days in 400 years (4*36524 + 1) -/
   let quadcent := a / 146097
   let b := a % 146097
-  /- there are 36524 days in 100 years if not including a year divisible by 400 (76*365+24*366) -/
-  let cent := min (b / 36524) 3
-  let c := b - (cent * 36524)
-  /- there are 1461 days in 4 years including a leap year (3*365 + 366) -/
-  let quad := c / 1461
-  let d' := c % 1461
-
-  have hquad₁ : 0 ≤ quad := by omega
-  have hquad₂ : quad ≤ 24 := by omega
-  have hcent₃ (h1 : d' = 4*365) (h2 : quad = 24) : cent = 3 := by omega
-
-  if h : d' < 4*365
-  then
-    let y := d' / 365
-    let year := quadcent * 400 + cent * 100 + quad * 4 + y + 1
-    toDayOfYear year d'
-  else
-    have hx : d' = 4*365 := by omega
-
+  /- `b = 146096` means a leap year divisible by 400 and day of year = 366 -/
+  if h : b = 146096 then
+    let cent := 3
+    let quad := 24
     let year := quadcent * 400 + cent * 100 + quad * 4 + 4
-    have hyear : year = quadcent * 400 + cent * 100 + quad * 4 + 4 := by omega
-    ⟨year, .leap ⟨366, (by omega)⟩,
-          (by simp [isLeapYear_of_sum year hyear hquad₁ hquad₂ (hcent₃ hx)])⟩
+    ⟨year, .leap ⟨366, (by omega)⟩, (by split <;> try simp_all [isLeapYear] <;> omega)⟩
+  else
+    /- there are 36524 days in 100 years if not including a year divisible by 400 (76*365+24*366) -/
+    let cent := b / 36524
+    let c := b - (cent * 36524)
+    /- there are 1461 days in 4 years including a leap year (3*365 + 366) -/
+    let quad := c / 1461
+    let d' := c % 1461
+
+    have hquad₁ : 0 ≤ quad := by omega
+    have hquad₂ : quad ≤ 24 := by omega
+
+    if h : d' < 4*365
+    then
+      let y := d' / 365
+      let year := quadcent * 400 + cent * 100 + quad * 4 + y + 1
+      toDayOfYear year d'
+    else
+      have hcent₃ (h2 : quad = 24) : cent = 3 := by omega
+
+      let year := quadcent * 400 + cent * 100 + quad * 4 + 4
+      have hyear : year = quadcent * 400 + cent * 100 + quad * 4 + 4 := by simp
+      ⟨year, .leap ⟨366, (by omega)⟩, (by simp [isLeapYear_of_sum hyear hquad₁ hquad₂ hcent₃])⟩
+
+def toModifiedJulianDay (year : Int) (dayOfYear : Nat) : Int :=
+  /- Gregorian serial date minus difference to modified julian date. -/
+  let y := year - 1
+  dayOfYear + (365 * y) + (y / 4) - (y / 100) + (y / 400)
+    + ((default : Day).modifiedJulianDay -  1)
 
 theorem ite_ge {α : Type} (f : α → Bool) (v : α) (a b c : Nat) (h₁ : c <= a) (h₂ : c <= b):
     c <= if (f v) then a else b := by
@@ -135,7 +156,7 @@ private inductive YearBase where
   | One
   deriving Repr, BEq
 
-private def clipDayOfYear (b : YearBase) (year : Int) (dayOfYear : Int) : Nat :=
+def clipDayOfYear (b : YearBase) (year : Int) (dayOfYear : Int) : Nat :=
   match b with
   | .Zero => Clip.clip 0 (if isLeapYear year then 365 else 364) dayOfYear
               (ite_ge _ _ _ _ 0 (Nat.zero_le _) (Nat.zero_le _))
@@ -148,12 +169,6 @@ private def clipDayOfYearValid (b : YearBase) (year : Int) (dayOfYear : Int) : O
               (ite_ge _ _ _ _ 0 (Nat.zero_le _) (Nat.zero_le _))
   | .One => Clip.clip? 1 (if isLeapYear year then 366 else 365) dayOfYear
               (ite_ge _ _ _ _ 1 (by simp_arith) (by simp_arith))
-
-private def toModifiedJulianDay (year : Int) (dayOfYear : Nat) : Int :=
-  /- Gregorian serial date minus difference to modified julian date. -/
-  let y := year - 1
-  dayOfYear + (365 * y) + ( y / 4) - (y / 100) + ( y / 400)
-    + ((default : Day).modifiedJulianDay -  1)
 
 def firstDayOfYear (year : Int) : DayOfYear :=
     if isLeapYear year then .leap ⟨1, (by simp_arith)⟩ else .common ⟨1, (by simp_arith)⟩
@@ -180,10 +195,9 @@ def fromOrdinalDayOfYear (year : Int) (d : Time.Icc 1 366) : Day :=
   let day' := clipDayOfYear .One year d.val
   { modifiedJulianDay := toModifiedJulianDay year day' }
 
-/--  Convert from ISO 8601 Ordinal Date format.
-Invalid day numbers will be clipped to the correct range (1 to 365 or 366). -/
+/--  Convert from ISO 8601 Ordinal Date format. -/
 def fromOrdinalDate (dt : OrdinalDate) : Day :=
-  fromOrdinalDayOfYear dt.year dt.dayOfYear
+  { modifiedJulianDay := toModifiedJulianDay dt.year (dayOfYear dt.dayOfYear) }
 
 /--  Convert from ISO 8601 Ordinal Date format. -/
 def fromOrdinalDateValid (year : Int) (day : Int) : Option Day := do
@@ -228,3 +242,6 @@ def fromSundayStartWeekValid (year : Int) (w : Int) (d : Int) : Option Day := do
   let zbYearDay := zbFirstSunday + 7 * zbWeek + zbDay
   let zbYearDay' ← clipDayOfYearValid .Zero year zbYearDay
   return Day.addDays zbYearDay' firstDay
+
+def OrdinalDate.addDays (n : Int) (dt : OrdinalDate) : OrdinalDate :=
+  fromOrdinalDate dt |> Day.addDays n |> toOrdinalDate

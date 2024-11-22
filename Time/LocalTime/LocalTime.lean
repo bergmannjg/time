@@ -29,7 +29,7 @@ syntax "datetime%" datetime : term
 -/
 macro_rules
 | `(datetime% $y:num-$mo:num-$d:num $h:num:$mi:num$[:$s:num]?) =>
-    `((⟨Time.fromGregorianDate (Time.Date.mk $y ⟨$mo, by omega⟩ ⟨$d, by omega⟩ (by native_decide)),
+    `((⟨Time.fromGregorian (Time.Date.mk $y ⟨$mo, by omega⟩ ⟨$d, by omega⟩ (by native_decide)),
       Time.TimeOfDay.mk ⟨$h, by omega⟩ ⟨$mi, by omega⟩
         (Time.TimeOfDay.toSecond $(s.getD (Lean.Quote.quote 0)) 0 (by omega) (by omega))⟩
       : Time.LocalTime))

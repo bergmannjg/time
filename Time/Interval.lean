@@ -122,3 +122,22 @@ instance : Coe (NonemptyIcc 1 m) (Fin m) where
   coe x := Fin.cast (by simp) <| toFin x
 
 end NonemptyIcc
+
+namespace Icc.Nat
+
+theorem val_eq_mem_of_range (m : Icc 1 n) : m.val ∈ List.range' 1 n := by
+  apply List.mem_range'.mpr
+  exact ⟨m.val - 1, by
+    simp_all
+    have := m.property.left
+    have := m.property.right
+    omega⟩
+
+theorem mem_of_range_exists_val (h : m ∈ List.range' 1 n)
+    : ∃ (x : Icc 1 n), m = x.val := by
+  let ⟨x, h⟩  :=  List.mem_range'.mp h
+  exact ⟨⟨x + 1,
+    by simp_all [Nat.le_of_lt_succ]⟩,
+    by simp_all; omega⟩
+
+end Icc.Nat

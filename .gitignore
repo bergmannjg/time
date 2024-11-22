@@ -2,7 +2,6 @@ build/
 .lake/
 lake-packages/
 doc/book
-Playgound/
 
 x.json
 y.json

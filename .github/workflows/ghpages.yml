@@ -40,10 +40,14 @@ jobs:
         with:
           lint-module: Time
           use-mathlib-cache: false
+      - name: build Verify
+        run: |
+          lake build Verify
       - name: Build Doc
         run: |
           lake -R -Kenv=dev update
           lake -R -Kenv=dev build Time:docs
+          lake -R -Kenv=dev build Verify:docs
       - name: Build book
         run: mdbook build doc
       - name: Setup Pages

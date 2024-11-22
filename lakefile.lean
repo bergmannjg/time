@@ -32,3 +32,6 @@ lean_lib Test where
 lean_exe test where
   srcDir := "test"
   root := `Test
+
+lean_lib Verify where
+  globs := #[.andSubmodules `Time.Verify]
