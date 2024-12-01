@@ -62,9 +62,7 @@ theorem next_date_of_day_lt_eq' {dt : Date} {dy : Nat}
         { year := dt.Year,
           dayOfYear := DayOfYear.common ⟨dy + 1, by have := dy'_add_one_hle h; simp_all⟩,
           isValid := (by simp_all) } := by
-  simp [ordinalDateToDate, findMonthDayCommon]
-  simp [Date.ext_iff]
-  simp [findValidMonthDay_year_eq]
+  simp [ordinalDateToDate, Date.ext_iff, findValidMonthDay_year_eq]
   let yd : Icc 1 366 := ⟨dy, by
           rw [← heq]
           simp [Time.le_dy' false dt.Month dt.Day]
@@ -87,9 +85,7 @@ theorem next_date_of_day_lt_eq'' {dt : Date} {dy : Nat}
         { year := dt.Year,
           dayOfYear := DayOfYear.leap ⟨dy + 1, by have := dy'_add_one_hle h; simp_all⟩,
           isValid := (by simp_all) } := by
-  simp [ordinalDateToDate, findMonthDayLeap]
-  simp [Date.ext_iff]
-  simp [findValidMonthDay_year_eq]
+  simp [ordinalDateToDate, Date.ext_iff, findValidMonthDay_year_eq]
   let yd : Icc 1 366 := ⟨dy, by
           rw [← heq]
           simp [Time.le_dy' true dt.Month dt.Day]
@@ -106,10 +102,8 @@ theorem next_date_of_day_lt_eq (dt : Date)
     : {dt with Day := ⟨dt.Day.val + 1, incr_of_day_in_intervall dt ml h⟩,
                IsValid := incr_of_day_is_valid dt ml h}
     = ordinalDateToDate (OrdinalDate.next_date (dateToOrdinalDate dt)) := by
-  let dt' := dateToOrdinalDate dt
-  have heq : dt' = dateToOrdinalDate dt := by simp
-  rw [← heq]
-  have := @next_date_of_day_lt_eq_incr' dt dt' ml (Or.inl h) heq
+  generalize heq : dateToOrdinalDate dt = dt'
+  have := @next_date_of_day_lt_eq_incr' dt dt' ml (Or.inl h) heq.symm
   rw [← this]
   simp only [dateToOrdinalDate', OrdinalDate.DayOfYear.incr]
   split
@@ -140,9 +134,7 @@ theorem next_date_of_last_day_of_month_eq' {dt : Date} {dy : Nat}
             simp [hl] at this
             omega⟩,
           isValid := (by simp_all) } := by
-  simp [ordinalDateToDate, findMonthDayCommon]
-  simp [Date.ext_iff]
-  simp [findValidMonthDay_year_eq]
+  simp [ordinalDateToDate, Date.ext_iff, findValidMonthDay_year_eq]
   let yd : Icc 1 366 := ⟨dy, by
           rw [← heq]
           simp [Time.le_dy' false dt.Month dt.Day]
@@ -167,9 +159,7 @@ theorem next_date_of_last_day_of_month_eq'' {dt : Date} {dy : Nat}
             simp [hl] at this
             omega⟩,
           isValid := (by simp_all) } := by
-  simp [ordinalDateToDate, findMonthDayLeap]
-  simp [Date.ext_iff]
-  simp [findValidMonthDay_year_eq]
+  simp [ordinalDateToDate, Date.ext_iff, findValidMonthDay_year_eq]
   let yd : Icc 1 366 := ⟨dy, by
           rw [← heq]
           simp [Time.le_dy' true dt.Month dt.Day]
@@ -187,10 +177,8 @@ theorem next_date_of_last_day_of_month_eq (dt : Date)
     = ordinalDateToDate (OrdinalDate.next_date (dateToOrdinalDate dt)) := by
   simp [monthLengthsOfDate] at ml
   have h : dt.Day.val = ml.val.snd := by omega
-  let dt' := dateToOrdinalDate dt
-  have heq : dt' = dateToOrdinalDate dt := by simp
-  rw [← heq]
-  have := @next_date_of_day_lt_eq_incr' dt dt' ml (Or.inr hm) heq
+  generalize heq : dateToOrdinalDate dt = dt'
+  have := @next_date_of_day_lt_eq_incr' dt dt' ml (Or.inr hm) heq.symm
   rw [← this]
   simp only [dateToOrdinalDate', OrdinalDate.DayOfYear.incr]
   split
@@ -214,9 +202,7 @@ theorem dy'_of_last_day_of_year (dt : Date)
     have := dt.Month.property.right
     omega
   simp [dy']
-  let a := memOfMonth (isLeapYear dt.Year) dt.Month
-  have heq : a = memOfMonth (isLeapYear dt.Year) dt.Month := by simp
-  rw [← heq]
+  generalize memOfMonth (isLeapYear dt.Year) dt.Month = a
   simp_all
   have heq : a.val.fst = 12 := by omega
   have hv : a.val.snd.fst = if isLeapYear dt.Year = true then 336 else 335 := by
@@ -244,10 +230,8 @@ theorem dy'_of_last_day_of_year (dt : Date)
         simp_all
       simp [this]
   have : dt.Day.val = 31 := by
-    let a := monthLengths_of_date dt
+    generalize monthLengths_of_date dt = a at h1
     simp [monthLengthsOfDate] at a
-    have heq : a = monthLengths_of_date dt := by simp
-    rw [← heq] at h1
     have hp := a.property.left
     simp_arith [monthLengths, Prod.ext_iff] at hp
     have heq : a.val.fst = 12 := by omega
@@ -275,9 +259,9 @@ theorem next_date_of_last_day_of_year_eq (dt : Date)
     simp_all
     simp [OrdinalDate.next_date]
     split
-    · simp [ordinalDateToDate, findMonthDayLeap, findValidMonthDay, monthLastDayAsDayOfYear,
+    · simp [ordinalDateToDate, findValidMonthDay, monthLastDayAsDayOfYear,
             findValidMonthDay_1]
-    · simp [ordinalDateToDate, findMonthDayCommon, findValidMonthDay, monthLastDayAsDayOfYear,
+    · simp [ordinalDateToDate, findValidMonthDay, monthLastDayAsDayOfYear,
             findValidMonthDay_1]
   · rename_i h
     simp [h]
@@ -285,26 +269,21 @@ theorem next_date_of_last_day_of_year_eq (dt : Date)
     simp [h] at this
     simp_all
     simp [OrdinalDate.next_date]
-    split
-    · simp [ordinalDateToDate, findMonthDayLeap, findValidMonthDay, monthLastDayAsDayOfYear,
-            findValidMonthDay_1]
-    · simp [ordinalDateToDate, findMonthDayCommon, findValidMonthDay, monthLastDayAsDayOfYear,
-            findValidMonthDay_1]
+    split <;> simp [ordinalDateToDate, findValidMonthDay, monthLastDayAsDayOfYear,
+                    findValidMonthDay_1]
 
 /-- `Verify.Gregorian.next_date` transforms to `Verify.OrdinalDate.next_date` -/
 theorem next_date_eq_next_date (dt : Date)
     : next_date dt = (dateToOrdinalDate dt |> OrdinalDate.next_date |> ordinalDateToDate) := by
+  let ml := monthLengths_of_date dt
   simp [next_date]
   split
   · rename_i h
-    let ml := monthLengths_of_date dt
     exact next_date_of_day_lt_eq dt ml (by simp) h
   · split
     · rename_i h' h
-      let ml := monthLengths_of_date dt
       exact next_date_of_last_day_of_month_eq dt ml (by simp) h' h
     · rename_i h' h
-      let ml := monthLengths_of_date dt
       exact next_date_of_last_day_of_year_eq dt ml (by simp) h' h
 
 /-- `Verify.Gregorian.next_date` transforms to `Time.Day.addDays` 1. -/

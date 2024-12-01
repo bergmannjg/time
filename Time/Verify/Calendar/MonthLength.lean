@@ -31,9 +31,11 @@ macro_rules
   contradiction
     : ∀ (dt : Date) (isleap : Bool)
         (a : { x // x ∈ monthLastDayAsDayOfYear' isleap ∧ x.fst = dt.Month.val }),
-        (if isleap = true then $p else $p') <
-         a.val.snd.fst →
-          (a.val.snd.fst ≤ if isleap = true then $n else $n') → $m = a.val.fst))
+        (if isleap = true then $p else $p') < a.val.snd.fst →
+        (a.val.snd.fst ≤ if isleap = true then $n else $n') →
+        $m = a.val.fst))
+
+--#check monthLastDayMonthEq% 4 61 60 120 119
 
 declare_syntax_cat monthLastDayMonthEq'
 syntax num ws num ws num ws num ws num : monthLastDayMonthEq'
@@ -88,6 +90,14 @@ syntax "monthIfEq%" monthIfEq : term
 
 /-- proof of `ml.snd = 30` -/
 macro_rules
+| `(monthIfEq% 2) =>
+    `((fun {ml} isLeap h h' => by
+  have : ∀ ml, ml ∈ monthLengths isLeap ∧ ml.1 = 2 → ml.2 = if isLeap then 29 else 28 := by
+    simp [monthLengths]
+  simp [this ml (And.intro (by simp_all) h')]
+    : ∀ {ml : Nat × Nat} (isLeap : Bool), ml ∈ monthLengths isLeap
+        → ml.fst = 2
+        → ml.snd = if isLeap then 29 else 28))
 | `(monthIfEq% $m:num) =>
     `((fun {ml} isLeap h h' => by
   have : ∀ ml, ml ∈ monthLengths isLeap ∧ ml.1 = $m → ml.2 = 30 := by
@@ -185,9 +195,11 @@ theorem monthLastDayAsDayOfYear'_sub_le_31 (isleap : Bool)
 theorem monthLastDayAsDayOfYear'_sub_of_monthLengths (isleap : Bool)
     : ∀ a b, a ∈ monthLastDayAsDayOfYear' isleap →  b ∈ monthLengths isleap
         → a.1 = b.1 → a.2.2 - a.2.1 + 1 = b.2 := by
-  cases isleap <;> simp [monthLastDayAsDayOfYear', monthLengths]
-  · omega
-  · omega
+  cases isleap <;> simp [monthLastDayAsDayOfYear', monthLengths] <;> omega
+
+theorem monthLastDayAsDayOfYear'_snd_fst_lt (isleap : Bool)
+    : ∀ a ∈ (monthLastDayAsDayOfYear' isleap), 0 < a.2.1 := by
+  cases isleap <;> simp_arith
 
 private theorem monthLastDayAsDayOfYear'_month_lt_12_lt_not (isleap : Bool)
     : ∀ a ∈ monthLastDayAsDayOfYear' isleap,
@@ -201,128 +213,18 @@ theorem monthLastDayAsDayOfYear'_month_lt_12_lt (isleap : Bool) (dt : Date)
   have := monthLastDayAsDayOfYear'_month_lt_12_lt_not isleap a a.property.left (by omega)
   contradiction
 
-private theorem monthLastDayAsDayOfYear'_month_1_day_1_not_lt (isleap : Bool)
-    : ∀ a ∈ monthLastDayAsDayOfYear' isleap, ¬a.1 = 1 → ¬a.2.1 ≤ 31 := by
-  cases isleap <;> simp [monthLastDayAsDayOfYear']
-
 theorem monthLastDayAsDayOfYear'_month_1_eq (dt : Date) (isleap : Bool)
   (a : { x // x ∈ monthLastDayAsDayOfYear' isleap ∧ x.fst = dt.Month.val }) (h : a.val.2.1 ≤ 31)
     : 1 = a.val.1 := by
-  by_contra
-  have := monthLastDayAsDayOfYear'_month_1_day_1_not_lt isleap a a.property.left (by omega)
-  contradiction
-
-theorem monthLastDayAsDayOfYear'_month_1_eq_snd_le (dt : Date) (isleap : Bool)
-    (a : { x // x ∈ monthLastDayAsDayOfYear' isleap ∧ x.fst = dt.Month.val })
-  (h1 : 31 ≤ a.val.2.2)
-  (h2 : a.val.2.2 ≤ (if isleap then 59 else 58))
-    : a.val.1 = 1 := by
-  by_contra
-  have : ¬(31 ≤ a.val.snd.snd ∧ a.val.snd.snd ≤ (if isleap then 59 else 58)) := by
-    have : ∀ a ∈ monthLastDayAsDayOfYear' isleap, ¬(1 = a.fst)
-      → ¬(31 ≤ a.2.2 ∧ a.2.2 ≤ (if isleap then 59 else 58)) := by
-      cases isleap <;> simp [monthLastDayAsDayOfYear']
-    exact this a a.property.left (by omega)
-  have : 31 ≤ a.val.2.2 ∧ a.val.snd.snd ≤ (if isleap then 59 else 58) := by
-    cases isleap <;> simp_all
-  contradiction
-
-theorem monthLastDayAsDayOfYear'_month_1_eq_snd (dt : Date) (isleap : Bool)
-    (a : { x // x ∈ monthLastDayAsDayOfYear' isleap ∧ x.fst = dt.Month.val })
-  (h : a.val.1 = 1)
-  (h1 : 31 ≤ a.val.2.2)
-  (h2 : a.val.2.2 ≤ (if isleap then 59 else 58))
-    : a.val.2.2 = 31 := by
-  by_contra
-  have : ¬(a.val.1 = 1 ∧ 31 ≤ a.val.snd.snd ∧ a.val.snd.snd ≤ (if isleap then 59 else 58)) := by
-    have : ∀ a ∈ monthLastDayAsDayOfYear' isleap, ¬(31 = a.snd.snd)
-      → ¬(a.1 = 1 ∧ 31 ≤ a.2.2 ∧ a.2.2 ≤ (if isleap then 59 else 58)) := by
-      cases isleap <;> simp [monthLastDayAsDayOfYear']
-    exact this a a.property.left (by omega)
-  have : a.val.1 = 1 ∧ 31 ≤ a.val.2.2 ∧ a.val.snd.snd ≤ (if isleap then 59 else 58) := by
-    cases isleap <;> simp_all
-  contradiction
-
-private theorem monthLastDayAsDayOfYear'_month_1_day_1_not_eq (isleap : Bool)
-    : ∀ a ∈ monthLastDayAsDayOfYear' isleap, ¬a.2.1 = 1 → ¬a.1 = 1 := by
-  cases isleap <;> simp [monthLastDayAsDayOfYear']
+  exact (monthLastDayMonthEq% 1 0 0 31 31) dt isleap a
+          (by simp [monthLastDayAsDayOfYear'_snd_fst_lt isleap a.val a.property.left])
+          (by simp [h])
 
 theorem monthLastDayAsDayOfYear'_day_of_month_1_eq (dt : Date) (isleap : Bool)
   (a : { x // x ∈ monthLastDayAsDayOfYear' isleap ∧ x.fst = dt.Month.val }) (h : a.val.1 = 1)
     : 1 = a.val.2.1 := by
-  by_contra
-  have := monthLastDayAsDayOfYear'_month_1_day_1_not_eq isleap a a.property.left (by omega)
-  contradiction
-
-theorem monthLastDayAsDayOfYear'_month_2_eq (dt : Date) (isleap : Bool)
-    (a : { x // x ∈ monthLastDayAsDayOfYear' isleap ∧ x.fst = dt.Month.val })
-  (h1 : 1 < a.val.2.1 ) (h2 : a.val.2.1 ≤ 59)
-    : 2 = a.val.1 := by
-  by_contra
-  have : ¬(1 < a.val.snd.fst ∧ a.val.snd.fst < 60) := by
-    have : ∀ a ∈ monthLastDayAsDayOfYear' isleap, ¬2 = a.1 → ¬(1 < a.2.1 ∧ a.2.1 < 60) := by
-      cases isleap <;> simp [monthLastDayAsDayOfYear']
-    exact this a a.property.left (by omega)
-  have : 1 < a.val.2.1 ∧ a.val.2.1 < 60 := by omega
-  contradiction
-
-theorem monthLastDayAsDayOfYear'_day_of_month_2_eq (dt : Date) (isleap : Bool)
-  (a : { x // x ∈ monthLastDayAsDayOfYear' isleap ∧ x.fst = dt.Month.val }) (h : a.val.1 = 2)
-    : (if isleap then 32 else 32) = a.val.2.1 := by
-  by_contra
-  have : ¬a.val.1 = 2 := by
-    have : ∀ a ∈ monthLastDayAsDayOfYear' isleap, ¬(if isleap then 32 else 32) = a.2.1 → ¬a.1 = 2 := by
-      cases isleap <;> simp [monthLastDayAsDayOfYear']
-    exact this a a.property.left (by omega)
-  contradiction
-
-theorem month_2_if_eq (isLeap : Bool) (h: ml ∈ monthLengths isLeap)
-    : ml.1 = 2 → ml.2 = if isLeap then 29 else 28 := by
-  intro
-  rename_i h
-  have : ∀ ml, ml ∈ monthLengths isLeap ∧ ml.1 = 2 → ml.2 = if isLeap then 29 else 28 := by
-    simp [monthLengths]
-  simp [this ml (And.intro (by simp_all) h)]
-
-theorem monthLastDayAsDayOfYear'_month_3_eq' (dt : Date) (isleap : Bool)
-    (a : { x // x ∈ monthLastDayAsDayOfYear' isleap ∧ x.fst = dt.Month.val })
-  (h1 : (if isleap then 30 else 29) < a.val.2.1)
-  (h2 : a.val.2.1 ≤ (if isleap then 91 else 90))
-    : 2 = a.val.1 ∨ 3 = a.val.1 := by
-  by_contra
-  have : ¬((if isleap then 30 else 29) < a.val.snd.fst ∧ a.val.snd.fst ≤ (if isleap then 91 else 90)) := by
-    have : ∀ a ∈ monthLastDayAsDayOfYear' isleap, ¬(2 = a.fst ∨ 3 = a.fst)
-      → ¬((if isleap then 30 else 29) < a.2.1 ∧ a.2.1 ≤ (if isleap then 91 else 90)) := by
-      cases isleap <;> simp [monthLastDayAsDayOfYear']
-    exact this a a.property.left (by omega)
-  have : (if isleap then 30 else 29) < a.val.2.1 ∧ a.val.snd.fst ≤ (if isleap then 91 else 90) := by
-    cases isleap <;> simp_all
-  contradiction
-
-theorem monthLastDayAsDayOfYear'_month_3_eq (dt : Date) (isleap : Bool)
-    (a : { x // x ∈ monthLastDayAsDayOfYear' isleap ∧ x.fst = dt.Month.val })
-  (h1 : (if isleap then 32 else 32) < a.val.2.1)
-  (h2 : a.val.2.1 ≤ (if isleap then 91 else 90))
-    : 3 = a.val.1 := by
-  by_contra
-  have : ¬((if isleap then 32 else 32) < a.val.snd.fst ∧ a.val.snd.fst ≤ (if isleap then 91 else 90)) := by
-    have : ∀ a ∈ monthLastDayAsDayOfYear' isleap, ¬(3 = a.fst)
-      → ¬((if isleap then 32 else 32) < a.2.1 ∧ a.2.1 ≤ (if isleap then 91 else 90)) := by
-      cases isleap <;> simp [monthLastDayAsDayOfYear']
-    exact this a a.property.left (by omega)
-  have : (if isleap then 32 else 32) < a.val.2.1 ∧ a.val.snd.fst ≤ (if isleap then 91 else 90) := by
-    cases isleap <;> simp_all
-  contradiction
-
-theorem monthLastDayAsDayOfYear'_day_of_month_3_eq (dt : Date) (isleap : Bool)
-  (a : { x // x ∈ monthLastDayAsDayOfYear' isleap ∧ x.fst = dt.Month.val }) (h : a.val.1 = 3)
-    : (if isleap then 61 else 60) = a.val.2.1 := by
-  by_contra
-  have : ¬a.val.1 = 3 := by
-    have : ∀ a ∈ monthLastDayAsDayOfYear' isleap, ¬(if isleap then 61 else 60) = a.2.1 → ¬a.1 = 3 := by
-      cases isleap <;> simp [monthLastDayAsDayOfYear']
-    exact this a a.property.left (by omega)
-  contradiction
+  have := ( monthLastDayMonthDayEq% 1 1 1) dt isleap a h
+  simp_all
 
 theorem monthLastDayAsDayOfYear'_month_12_eq (dt : Date) (isleap : Bool)
     (a : { x // x ∈ monthLastDayAsDayOfYear' isleap ∧ x.fst = dt.Month.val })

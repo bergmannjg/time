@@ -346,26 +346,22 @@ def findValidMonthDay (year : Int) (isLeap : Bool) (yd : Time.Icc 1 366)
   then findValidMonthDay_6 year isLeap yd hl h5 h6
   else findValidMonthDay_tail year isLeap yd hl hle h6
 
-def findMonthDayCommon (year : Int) (yd : Time.Icc 1 365) (h : (isLeapYear year) = false)
-    : Date :=
-  findValidMonthDay year false yd h (by split <;> simp_all [yd.property.right])
+theorem isLeapYear_false {dt : OrdinalDate} (h : dt.dayOfYear = DayOfYear.common yd)
+    : isLeapYear dt.year = false := by
+  have h := dt.isValid
+  split at h <;> simp_all
 
-def findMonthDayLeap (year : Int) (yd : Time.Icc 1 366) (h : (isLeapYear year) = true)
-    : Date :=
-  findValidMonthDay year true yd h (by split <;> simp_all [yd.property.right])
+theorem isLeapYear_true {dt : OrdinalDate} (h : dt.dayOfYear = DayOfYear.leap yd)
+    : isLeapYear dt.year = true := by
+  have h := dt.isValid
+  split at h <;> simp_all
 
 def ordinalDateToDate (dt : OrdinalDate) : Date :=
   match h : dt.dayOfYear with
-  | .common yd => findMonthDayCommon dt.year yd (by
-      have hx : match dt.dayOfYear with
-            | .common _ => isLeapYear dt.year = false
-            | .leap _ => isLeapYear dt.year = true := dt.isValid
-      split at hx <;> simp_all)
-  | .leap yd => findMonthDayLeap dt.year yd (by
-      have hx : match dt.dayOfYear with
-            | .common _ => isLeapYear dt.year = false
-            | .leap _ => isLeapYear dt.year = true := dt.isValid
-      split at hx <;> simp_all)
+  | .common yd => findValidMonthDay dt.year false yd (isLeapYear_false h)
+                    (by split <;> simp_all [yd.property.right])
+  | .leap yd => findValidMonthDay dt.year true yd (isLeapYear_true h)
+                    (by split <;> simp_all [yd.property.right])
 
 theorem monthLengths_month_le_12 (isleap : Bool)
   : ∀ a ∈ (monthLengths isleap), 1 ≤ a.1 ∧ a.1 ≤ 12 := by

@@ -165,6 +165,8 @@ macro_rules
 
 --#check validMonthDayMonthEq'% findValidMonthDay_5 5 122 121 92 91 152 151
 
+--#check validMonthDayMonthEq'% findValidMonthDay_3 3 61 60 32 32 91 90
+
 declare_syntax_cat ValidMonthDayMonthEqIncr'
 syntax num ws num ws num ws num ws num : ValidMonthDayMonthEqIncr'
 syntax "ValidMonthDayMonthEqIncr'%" ValidMonthDayMonthEqIncr' : term
@@ -182,9 +184,7 @@ macro_rules
 | `(ValidMonthDayMonthEqIncr'% $m:num $v:num $v':num $p:num $p':num) =>
     `((fun {dt} isLeap yd {ml} hml h heq hl h1 h2  => by
   simp [dy'] at heq
-  let a := memOfMonth isLeap dt.Month
-  have : a = memOfMonth isLeap dt.Month := by simp
-  rw [← this] at heq
+  generalize memOfMonth isLeap dt.Month = a at heq
   have := yd_eq_monthLastDayAsDayOfYear'_val isLeap yd hml h ml.property heq hl
   rw  [← this] at h1
   rw  [← this] at h2
@@ -475,72 +475,6 @@ theorem findValidMonthDay_1_month_eq {dt : Date} (isLeap : Bool) (yd : Time.Icc 
       exact hyd)
     simp_all
 
-theorem findValidMonthDay_2_month_eq {dt : Date} (isLeap : Bool) (yd : Time.Icc 1 366)
-  {ml : { m // monthLengthsOfDate m dt }}
-  (hml : ml = monthLengths_of_date dt) (h : dt.Day.val < ml.val.snd)
-  (heq : Time.dy' isLeap dt.Month dt.Day = yd.val) (hle : yd.val + 1 ≤ if isLeap then 366 else 365)
-  (hl : isLeapYear dt.Year = isLeap)
-  (hne : ¬yd.val + 1 ≤ (monthLastDayAsDayOfYear isLeap)[0].snd)
-  (hyd : yd.val+1 ≤ ((monthLastDayAsDayOfYear isLeap).get ⟨1, by simp⟩).2)
-    : (findValidMonthDay_2 dt.Year isLeap ⟨yd + 1, incr_of_yd_in yd isLeap hle⟩ hl hne hyd).Month
-        = dt.Month
-      ∧ ⟨dt.Day.val + 1, incr_of_day_in_intervall dt ml h⟩
-        = (findValidMonthDay_2 dt.Year isLeap ⟨yd.val + 1, incr_of_yd_in yd isLeap hle⟩ hl hne hyd).Day
-           := by
-  simp [findValidMonthDay_2]
-  simp [Icc, Subtype.ext_iff]
-  simp [monthLastDayAsDayOfYear] at hyd
-  have := incr_of_day_in_intervall dt ml h
-  split at hyd <;> simp_all
-  · simp [monthLastDayAsDayOfYear] at hne
-    rw [← heq] at hne
-    rw [← heq] at hyd
-    simp [dy'_month_2_eq dt true (by omega) hne hyd]
-    simp [monthLastDayAsDayOfYear]
-    have := dy'_month_2_day_eq dt true (by omega) hne hyd
-    simp_all
-  · simp [monthLastDayAsDayOfYear] at hne
-    rw [← heq] at hne
-    rw [← heq] at hyd
-    simp [dy'_month_2_eq dt false (by omega) hne hyd]
-    simp [monthLastDayAsDayOfYear]
-    have := dy'_month_2_day_eq dt false (by omega) hne hyd
-    simp_all
-
-theorem findValidMonthDay_3_month_eq {dt : Date} (isLeap : Bool) (yd : Time.Icc 1 366)
-  {ml : { m // monthLengthsOfDate m dt }}
-  (hml : ml = monthLengths_of_date dt) (h : dt.Day.val < ml.val.snd)
-  (heq : Time.dy' isLeap dt.Month dt.Day = yd.val) (hle : yd.val + 1 ≤ if isLeap then 366 else 365)
-  (hl : isLeapYear dt.Year = isLeap)
-  (hne : ¬yd.val + 1 ≤ (monthLastDayAsDayOfYear isLeap)[1].snd)
-  (hyd : yd.val+1 ≤ ((monthLastDayAsDayOfYear isLeap).get ⟨2, by simp⟩).2)
-    : (findValidMonthDay_3 dt.Year isLeap ⟨yd + 1, incr_of_yd_in yd isLeap hle⟩ hl hne hyd).Month
-        = dt.Month
-      ∧ ⟨dt.Day.val + 1, incr_of_day_in_intervall dt ml h⟩
-        = (findValidMonthDay_3 dt.Year isLeap ⟨yd.val + 1, incr_of_yd_in yd isLeap hle⟩ hl hne hyd).Day
-           := by
-  simp [findValidMonthDay_3]
-  simp [Icc, Subtype.ext_iff]
-  simp [monthLastDayAsDayOfYear] at hyd
-  have := incr_of_day_in_intervall dt ml h
-  split at hyd <;> simp_all
-  · simp [monthLastDayAsDayOfYear] at hne
-    rw [← heq] at hne
-    rw [← heq] at hyd
-    have := (month_2_if_lt true hml (by simp_all) hl)
-    simp [dy'_month_3_eq dt true (by omega) this hne hyd]
-    simp [monthLastDayAsDayOfYear]
-    have := dy'_month_3_day_eq dt true (by omega) this hne hyd
-    simp_all
-  · simp [monthLastDayAsDayOfYear] at hne
-    rw [← heq] at hne
-    rw [← heq] at hyd
-    have := (month_2_if_lt false hml (by simp_all) hl)
-    simp [dy'_month_3_eq dt false (by omega) this hne hyd]
-    simp [monthLastDayAsDayOfYear]
-    have := dy'_month_3_day_eq dt false (by omega) this hne hyd
-    simp_all
-
 theorem findValidMonthDay_12_month_eq {dt : Date} (isLeap : Bool) (yd : Time.Icc 1 366)
   {ml : { m // monthLengthsOfDate m dt }}
   (hml : ml = monthLengths_of_date dt) (h : dt.Day.val < ml.val.snd)
@@ -589,10 +523,10 @@ theorem findValidMonthDay_month_eq {dt : Date} (isLeap : Bool) (yd : Time.Icc 1 
     exact findValidMonthDay_1_month_eq isLeap yd hml h heq hle hyd
   · split
     . rename_i hne hyd
-      exact findValidMonthDay_2_month_eq isLeap yd hml h heq hle hl hne hyd
+      exact (validMonthDayMonthEq% findValidMonthDay_2 2 32 32 1 1 60 59) isLeap yd hml h heq hle hl hne hyd
     · split
       · rename_i hne' hne hyd
-        exact findValidMonthDay_3_month_eq isLeap yd hml h heq hle hl hne hyd
+        exact (validMonthDayMonthEq'% findValidMonthDay_3 3 61 60 32 32 91 90) isLeap yd hml h heq hle hl hne hyd
       · split
         · rename_i hne hyd
           exact ((validMonthDayMonthEq% findValidMonthDay_4 4 92 91 61 60 121 120)) isLeap yd hml h heq hle hl hne hyd
@@ -664,9 +598,7 @@ theorem findValidMonthDay_12_month_eq_incr' {dt : Date} (isLeap : Bool) (yd : Ti
   (h2 : yd.val ≤ if isLeap = true then 365 else 364)
     : dt.Month.val = 11 ∧ yd.val = (if isLeap then 335 else 334) := by
   simp [dy'] at heq
-  let a := memOfMonth isLeap dt.Month
-  have : a = memOfMonth isLeap dt.Month := by simp
-  rw [← this] at heq
+  generalize memOfMonth isLeap dt.Month = a at heq
   have := yd_eq_monthLastDayAsDayOfYear'_val isLeap yd hml h ml.property heq hl
   rw  [← this] at h1
   rw  [← this] at h2
