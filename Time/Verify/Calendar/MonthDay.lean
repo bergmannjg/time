@@ -344,7 +344,7 @@ def dateToOrdinalDate' (dt : Date) : OrdinalDate :=
 theorem dateToOrdinalDate'_dateToOrdinalDate_eq {dt : Date}
     : dateToOrdinalDate' dt = dateToOrdinalDate dt := by
   simp [dateToOrdinalDate', dateToOrdinalDate]
-  split <;> simp
+  split <;> simp [Icc, Subtype.ext_iff] <;> rw [dy_eq_dy']
 
 theorem next_date_of_day_lt_top (dt : Date)
   {ml : { m // monthLengthsOfDate m dt }}
@@ -400,7 +400,8 @@ theorem next_date_of_day_lt_eq_incr' {dt : Date} {dt' : OrdinalDate}
           rw [heq'] at this
           simp_all
           simp [Icc, Subtype.ext] at this
-          exact this.symm
+          rw [dy_eq_dy'] at this
+          simp_all
         · contradiction
   · split <;> try simp_all
     · rename_i h yd _ heq
@@ -419,6 +420,7 @@ theorem next_date_of_day_lt_eq_incr' {dt : Date} {dt' : OrdinalDate}
           simp [heq'''] at heq''
           simp [dateToOrdinalDate, h] at heq''
           simp [Icc, Subtype.ext] at heq''
+          rw [dy_eq_dy'] at heq''
           simp [heq'']
         · rename_i h' heq'' _ _ yd _ heq' _
           simp [heq''] at heq'
@@ -435,6 +437,7 @@ theorem next_date_of_day_lt_eq_incr' {dt : Date} {dt' : OrdinalDate}
               have := @dy'_lt_of_month_lt dt h'
               simp [h] at this
               exact this
+          rw [dy_eq_dy'] at heq'
           rw [heq'] at this
           contradiction
       · rename_i heq'' _ _ _ _ heq'

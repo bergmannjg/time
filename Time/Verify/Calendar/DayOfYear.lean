@@ -3,10 +3,11 @@ import Time.Data.List.Basic
 import Time.Verify.Calendar.MonthLength
 
 /-!
-## Theorems about `Time.dy'` properties
+## Theorems about `Time.dy` properties
 
 Main theorems:
 
+* `Verify.DayOfYear.dy_eq_dy'`
 * `Verify.DayOfYear.Notation.«termDy'MonthEq%_»`
 * `Verify.DayOfYear.Notation.«termDy'MonthDayEq%_»`
 
@@ -276,12 +277,31 @@ theorem dy_map_size_eq (isleap : Bool)
   cases isleap <;> simp_arith
 -/
 
+/-- Get first day of month as day of year by lookup in `monthLastDayAsDayOfYear`
+    is equal to compute by `Time.dy` -/
+theorem monthFirstDayAsDayOfYear_eq_dy (isleap : Bool)
+    : ∀ a ∈ monthLastDayAsDayOfYear' isleap, a.2.1 = Time.dy isleap a.1 1 := by
+  cases isleap <;> simp_arith
+
 /-- Get last day of month as day of year by lookup in `monthLastDayAsDayOfYear`
     is equal to compute by `Time.dy` -/
 theorem monthLastDayAsDayOfYear_eq_dy (isleap : Bool)
-    : (monthLastDayAsDayOfYear isleap |> List.map (fun x => x.2))
-    = dyOfLastDayOfMonth_map isleap := by
+    : ∀ a ∈ monthLastDayAsDayOfYear' isleap, a.2.2 = Time.dyOfLastDayOfMonth isleap a.1 := by
   cases isleap <;> simp_arith
+
+theorem dy_eq_incr (isleap : Bool) (m : Icc 1 12) (d : Icc 1 31)
+    : Time.dy isleap m.val d.val = (Time.dy isleap m.val 1) + d.val - 1 := by
+  unfold Time.dy
+  simp_arith
+  have := d.property.left
+  have := m.property.left
+  omega
+
+theorem dy_eq_dy' (isleap : Bool) (m : Icc 1 12) (d : Icc 1 31)
+    : Time.dy isleap m.val d.val = Time.dy' isleap m d := by
+  unfold Time.dy'
+  generalize memOfMonth isleap m = a
+  simp [monthFirstDayAsDayOfYear_eq_dy isleap a a.property.left, dy_eq_incr, a.property.right]
 
 theorem lt_dy'_lt (isleap : Bool) (month : Icc 1 12) (day1 day2 : Icc 1 31)
   (hlt : day1.val < day2.val)
@@ -355,6 +375,7 @@ theorem dy_lt_of_month_lt {dt : Date} (h : dt.Month.val < 12)
     rename_i hl
     simp [Icc, Subtype.ext_iff] at heq'
     have := @dy'_lt_of_month_lt dt h
+    rw [← dy_eq_dy'] at this
     simp [hl] at this
     omega
   · rename_i dy heq'
@@ -362,6 +383,7 @@ theorem dy_lt_of_month_lt {dt : Date} (h : dt.Month.val < 12)
     simp [Icc, Subtype.ext_iff] at heq'
     rename_i hl
     have := @dy'_lt_of_month_lt dt h
+    rw [← dy_eq_dy'] at this
     simp [hl] at this
     omega
 
@@ -384,6 +406,7 @@ theorem dy_lt_of_day_lt {dt : Date}
     simp [hl] at hlt
     have hle := dy'_hle ml
     simp [hl] at hle
+    rw [dy_eq_dy'] at heq'
     rw [heq'] at hlt
     exact Nat.lt_of_lt_of_le hlt hle
   · rename_i dy heq'
@@ -397,6 +420,7 @@ theorem dy_lt_of_day_lt {dt : Date}
     simp [hl] at hlt
     have hle := dy'_hle ml
     simp [hl] at hle
+    rw [dy_eq_dy'] at heq'
     rw [heq'] at hlt
     exact Nat.lt_of_lt_of_le hlt hle
 

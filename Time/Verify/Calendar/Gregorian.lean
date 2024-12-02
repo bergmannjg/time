@@ -255,6 +255,7 @@ theorem next_date_of_last_day_of_year_eq (dt : Date)
   · rename_i h
     simp [h]
     have := dy'_of_last_day_of_year dt ml hml h1 h2
+    rw [← dy_eq_dy'] at this
     simp [h] at this
     simp_all
     simp [OrdinalDate.next_date]
@@ -266,6 +267,7 @@ theorem next_date_of_last_day_of_year_eq (dt : Date)
   · rename_i h
     simp [h]
     have := dy'_of_last_day_of_year dt ml hml h1 h2
+    rw [← dy_eq_dy'] at this
     simp [h] at this
     simp_all
     simp [OrdinalDate.next_date]

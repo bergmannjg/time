@@ -8,11 +8,45 @@ namespace Time
 
 open Clip
 
+/-- Month and days of month. -/
 def monthLengths (isleap : Bool) :=
   [ (1, 31), (2, if isleap then 29 else 28), (3, 31), (4, 30), (5, 31),
     (6, 30), (7, 31), (8, 31), (9, 30), (10, 31), (11, 30), (12, 31)]
 
-/-- Last day of month as day of year, sse `monthLengths_sum_le_map_pair`. -/
+/--  Date in proleptic Gregorian calendar. -/
+@[ext] structure Date where
+  Year : Int
+  Month : Time.Icc 1 12
+  Day : Time.Icc 1 31
+  IsValid : ∃ m ∈ monthLengths (isLeapYear Year), m.1 = Month.val ∧ Day.val ≤ m.2
+  deriving Repr
+
+namespace Notation
+
+/-- Date syntactic category -/
+declare_syntax_cat date
+/-- Date from numeric literals year, month and day -/
+syntax num noWs "-" noWs num noWs "-" noWs num : date
+syntax "date%" date : term
+
+/--
+  `date% year-month-day` is notation for
+  `Time.Date.mk year ⟨month, by omega⟩ ⟨day, by omega⟩ (by native_decide)`
+  for the numeric literals year, month and day.
+-/
+macro_rules
+| `(date% $y:num-$m:num-$d:num) =>
+    `(Time.Date.mk $y ⟨$m, by omega⟩ ⟨$d, by omega⟩ (by native_decide))
+
+end Notation
+
+instance : BEq Date where
+  beq a b := decide (Eq a.Year b.Year) && decide (Eq a.Month.val b.Month.val) && decide (Eq a.Day.val b.Day.val)
+
+instance : Inhabited Date where
+  default := date% 1-1-1
+
+/-- Last day of month as day of year, see `monthLengths_sum_le_map_pair`. -/
 def monthLastDayAsDayOfYear (isleap : Bool) :=
   if isleap then [(1, 31), (2, 60), (3, 91), (4, 121), (5, 152), (6, 182),
                   (7, 213), (8, 244), (9, 274), (10, 305), (11, 335), (12, 366)]
@@ -124,39 +158,6 @@ theorem monthLengths_sum_le_eq_monthLastDayAsDayOfYear (isleap : Bool)
 
 def monthLengths' (isleap : Bool) :=
   (monthLengths isleap).lookup
-
-/--  Date in proleptic Gregorian calendar. -/
-@[ext] structure Date where
-  Year : Int
-  Month : Time.Icc 1 12
-  Day : Time.Icc 1 31
-  IsValid : ∃ m ∈ monthLengths (isLeapYear Year), m.1 = Month.val ∧ Day.val ≤ m.2
-  deriving Repr
-
-namespace Notation
-
-/-- Date syntactic category -/
-declare_syntax_cat date
-/-- Date from numeric literals year, month and day -/
-syntax num noWs "-" noWs num noWs "-" noWs num : date
-syntax "date%" date : term
-
-/--
-  `date% year-month-day` is notation for
-  `Time.Date.mk year ⟨month, by omega⟩ ⟨day, by omega⟩ (by native_decide)`
-  for the numeric literals year, month and day.
--/
-macro_rules
-| `(date% $y:num-$m:num-$d:num) =>
-    `(Time.Date.mk $y ⟨$m, by omega⟩ ⟨$d, by omega⟩ (by native_decide))
-
-end Notation
-
-instance : BEq Date where
-  beq a b := decide (Eq a.Year b.Year) && decide (Eq a.Month.val b.Month.val) && decide (Eq a.Day.val b.Day.val)
-
-instance : Inhabited Date where
-  default := date% 1-1-1
 
 def monthLengths_sum (isleap : Bool) : Nat :=
   (monthLengths isleap).foldl (fun acc m => acc + m.2) 0
@@ -461,8 +462,10 @@ def dy (isleap : Bool) (month day : Nat) :=
 def dyOfLastDayOfMonth (isleap : Bool) (month : Nat) :=
   dy isleap (month + 1) 0
 
-theorem le_dy (isleap : Bool) {month day : Nat} (hm : 1 ≤ month)  (hd : 1 ≤ day)
+theorem le_dy (isleap : Bool) (month : Icc 1 12) (day : Icc 1 31)
     : 1 ≤ (dy isleap month day) := by
+  have := month.property
+  have := day.property
   simp [dy]
   split <;> try simp_all
   · have hle : (1:Int) ≤ ((367 * month - 362) / 12 + day : Int) := by omega
@@ -476,8 +479,10 @@ theorem le_dy (isleap : Bool) {month day : Nat} (hm : 1 ≤ month)  (hd : 1 ≤ 
       have := Int.toNat_le_toNat hle
       exact this
 
-theorem dy_le (isleap : Bool) {month day : Nat} (hm1 : 1 ≤ month) (hm2 : month ≤ 12)
-  (hd1 : 1 ≤ day) (hd2 : day ≤ 31) : (dy isleap month day) ≤ if isleap then 366 else 365 := by
+theorem dy_le (isleap : Bool) (month : Icc 1 12) (day : Icc 1 31)
+    : (dy isleap month day) ≤ if isleap then 366 else 365 := by
+  have := month.property
+  have := day.property
   simp [dy]
   split <;> try simp_all
   · have hle' : 70 ≤ if isleap then 366 else 365 := by split <;> omega
@@ -501,14 +506,14 @@ def monthAndDayToDayOfYearClipped' (year : Int) (month day : Nat)
   let day : Icc 1 31 := ⟨day, And.intro hd1 hd2⟩
   if h : isLeapYear year
   then
-    let dayOfYear : DayOfYear := .leap ⟨(dy' true month day), And.intro
-          (le_dy' true month day)
-          (by exact dy'_le true month day)⟩
+    let dayOfYear : DayOfYear := .leap ⟨(dy true month day), And.intro
+          (le_dy true month day)
+          (by exact dy_le true month day)⟩
     ⟨year, dayOfYear, by simp [dy, h]⟩
   else
-    let dy : DayOfYear := .common ⟨(dy' false month day), And.intro
-          (le_dy' false month day)
-          (by exact dy'_le false month day)⟩
+    let dy : DayOfYear := .common ⟨(dy false month day), And.intro
+          (le_dy false month day)
+          (by exact dy_le false month day)⟩
     ⟨year, dy, by simp [dy, h]⟩
 
 def monthAndDayToDayOfYearClipped (year : Int) (month' : NonemptyIcc 1 12)
@@ -546,12 +551,12 @@ def monthAndDayToDayOfYearValid (year : Int) (month : Int) (day : Int)
 def dateToOrdinalDate (dt : Date) : OrdinalDate :=
   if h : isLeapYear dt.Year
   then
-    let dayOfYear : DayOfYear := .leap ⟨(dy' true dt.Month dt.Day), And.intro
-          (le_dy' true dt.Month dt.Day)
-          (by exact dy'_le true dt.Month dt.Day)⟩
+    let dayOfYear : DayOfYear := .leap ⟨(dy true dt.Month dt.Day), And.intro
+          (le_dy true dt.Month dt.Day)
+          (by exact dy_le true dt.Month dt.Day)⟩
     ⟨dt.Year, dayOfYear, by simp [dy, h]⟩
   else
-    let dy : DayOfYear := .common ⟨(dy' false dt.Month dt.Day), And.intro
-          (le_dy' false dt.Month dt.Day)
-          (by exact dy'_le false dt.Month dt.Day)⟩
+    let dy : DayOfYear := .common ⟨(dy false dt.Month dt.Day), And.intro
+          (le_dy false dt.Month dt.Day)
+          (by exact dy_le false dt.Month dt.Day)⟩
     ⟨dt.Year, dy, by simp [dy, h]⟩
