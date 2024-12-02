@@ -466,8 +466,7 @@ theorem findValidMonthDay_year_eq (year : Int) (isLeap : Bool) (yd : Time.Icc 1 
   simp [findValidMonthDay_12]
 
 theorem findValidMonthDay_1_month_eq {dt : Date} (isLeap : Bool) (yd : Time.Icc 1 366)
-  {ml : { m // monthLengthsOfDate m dt }}
-  (hml : ml = monthLengths_of_date dt) (h : dt.Day.val < ml.val.snd)
+  {ml : { m // monthLengthsOfDate m dt }} (h : dt.Day.val < ml.val.snd)
   (heq : Time.dy' isLeap dt.Month dt.Day = yd.val) (hle : yd.val + 1 ≤ if isLeap then 366 else 365)
   (hyd : yd.val+1 ≤ ((monthLastDayAsDayOfYear isLeap).get ⟨0, by simp⟩).2)
     : (findValidMonthDay_1 year isLeap ⟨yd + 1, incr_of_yd_in yd isLeap hle⟩ hyd).Month
@@ -541,7 +540,7 @@ theorem findValidMonthDay_month_eq {dt : Date} (isLeap : Bool) (yd : Time.Icc 1 
   unfold findValidMonthDay
   split
   · rename_i hyd
-    exact findValidMonthDay_1_month_eq isLeap yd hml h heq hle hyd
+    exact findValidMonthDay_1_month_eq isLeap yd h heq hle hyd
   · split
     . rename_i hne hyd
       exact (validMonthDayMonthEq% findValidMonthDay_2 2 32 32 1 1 60 59) isLeap yd hml h heq hle hl hne hyd
@@ -670,8 +669,6 @@ theorem findValidMonthDay_12_month_eq_incr {dt : Date} (isLeap : Bool) (yd : Tim
                 (by simp_all; omega) hle]
 
 theorem yd_add_one_lt {dt : Date} (isLeap : Bool) (yd : Time.Icc 1 366)
-  {ml : { m // monthLengthsOfDate m dt }}
-  (hml : ml = monthLengths_of_date dt)
   (hm : dt.Month.val < 12)
   (heq : Time.dy' isLeap dt.Month dt.Day = yd.val)
   (hl : isLeapYear dt.Year = isLeap) (hle : yd.val+1 ≤ if isLeap then 366 else 365)
@@ -695,10 +692,10 @@ theorem findValidMonthDay_month_eq_incr {dt : Date} (isLeap : Bool) (yd : Time.I
   (hm : dt.Month.val < 12)
   (heq : Time.dy' isLeap dt.Month dt.Day = yd.val)
   (hl : isLeapYear dt.Year = isLeap) (hle : yd.val+1 ≤ if isLeap then 366 else 365)
-    : (findValidMonthDay dt.Year isLeap ⟨yd+1, yd_add_one_lt isLeap yd hml hm heq hl hle⟩
+    : (findValidMonthDay dt.Year isLeap ⟨yd+1, yd_add_one_lt isLeap yd hm heq hl hle⟩
         hl hle).Month
     = ⟨dt.Month.val + 1, by omega⟩
-    ∧ (findValidMonthDay dt.Year isLeap ⟨yd+1, yd_add_one_lt isLeap yd hml hm heq hl
+    ∧ (findValidMonthDay dt.Year isLeap ⟨yd+1, yd_add_one_lt isLeap yd hm heq hl
           hle⟩ hl hle).Day
     = ⟨1, by simp⟩ := by
   unfold findValidMonthDay

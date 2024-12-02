@@ -244,7 +244,7 @@ def dyOfLastDayOfMonth_map (isleap : Bool) : List Nat :=
 def dy_map (isleap : Bool) : List Nat :=
   monthLengths isleap
   |> List.map (fun (m, ml) => List.range' 1 ml |> List.map (fun d => Time.dy isleap m d))
-  |> List.join
+  |> List.flatten
 
 def dy'_map (isleap : Bool) : List Nat :=
   monthLengths isleap
@@ -259,7 +259,7 @@ def dy'_map (isleap : Bool) : List Nat :=
                 have := List.mem_range'_1.mp d.property
                 omega⟩
             Time.dy' isleap month day))
-  |> List.join
+  |> List.flatten
 
 /-
 set_option maxRecDepth 1200 in
