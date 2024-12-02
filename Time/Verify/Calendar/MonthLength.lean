@@ -162,10 +162,12 @@ macro_rules
 
 end Notation
 
+/-- Relation of Date to `Time.monthLengths` list. -/
 @[simp] def monthLengthsOfDate (m : Nat × Nat) (dt : Date) :=
   m ∈ (monthLengths (isLeapYear dt.Year))
   ∧ m.fst = dt.Month.val ∧ dt.Day.val ≤ m.snd
 
+/-- Build relation of Date to `Time.monthLengths`. -/
 def monthLengths_of_date (dt : Date) : {m // monthLengthsOfDate m dt} :=
   let a := List.findExisting
      (fun m => m.fst = dt.Month.val ∧ dt.Day.val ≤ m.snd)

@@ -4,6 +4,16 @@ import Time.Verify.Calendar.OrdinalDate
 import Time.Verify.Calendar.MonthLength
 import Time.Verify.Calendar.DayOfYear
 
+/-!
+## Theorems about `Time.findValidMonthDay` properties
+
+Main theorems:
+
+* `Verify.MonthDay.findValidMonthDay_month_eq`
+* `Verify.MonthDay.findValidMonthDay_month_eq_incr`
+
+-/
+
 namespace Verify
 namespace MonthDay
 
@@ -26,6 +36,8 @@ theorem incr_of_day_in_intervall (dt : Date) (ml : { m // monthLengthsOfDate m d
     simp [monthLengths_days_in (isLeapYear dt.Year) ml.val ml.property.left]
   omega
 
+/-- Day of year `yd` equals `(Time.monthLastDayAsDayOfYear' isLeap).val.snd.snd`
+if `dt.Day.val = ml.val.snd` (if dt.Day is last day of month). -/
 theorem yd_eq_monthLastDayAsDayOfYear'_val {dt : Date} (isLeap : Bool) (yd : Time.Icc 1 366)
   {a : { x // x ∈ monthLastDayAsDayOfYear' isLeap ∧ x.fst = dt.Month.val } }
   {ml : { m // monthLengthsOfDate m dt }}
@@ -508,6 +520,12 @@ theorem findValidMonthDay_12_month_eq {dt : Date} (isLeap : Bool) (yd : Time.Icc
     simp_all
 
 set_option maxHeartbeats 2000000 in
+/-- For a day of year `yd`, if `dt.Day` is not last day of month, then
+
+* (Time.findValidMonthDay dt.Year (yd + 1)).Month = dt.Month
+* (Time.findValidMonthDay dt.Year (yd + 1)).Day = dt.Day + 1
+
+-/
 theorem findValidMonthDay_month_eq {dt : Date} (isLeap : Bool) (yd : Time.Icc 1 366)
   {ml : { m // monthLengthsOfDate m dt }}
   (hml : ml = monthLengths_of_date dt) (h : dt.Day.val < ml.val.snd)
@@ -662,6 +680,12 @@ theorem yd_add_one_lt {dt : Date} (isLeap : Bool) (yd : Time.Icc 1 366)
   omega
 
 set_option maxHeartbeats 2000000 in
+/-- For a day of year `yd`, if `dt.Day` is equal to last day of month, then
+
+* (Time.findValidMonthDay dt.Year (yd + 1)).Month = dt.Month + 1
+* (Time.findValidMonthDay dt.Year (yd + 1)).Day = 1
+
+-/
 theorem findValidMonthDay_month_eq_incr {dt : Date} (isLeap : Bool) (yd : Time.Icc 1 366)
   {ml : { m // monthLengthsOfDate m dt }}
   (hml : ml = monthLengths_of_date dt) (h : dt.Day.val = ml.val.snd)

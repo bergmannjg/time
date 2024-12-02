@@ -4,6 +4,12 @@ import Time.Verify.Calendar.MonthLength
 
 /-!
 ## Theorems about `Time.dy'` properties
+
+Main theorems:
+
+* `Verify.DayOfYear.Notation.«termDy'MonthEq%_»`
+* `Verify.DayOfYear.Notation.«termDy'MonthDayEq%_»`
+
 -/
 
 namespace Verify
