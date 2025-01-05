@@ -41,7 +41,7 @@ example : fromWeekDate 2023 3 2 == fromGregorian dt_2023_1_17 := by rfl
 
 example : fromWeekDateValid 2023 3 2 == some (fromGregorian dt_2023_1_17) := by rfl
 
-example : (NonemptyIcc.toFin <| clipToNonemptyIcc 1 12 3 (by simp_arith)) == (Fin.ofNat 2 : Fin 12) := by rfl
+example : (NonemptyIcc.toFin <| clipToNonemptyIcc 1 12 3 (by simp_arith)) == Fin.ofNat' 12 2 := by rfl
 
 def dt_2023_2_11 : Date := date% 2023-2-11
 

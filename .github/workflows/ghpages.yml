@@ -38,7 +38,8 @@ jobs:
       - name: Build and test
         uses: leanprover/lean-action@v1
         with:
-          lint-module: Time
+          test: true
+          lint: true
           use-mathlib-cache: false
       - name: build Verify
         run: |

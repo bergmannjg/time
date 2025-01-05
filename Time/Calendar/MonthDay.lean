@@ -125,7 +125,6 @@ theorem monthLastDayAsDayOfYear_val_le (isleap : Bool)
   (hVal : val = ((monthLastDayAsDayOfYear isleap).get ⟨i-1, monthLastDayAsDayOfYear_index_lt i⟩).2)
   (h1 : ¬yd ≤ val) (h2 : yd ≤ ((monthLastDayAsDayOfYear isleap).get i).2)
     : 1 ≤ yd - val ∧ yd - val ≤ 31 := by
-  have : val < yd := by simp_all [h1]
   have hLeft : 1 ≤ yd - val := by
     omega
   have hRight : yd - val ≤ 31 := by
@@ -383,7 +382,7 @@ theorem monthLength'_ge_1 (isLeap : Bool) (month': Fin 12)
   simp only [monthLength']
   have h1 : 1 ≤ 28 := by omega
   have h : List.get (monthLengths _) _ ∈ monthLengths _ :=
-    List.get_mem (monthLengths isLeap) month'.val month'.isLt
+    List.get_mem (monthLengths isLeap) month'
   have h2: 28 <= monthLength' _ _ := monthLengths_days_ge_28 _ _ h
   exact Nat.le_trans h1 h2
 
@@ -391,7 +390,7 @@ theorem monthLength'_le_31 (isLeap : Bool) (month': Fin 12)
    : monthLength' (isLeap : Bool) (month': Fin 12) <= 31 := by
   simp only [monthLength']
   have h : List.get (monthLengths _) _ ∈ monthLengths _ :=
-    List.get_mem (monthLengths isLeap) month'.val month'.isLt
+    List.get_mem (monthLengths isLeap) month'
   exact monthLengths_days_le_31 _ _ h
 
 theorem monthAndDayToDayOfYear_gt_zero_of_month_gt (month day k : Int)

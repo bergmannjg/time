@@ -2,13 +2,14 @@ import Lake
 open System Lake DSL
 
 package time {
+  lintDriver := "batteries/runLinter"
   precompileModules := if get_config? env = some "noprecompile" then false else true
 }
 
 meta if get_config? env = some "dev" then
-require «doc-gen4» from  git "https://github.com/leanprover/doc-gen4" @ "v4.14.0"
+require «doc-gen4» from  git "https://github.com/leanprover/doc-gen4" @ "v4.15.0"
 
-require batteries from git "https://github.com/leanprover-community/batteries" @ "v4.14.0"
+require batteries from git "https://github.com/leanprover-community/batteries" @ "v4.15.0"
 
 @[default_target]
 lean_lib Time

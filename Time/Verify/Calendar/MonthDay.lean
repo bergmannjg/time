@@ -341,6 +341,9 @@ def dateToOrdinalDate' (dt : Date) : OrdinalDate :=
             · simp_all
             · contradiction)⟩
 
+theorem dateToOrdinalDate'_year_eq (dt : Date) : (dateToOrdinalDate' dt).year = dt.Year := by
+  simp [dateToOrdinalDate']
+
 theorem dateToOrdinalDate'_dateToOrdinalDate_eq {dt : Date}
     : dateToOrdinalDate' dt = dateToOrdinalDate dt := by
   simp [dateToOrdinalDate', dateToOrdinalDate]
@@ -361,91 +364,36 @@ theorem next_date_of_day_lt_eq_incr' {dt : Date} {dt' : OrdinalDate}
   (heq : dt' = dateToOrdinalDate dt)
     : OrdinalDate.DayOfYear.incr (dateToOrdinalDate' dt) (next_date_of_day_lt_top dt h)
     = OrdinalDate.next_date dt' := by
-  unfold OrdinalDate.next_date OrdinalDate.DayOfYear.incr dateToOrdinalDate'
+  unfold OrdinalDate.next_date OrdinalDate.DayOfYear.incr
   split <;> simp_all
-  · split <;> try simp_all
-    · rename_i h _ _ heq
-      simp [h] at heq
-    · simp [OrdinalDate.ext_iff]
-      split <;> try simp_all
-      · rename_i h' dy' _ heq'' dy hdy heq'
-        have : dy < 365 := by
-          have := dy_lt_of_day_or_month_lt h
-          simp_all
-        split
-        · have := dateToOrdinalDate_year_eq dt
-          simp [And]
-          simp [h'] at heq''
-          simp [Icc, Subtype.ext] at heq''
-          simp [dateToOrdinalDate, h'] at heq
-          simp [OrdinalDate.ext_iff] at heq
-          have := heq.right
-          rw [heq'] at this
-          simp_all
-        · contradiction
-      · rename_i h' dy' _ heq'' dy hdy heq'
-        have : dy < 366 := by
-          have := dy_lt_of_day_or_month_lt h
-          simp_all
-        split
-        · have := dateToOrdinalDate_year_eq dt
-          simp [And]
-          simp [h'] at heq''
-          simp [Icc, Subtype.ext] at heq''
-          simp [Icc, Subtype.ext]
-          rw [← heq'']
-          simp [dateToOrdinalDate, h] at heq
-          simp [OrdinalDate.ext_iff] at heq
-          have := heq.right
-          rw [heq'] at this
-          simp_all
-          simp [Icc, Subtype.ext] at this
-          rw [dy_eq_dy'] at this
-          simp_all
-        · contradiction
-  · split <;> try simp_all
-    · rename_i h yd _ heq
-      simp [h] at heq
-      simp [Icc, Subtype.ext] at heq
-      simp [OrdinalDate.ext_iff]
+  · rename_i dy _ h_dt_dayOfYear_common
+    have hlt := dy_lt_of_day_or_month_lt h
+    rw [← dateToOrdinalDate'_dateToOrdinalDate_eq] at heq
+    split <;> try simp_all
+    · rename_i heq' _ dy' _ h_dt'_dayOfYear_common
+      rw [← heq'] at h_dt_dayOfYear_common
+      have : dy = dy' := by
+        rw [h_dt_dayOfYear_common] at h_dt'_dayOfYear_common
+        simp [Subtype] at h_dt'_dayOfYear_common
+        exact  Subtype.ext_iff.mp h_dt'_dayOfYear_common
       split <;> simp_all
-      · split
-        · have := dateToOrdinalDate_year_eq dt
-          simp [And]
-          rw [this]
-          simp
-          simp [Icc, Subtype.ext]
-          rename_i heq''' _ _ yd' _ heq'' _
-          simp [← heq]
-          simp [heq'''] at heq''
-          simp [dateToOrdinalDate, h] at heq''
-          simp [Icc, Subtype.ext] at heq''
-          rw [dy_eq_dy'] at heq''
-          simp [heq'']
-        · rename_i h' heq'' _ _ yd _ heq' _
-          simp [heq''] at heq'
-          simp [dateToOrdinalDate ] at heq'
-          simp [h] at heq'
-          simp [Icc, Subtype.ext] at heq'
-          have : dy' false dt.Month dt.Day < 365 := by
-            cases h'
-            · rename_i h'
-              have := @dy'_hlt' dt ml h'
-              simp [h] at this
-              exact this
-            · rename_i h'
-              have := @dy'_lt_of_month_lt dt h'
-              simp [h] at this
-              exact this
-          rw [dy_eq_dy'] at heq'
-          rw [heq'] at this
-          contradiction
-      · rename_i heq'' _ _ _ _ heq'
-        simp [heq''] at heq'
-        simp [dateToOrdinalDate ] at heq'
-        simp [h] at heq'
-    · rename_i h _ _ heq
-      simp [h] at heq
+    · rename_i heq' _ _ _ h_dt'_dayOfYear_leap
+      rw [← heq', h_dt'_dayOfYear_leap] at h_dt_dayOfYear_common
+      contradiction
+  · rename_i dy _ h_dt_dayOfYear_leap
+    have hlt := dy_lt_of_day_or_month_lt h
+    rw [← dateToOrdinalDate'_dateToOrdinalDate_eq] at heq
+    split <;> try simp_all
+    · rename_i heq' _ dy' _ h_dt'_dayOfYear_common
+      rw [heq', h_dt_dayOfYear_leap] at h_dt'_dayOfYear_common
+      contradiction
+    · rename_i heq' _ dy' _ h_dt'_dayOfYear_leap
+      rw [← heq'] at h_dt_dayOfYear_leap
+      have : dy = dy' := by
+        rw [h_dt_dayOfYear_leap] at h_dt'_dayOfYear_leap
+        simp [Subtype] at h_dt'_dayOfYear_leap
+        exact  Subtype.ext_iff.mp h_dt'_dayOfYear_leap
+      split <;> simp_all
 
 theorem findValidMonthDay_year_eq (year : Int) (isLeap : Bool) (yd : Time.Icc 1 366)
   (hl : isLeapYear year = isLeap) (hle : yd.val ≤ if isLeap then 366 else 365)
