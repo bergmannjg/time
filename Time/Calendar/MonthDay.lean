@@ -60,52 +60,168 @@ def monthLastDayAsDayOfYear' (isleap : Bool) :=
   else [(1, 1, 31), (2, 32, 59), (3, 60, 90), (4, 91, 120), (5, 121, 151), (6, 152, 181),
       (7, 182, 212), (8, 213, 243), (9, 244, 273), (10, 274, 304), (11, 305, 334), (12, 335, 365)]
 
+@[simp] theorem monthLengths_length_eq_12 (isleap : Bool) : (monthLengths isleap).length = 12 := by
+  cases isleap <;> simp_arith
+
 @[simp] theorem monthLastDayAsDayOfYear_length_eq_12 (isleap : Bool)
     : (monthLastDayAsDayOfYear isleap).length = 12 := by
   cases isleap <;> simp_arith
-
-theorem monthLastDayAsDayOfYear_index_lt (i : Fin (monthLastDayAsDayOfYear isleap).length)
-    :  i - 1 < (monthLastDayAsDayOfYear isleap).length := by
-  cases isleap <;> simp_all [monthLastDayAsDayOfYear_length_eq_12]
-  · have := monthLastDayAsDayOfYear_length_eq_12 false; omega
-  · have := monthLastDayAsDayOfYear_length_eq_12 true; omega
 
 @[simp] theorem monthLastDayAsDayOfYear'_length_eq_12 (isleap : Bool)
     : (monthLastDayAsDayOfYear' isleap).length = 12 := by
   cases isleap <;> simp_arith
 
-theorem monthLastDayAsDayOfYear'_index_lt (i : Fin (monthLastDayAsDayOfYear' isleap).length)
-    :  i - 1 < (monthLastDayAsDayOfYear' isleap).length := by
-  cases isleap <;> simp_all [monthLastDayAsDayOfYear'_length_eq_12]
-  · have := monthLastDayAsDayOfYear'_length_eq_12 false; omega
-  · have := monthLastDayAsDayOfYear'_length_eq_12 true; omega
+instance : Coe (Fin (monthLengths isleap).length)
+    (Fin (monthLastDayAsDayOfYear' isleap).length) where
+  coe x := @Fin.cast (monthLengths isleap).length (monthLastDayAsDayOfYear' isleap).length
+              (by simp_all) x
+
+instance : Coe (Fin (monthLastDayAsDayOfYear' isleap).length)
+    (Fin (monthLengths isleap).length) where
+  coe x := @Fin.cast (monthLastDayAsDayOfYear' isleap).length (monthLengths isleap).length
+              (by simp_all) x
+
+instance : Coe (Fin (monthLastDayAsDayOfYear' isleap).length)
+    (Fin (monthLastDayAsDayOfYear isleap).length) where
+  coe x := @Fin.cast (monthLastDayAsDayOfYear' isleap).length (monthLastDayAsDayOfYear isleap).length
+              (by simp_all) x
+
+instance : Coe (Fin (monthLastDayAsDayOfYear isleap).length)
+    (Fin (monthLastDayAsDayOfYear' isleap).length) where
+  coe x := @Fin.cast (monthLastDayAsDayOfYear isleap).length (monthLastDayAsDayOfYear' isleap).length
+              (by simp_all) x
+
+theorem monthLengths_nodup : (monthLengths isleap).Nodup = true := by
+  cases isleap <;> decide
+
+theorem monthLastDayAsDayOfYear_nodup : (monthLastDayAsDayOfYear isleap).Nodup = true := by
+  cases isleap <;> decide
+
+theorem monthLastDayAsDayOfYear'_nodup : (monthLastDayAsDayOfYear' isleap).Nodup = true := by
+  cases isleap <;> decide
+
+theorem monthLastDayAsDayOfYear'_fst_eq_of_le_31 (isleap : Bool)
+  : ∀ a : Fin (monthLastDayAsDayOfYear' isleap).length,
+    (monthLastDayAsDayOfYear' isleap)[a].2.1 ≤ 31 →
+    (monthLastDayAsDayOfYear' isleap)[a].1 = 1 := by
+  cases isleap <;> decide
+
+theorem monthLastDayAsDayOfYear'_snd_eq_of_eq_1 (isleap : Bool)
+  : ∀ a : Fin (monthLastDayAsDayOfYear' isleap).length,
+    (monthLastDayAsDayOfYear' isleap)[a].1 = 1 →
+    (monthLastDayAsDayOfYear' isleap)[a].2.1 = 1 := by
+  cases isleap <;> decide
+
+theorem monthLastDayAsDayOfYear'_month_eq (isleap : Bool)
+  : ∀ a : Fin (monthLastDayAsDayOfYear' isleap).length,
+    (monthLastDayAsDayOfYear' isleap)[a].1 = a.val + 1 := by
+  cases isleap <;> simp_arith
 
 theorem monthLastDayAsDayOfYear_sub_pred_le (isleap : Bool)
   : ∀ i : Fin (monthLastDayAsDayOfYear isleap).length,
     ((monthLastDayAsDayOfYear isleap).get i).2
-      - ((monthLastDayAsDayOfYear isleap).get ⟨i-1, monthLastDayAsDayOfYear_index_lt i⟩).2
+      - ((monthLastDayAsDayOfYear isleap).get ⟨i-1, by omega⟩).2
       ≤ 31 := by
-  cases isleap <;> simp_arith
+  cases isleap <;> decide
+
+theorem monthLastDayAsDayOfYear_snd_eq (isleap : Bool)
+  : ∀ i : Fin (monthLastDayAsDayOfYear isleap).length,
+    ((monthLastDayAsDayOfYear isleap).get i).2
+    = ((monthLastDayAsDayOfYear' isleap).get i).2.2 := by
+  cases isleap <;> decide
+
+theorem monthLastDayAsDayOfYear'_snd_eq (isleap : Bool)
+  : ∀ i : Fin (monthLastDayAsDayOfYear' isleap).length,
+    ((monthLastDayAsDayOfYear' isleap).get i).2.2
+    = ((monthLastDayAsDayOfYear isleap).get i).2 := by
+  cases isleap <;> decide
+
+theorem monthLastDayAsDayOfYear'_fst_eq (isleap : Bool)
+  : ∀ i : Fin (monthLastDayAsDayOfYear' isleap).length,
+    (monthLastDayAsDayOfYear' isleap)[i.val].fst = (monthLengths isleap)[i.val].fst := by
+  cases isleap <;> decide
+
+theorem monthLastDayAsDayOfYear'_fst_lt_snd (isleap : Bool)
+  : ∀ i : Fin (monthLastDayAsDayOfYear' isleap).length,
+    ((monthLastDayAsDayOfYear' isleap).get i).2.1
+    < ((monthLastDayAsDayOfYear' isleap).get i).2.2 := by
+  cases isleap <;> decide
+
+theorem monthLengths_index_eq_of_fst_eq (isleap : Bool)
+  : ∀ i i' : Fin (monthLengths isleap).length,
+    ((monthLengths isleap)[i.val]).1 = ((monthLengths isleap)[i'.val]).1 →
+    i.val = i'.val := by
+  cases isleap <;> decide
+
+theorem monthLastDayAsDayOfYear'_index_le_of_fst_lt_snd (isleap : Bool)
+  : ∀ i i' : Fin (monthLastDayAsDayOfYear' isleap).length,
+    ((monthLastDayAsDayOfYear' isleap).get i').2.1
+      < ((monthLastDayAsDayOfYear' isleap).get i).2.2 →
+    i'.val ≤ i.val := by
+  cases isleap <;> decide
+
+theorem monthLastDayAsDayOfYear'_index_le_of_fst_le_snd (isleap : Bool)
+  : ∀ i i' : Fin (monthLastDayAsDayOfYear' isleap).length,
+    ((monthLastDayAsDayOfYear' isleap).get i').2.1
+      ≤ ((monthLastDayAsDayOfYear' isleap).get i).2.2 →
+    i'.val ≤ i.val := by
+  cases isleap <;> decide
+
+theorem monthLastDayAsDayOfYear'_index_le_of_fst_le_snd_incr (isleap : Bool)
+  : ∀ i i' : Fin (monthLastDayAsDayOfYear' isleap).length,
+    ((monthLastDayAsDayOfYear' isleap).get i').2.1
+      ≤ ((monthLastDayAsDayOfYear' isleap).get i).2.2 + 1 →
+    i'.val ≤ i.val + 1 := by
+  cases isleap <;> decide
+
+theorem monthLastDayAsDayOfYear'_index_le_of_snd_le_snd_incr (isleap : Bool)
+  : ∀ i i' : Fin (monthLastDayAsDayOfYear' isleap).length,
+    ((monthLastDayAsDayOfYear' isleap).get i').2.2 + 1
+      ≤ ((monthLastDayAsDayOfYear' isleap).get i).2.2 →
+    i'.val + 1 ≤ i.val := by
+  cases isleap <;> decide
+
+theorem monthLastDayAsDayOfYear'_index_le_of_fst_le_fst (isleap : Bool)
+  : ∀ i i' : Fin (monthLastDayAsDayOfYear' isleap).length,
+    ((monthLastDayAsDayOfYear' isleap).get i').2.1
+      ≤ ((monthLastDayAsDayOfYear' isleap).get i).2.1 + 31 →
+    i'.val ≤ i.val + 1 := by
+  cases isleap <;> decide
+
+theorem monthLastDayAsDayOfYear'_pred_snd_incr_eq_fst (isleap : Bool)
+  : ∀ i : Fin (monthLastDayAsDayOfYear' isleap).length,
+    i.val > 0 →
+    ((monthLastDayAsDayOfYear' isleap).get i).2.1
+    = ((monthLastDayAsDayOfYear' isleap).get ⟨i-1, by omega⟩).2.2 + 1 := by
+  cases isleap <;> decide
+
+theorem monthLastDayAsDayOfYear'_pred_snd_lt_fst (isleap : Bool)
+  : ∀ i : Fin (monthLastDayAsDayOfYear' isleap).length,
+    i.val > 0 →
+    ((monthLastDayAsDayOfYear' isleap).get ⟨i-1, by omega⟩).2.2
+    < ((monthLastDayAsDayOfYear' isleap).get i).2.1 := by
+  cases isleap <;> decide
+
+theorem monthLastDayAsDayOfYear'_sub_eq (isleap : Bool)
+  : ∀ i : Fin (monthLastDayAsDayOfYear' isleap).length,
+    ((monthLengths isleap).get i).snd
+    = ((monthLastDayAsDayOfYear' isleap).get i).2.2
+      -((monthLastDayAsDayOfYear' isleap).get i).2.1 + 1 := by
+  cases isleap <;> decide
 
 theorem monthLastDayAsDayOfYear'_day_1_le (isleap : Bool)
   : ∀ a ∈ monthLastDayAsDayOfYear' isleap, 1 ≤ a.2.1 := by
-  cases isleap <;> simp_arith
+  cases isleap <;> decide
 
 theorem monthLastDayAsDayOfYear'_le_day_1 (isleap : Bool)
   : ∀ a ∈ monthLastDayAsDayOfYear' isleap, a.2.1 ≤ if isleap then 336 else 335 := by
-  cases isleap <;> simp_arith
-
-theorem monthLastDayAsDayOfYear'_sub_pred_le (isleap : Bool)
-  : ∀ i : Fin (monthLastDayAsDayOfYear' isleap).length,
-    ((monthLastDayAsDayOfYear' isleap).get i).2.1 = if i.val = 0 then 1 else
-      ((monthLastDayAsDayOfYear' isleap).get ⟨i-1, monthLastDayAsDayOfYear'_index_lt i⟩).2.2+1 := by
-  cases isleap <;> simp_arith
+  cases isleap <;> decide
 
 theorem monthLastDayAsDayOfYear'_sub_days_le (isleap : Bool)
   : ∀ i : Fin (monthLastDayAsDayOfYear' isleap).length,
     ((monthLastDayAsDayOfYear' isleap).get i).2.2
     - ((monthLastDayAsDayOfYear' isleap).get i).2.1 ≤ 30 := by
-  cases isleap <;> simp_arith
+  cases isleap <;> decide
 
 theorem Int.le_of_sub_le {a b c d : Nat} (h1 : a ≤ c) (h2 : c - b ≤ d)
     : a - b ≤ d := by
@@ -122,7 +238,7 @@ theorem monthLastDayAsDayOfYear'_val_in (isLeap : Bool) (yd : Nat)
 
 theorem monthLastDayAsDayOfYear_val_le (isleap : Bool)
   (i : Fin (monthLastDayAsDayOfYear isleap).length) (val : Nat)
-  (hVal : val = ((monthLastDayAsDayOfYear isleap).get ⟨i-1, monthLastDayAsDayOfYear_index_lt i⟩).2)
+  (hVal : val = ((monthLastDayAsDayOfYear isleap).get ⟨i-1, by omega⟩).2)
   (h1 : ¬yd ≤ val) (h2 : yd ≤ ((monthLastDayAsDayOfYear isleap).get i).2)
     : 1 ≤ yd - val ∧ yd - val ≤ 31 := by
   have hLeft : 1 ≤ yd - val := by
@@ -133,7 +249,7 @@ theorem monthLastDayAsDayOfYear_val_le (isleap : Bool)
     omega
   simp_all
 
-/-- Sum of month lengths upto month `m` -/
+ -- Sum of month lengths upto month `m` -/
 def monthLengths_sum_le (isleap : Bool) (m : Nat) : Nat :=
   monthLengths isleap
   |> List.takeWhile (fun ml => ml.1 ≤ m)
@@ -165,9 +281,6 @@ theorem monthLengths_sum_eq (isleap : Bool) :
   monthLengths_sum isleap == if isleap then 366 else 365 := by
   cases isleap <;> simp_arith
 
-theorem monthLengths_length_eq_12 (isleap : Bool) : (monthLengths isleap).length == 12 := by
-  cases isleap <;> simp_arith
-
 theorem monthLengths_length_gt_0 (isleap : Bool) : 0 < (monthLengths isleap).length := by
   cases isleap <;> simp_arith
 
@@ -178,6 +291,48 @@ theorem monthLengths_month_in (isleap : Bool)
 theorem monthLengths_days_in (isleap : Bool)
   : ∀ a ∈ (monthLengths isleap), 1 ≤ a.2 ∧ a.2 ≤ 31 := by
   cases isleap <;> simp_arith
+
+theorem monthLengths_month_eq (isleap : Bool)
+  : ∀ a : Fin (monthLengths isleap).length, (monthLengths isleap)[a].1 = a.val + 1 := by
+  cases isleap <;> simp_arith
+
+theorem monthLastDayAsDayOfYear_sub_pred_eq_monthLengths (isleap : Bool)
+  : ∀ i : Fin (monthLastDayAsDayOfYear isleap).length,
+    ((monthLastDayAsDayOfYear isleap).get i).2
+      - (if i.val = 0
+         then 0
+         else ((monthLastDayAsDayOfYear isleap).get ⟨i-1, by omega⟩).2)
+    = ((monthLengths isleap).get ⟨i, by
+            rw [monthLengths_length_eq_12 isleap]
+            have := i.is_lt
+            simp_all⟩).2 := by
+  cases isleap <;> simp_arith
+
+theorem monthLengths_eq (isleap : Bool)
+    : (monthLengths isleap).length = (monthLastDayAsDayOfYear isleap).length := by
+  cases isleap <;> simp_arith
+
+theorem month_le_val_exists (isleap : Bool) (i v : Nat) (hle : 1 ≤ i)
+  (hlt : i < (monthLengths isleap).length)
+  (h1 : ((monthLastDayAsDayOfYear isleap).get ⟨i-1, by
+        rw [monthLengths_eq isleap] at hlt; omega⟩).2 < v)
+  (h2 : v ≤ ((monthLastDayAsDayOfYear isleap).get ⟨i, by
+        rwa [monthLengths_eq isleap] at hlt⟩).2)
+    : ∃ m ∈ monthLengths isleap, m.1 = i + 1
+      ∧ v - ((monthLastDayAsDayOfYear isleap).get ⟨i-1,
+                by rw [monthLengths_eq isleap] at hlt; omega⟩).2
+        ≤ m.2 := by
+  exact Exists.intro ((monthLengths isleap).get ⟨i, by omega⟩) (by
+    have hlt' : i < (monthLastDayAsDayOfYear isleap).length := by
+      rwa [← monthLengths_eq isleap]
+    have heq := monthLastDayAsDayOfYear_sub_pred_eq_monthLengths isleap ⟨i, hlt'⟩
+    simp_all
+    have := monthLengths_month_eq isleap ⟨i, by omega⟩
+    simp_all
+    rw [← heq]
+    split
+    · omega
+    · split at heq <;> omega)
 
 theorem list_foldl_init_add (l : List α) (init v : Nat) (f : α → Nat)
   : List.foldl (fun acc v => f v + acc) init l + v
@@ -201,133 +356,49 @@ def findValidMonthDay_1 (year : Int) (isLeap : Bool) (yd : Time.Icc 1 366)
       (by simp [monthLastDayAsDayOfYear] at h; cases isLeap <;> exact h)⟩,
     by simp [monthLastDayAsDayOfYear] at h; simp_all [monthLengths]; cases isLeap <;> exact h⟩
 
-def findValidMonthDay_2 (year : Int) (isLeap : Bool) (yd : Time.Icc 1 366)
+def findValidMonthDay_n (year : Int) (isLeap : Bool) (i : Nat) (yd : Time.Icc 1 366)
   (hl : isLeapYear year = isLeap)
-  (hn : ¬yd.val ≤ (monthLastDayAsDayOfYear isLeap)[0].snd)
-  (h : yd.val ≤ ((monthLastDayAsDayOfYear isLeap).get ⟨1, by simp⟩).2) : Date :=
-  ⟨year, ⟨2, by simp⟩, ⟨yd.val - (monthLastDayAsDayOfYear isLeap)[0].2,
-    by exact monthLastDayAsDayOfYear_val_le isLeap ⟨1, by simp_all⟩
-        ((monthLastDayAsDayOfYear isLeap)[0].snd) (by simp) hn h⟩,
-    by simp [monthLastDayAsDayOfYear] at h; simp_all [monthLengths];
-        cases isLeap <;> simp [monthLastDayAsDayOfYear] <;> simp [] at h <;> omega⟩
-
-def findValidMonthDay_3 (year : Int) (isLeap : Bool) (yd : Time.Icc 1 366)
-  (hl : isLeapYear year = isLeap)
-  (hn : ¬yd.val ≤ (monthLastDayAsDayOfYear isLeap)[1].snd)
-  (h : yd.val ≤ ((monthLastDayAsDayOfYear isLeap).get ⟨2, by simp⟩).2) : Date :=
-  ⟨year, ⟨3, by simp⟩, ⟨yd.val - (monthLastDayAsDayOfYear isLeap)[1].2,
-    by exact monthLastDayAsDayOfYear_val_le isLeap ⟨2, by simp_all⟩
-        ((monthLastDayAsDayOfYear isLeap)[1].snd) (by simp) hn h⟩,
-    by simp [monthLastDayAsDayOfYear] at h; simp_all [monthLengths];
-        cases isLeap <;> simp [monthLastDayAsDayOfYear] <;> simp [] at h <;> omega⟩
-
-def findValidMonthDay_4 (year : Int) (isLeap : Bool) (yd : Time.Icc 1 366)
-  (hl : isLeapYear year = isLeap)
-  (hn : ¬yd.val ≤ (monthLastDayAsDayOfYear isLeap)[2].snd)
-  (h : yd.val ≤ ((monthLastDayAsDayOfYear isLeap).get ⟨3, by simp⟩).2) : Date :=
-  ⟨year, ⟨4, by simp⟩, ⟨yd.val - (monthLastDayAsDayOfYear isLeap)[2].2,
-    by exact monthLastDayAsDayOfYear_val_le isLeap ⟨3, by simp_all⟩
-        ((monthLastDayAsDayOfYear isLeap)[2].snd) (by simp) hn h⟩,
-    by simp [monthLastDayAsDayOfYear] at h; simp_all [monthLengths];
-        cases isLeap <;> simp [monthLastDayAsDayOfYear] <;> simp [] at h <;> omega⟩
-
-def findValidMonthDay_5 (year : Int) (isLeap : Bool) (yd : Time.Icc 1 366)
-  (hl : isLeapYear year = isLeap)
-  (hn : ¬yd.val ≤ (monthLastDayAsDayOfYear isLeap)[3].snd)
-  (h : yd.val ≤ ((monthLastDayAsDayOfYear isLeap).get ⟨4, by simp⟩).2) : Date :=
-  ⟨year, ⟨5, by simp⟩, ⟨yd.val - (monthLastDayAsDayOfYear isLeap)[3].2,
-    by exact monthLastDayAsDayOfYear_val_le isLeap ⟨4, by simp_all⟩
-        ((monthLastDayAsDayOfYear isLeap)[3].snd) (by simp) hn h⟩,
-    by simp [monthLastDayAsDayOfYear] at h; simp_all [monthLengths];
-        cases isLeap <;> simp [monthLastDayAsDayOfYear] <;> simp [] at h <;> omega⟩
-
-def findValidMonthDay_6 (year : Int) (isLeap : Bool) (yd : Time.Icc 1 366)
-  (hl : isLeapYear year = isLeap)
-  (hn : ¬yd.val ≤ (monthLastDayAsDayOfYear isLeap)[4].snd)
-  (h : yd.val ≤ ((monthLastDayAsDayOfYear isLeap).get ⟨5, by simp⟩).2) : Date :=
-  ⟨year, ⟨6, by simp⟩, ⟨yd.val - (monthLastDayAsDayOfYear isLeap)[4].2,
-    by exact monthLastDayAsDayOfYear_val_le isLeap ⟨5, by simp_all⟩
-        ((monthLastDayAsDayOfYear isLeap)[4].snd) (by simp) hn h⟩,
-    by simp [monthLastDayAsDayOfYear] at h; simp_all [monthLengths];
-        cases isLeap <;> simp [monthLastDayAsDayOfYear] <;> simp [] at h <;> omega⟩
-
-def findValidMonthDay_7 (year : Int) (isLeap : Bool) (yd : Time.Icc 1 366)
-  (hl : isLeapYear year = isLeap)
-  (hn : ¬yd.val ≤ (monthLastDayAsDayOfYear isLeap)[5].snd)
-  (h : yd.val ≤ ((monthLastDayAsDayOfYear isLeap).get ⟨6, by simp⟩).2) : Date :=
-  ⟨year, ⟨7, by simp⟩, ⟨yd.val - (monthLastDayAsDayOfYear isLeap)[5].2,
-    by exact monthLastDayAsDayOfYear_val_le isLeap ⟨6, by simp_all⟩
-        ((monthLastDayAsDayOfYear isLeap)[5].snd) (by simp) hn h⟩,
-    by simp [monthLastDayAsDayOfYear] at h; simp_all [monthLengths];
-        cases isLeap <;> simp [monthLastDayAsDayOfYear] <;> simp [] at h <;> omega⟩
-
-def findValidMonthDay_8 (year : Int) (isLeap : Bool) (yd : Time.Icc 1 366)
-  (hl : isLeapYear year = isLeap)
-  (hn : ¬yd.val ≤ (monthLastDayAsDayOfYear isLeap)[6].snd)
-  (h : yd.val ≤ ((monthLastDayAsDayOfYear isLeap).get ⟨7, by simp⟩).2) : Date :=
-  ⟨year, ⟨8, by simp⟩, ⟨yd.val - (monthLastDayAsDayOfYear isLeap)[6].2,
-    by exact monthLastDayAsDayOfYear_val_le isLeap ⟨7, by simp_all⟩
-        ((monthLastDayAsDayOfYear isLeap)[6].snd) (by simp) hn h⟩,
-    by simp [monthLastDayAsDayOfYear] at h; simp_all [monthLengths];
-        cases isLeap <;> simp [monthLastDayAsDayOfYear] <;> simp [] at h <;> omega⟩
-
-def findValidMonthDay_9 (year : Int) (isLeap : Bool) (yd : Time.Icc 1 366)
-  (hl : isLeapYear year = isLeap)
-  (hn : ¬yd.val ≤ (monthLastDayAsDayOfYear isLeap)[7].snd)
-  (h : yd.val ≤ ((monthLastDayAsDayOfYear isLeap).get ⟨8, by simp⟩).2) : Date :=
-  ⟨year, ⟨9, by simp⟩, ⟨yd.val - (monthLastDayAsDayOfYear isLeap)[7].2,
-    by exact monthLastDayAsDayOfYear_val_le isLeap ⟨8, by simp_all⟩
-        ((monthLastDayAsDayOfYear isLeap)[7].snd) (by simp) hn h⟩,
-    by simp [monthLastDayAsDayOfYear] at h; simp_all [monthLengths];
-        cases isLeap <;> simp [monthLastDayAsDayOfYear] <;> simp [] at h <;> omega⟩
-
-def findValidMonthDay_10 (year : Int) (isLeap : Bool) (yd : Time.Icc 1 366)
-  (hl : isLeapYear year = isLeap)
-  (hn : ¬yd.val ≤ (monthLastDayAsDayOfYear isLeap)[8].snd)
-  (h : yd.val ≤ ((monthLastDayAsDayOfYear isLeap).get ⟨9, by simp⟩).2) : Date :=
-  ⟨year, ⟨10, by simp⟩, ⟨yd.val - (monthLastDayAsDayOfYear isLeap)[8].2,
-    by exact monthLastDayAsDayOfYear_val_le isLeap ⟨9, by simp_all⟩
-        ((monthLastDayAsDayOfYear isLeap)[8].snd) (by simp) hn h⟩,
-    by simp [monthLastDayAsDayOfYear] at h; simp_all [monthLengths];
-        cases isLeap <;> simp [monthLastDayAsDayOfYear] <;> simp [] at h <;> omega⟩
-
-def findValidMonthDay_11 (year : Int) (isLeap : Bool) (yd : Time.Icc 1 366)
-  (hl : isLeapYear year = isLeap)
-  (hn : ¬yd.val ≤ (monthLastDayAsDayOfYear isLeap)[9].snd)
-  (h : yd.val ≤ ((monthLastDayAsDayOfYear isLeap).get ⟨10, by simp⟩).2) : Date :=
-  ⟨year, ⟨11, by simp⟩, ⟨yd.val - (monthLastDayAsDayOfYear isLeap)[9].2,
-    by exact monthLastDayAsDayOfYear_val_le isLeap ⟨10, by simp_all⟩
-        ((monthLastDayAsDayOfYear isLeap)[9].snd) (by simp) hn h⟩,
-    by simp [monthLastDayAsDayOfYear] at h; simp_all [monthLengths];
-        cases isLeap <;> simp [monthLastDayAsDayOfYear] <;> simp [] at h <;> omega⟩
-
-def findValidMonthDay_12 (year : Int) (isLeap : Bool) (yd : Time.Icc 1 366)
-  (hl : isLeapYear year = isLeap)
-  (hn : ¬yd.val ≤ (monthLastDayAsDayOfYear isLeap)[10].snd)
-  (hle : yd.val ≤ if isLeap then 366 else 365) : Date :=
-  have h : yd.val ≤ ((monthLastDayAsDayOfYear isLeap).get ⟨11, by simp⟩).2 := by
-    simp [monthLastDayAsDayOfYear]; cases isLeap <;> simp_all
-  ⟨year, ⟨12, by simp⟩, ⟨yd.val - (monthLastDayAsDayOfYear isLeap)[10].2,
-    by exact monthLastDayAsDayOfYear_val_le isLeap ⟨11, by simp_all⟩
-        ((monthLastDayAsDayOfYear isLeap)[10].snd) (by simp) hn h⟩,
-    by simp [monthLastDayAsDayOfYear] at h; simp_all [monthLengths];
-        cases isLeap <;> simp [monthLastDayAsDayOfYear] <;> simp [] at h <;> omega⟩
+  (hle : 1 ≤ i)
+  (hlt : i < (monthLengths isLeap).length)
+  (hlt' : i < (monthLastDayAsDayOfYear isLeap).length)
+  (hn : ¬yd.val ≤ ((monthLastDayAsDayOfYear isLeap).get ⟨i-1, by omega⟩).snd)
+  (h : yd.val ≤ ((monthLastDayAsDayOfYear isLeap).get ⟨i, hlt'⟩).2) : Date :=
+  ⟨year,
+   ⟨i+1, by have := monthLengths_length_eq_12 isLeap; omega⟩,
+   ⟨yd.val - ((monthLastDayAsDayOfYear isLeap).get ⟨i-1, by omega⟩).2,
+      by exact
+        monthLastDayAsDayOfYear_val_le isLeap
+          ⟨i, hlt'⟩
+          (((monthLastDayAsDayOfYear isLeap).get ⟨i-1,
+                 by rw [monthLengths_eq isLeap] at hlt; omega⟩).snd)
+          (by simp_all)
+          hn h⟩,
+    by
+      have := month_le_val_exists (isLeap) i yd.val hle hlt
+                (by simp at hn; exact hn) (by omega)
+      rw [hl]
+      exact this⟩
 
 def findValidMonthDay_tail (year : Int) (isLeap : Bool) (yd : Time.Icc 1 366)
   (hl : isLeapYear year = isLeap) (hle : yd.val ≤ if isLeap then 366 else 365)
   (h6 : ¬yd.val ≤ (monthLastDayAsDayOfYear isLeap)[5].snd)
     : Date :=
   if h7 : yd.val ≤ (monthLastDayAsDayOfYear isLeap)[6].2
-  then findValidMonthDay_7 year isLeap yd hl h6 h7
+  then findValidMonthDay_n year isLeap 6 yd hl (by simp) (by simp_all) (by simp_all) h6 h7
   else if h8 : yd.val ≤ (monthLastDayAsDayOfYear isLeap)[7].2
-  then findValidMonthDay_8 year isLeap yd hl h7 h8
+  then findValidMonthDay_n year isLeap 7 yd hl (by simp) (by simp_all) (by simp_all) h7 h8
   else if h9 : yd.val ≤ (monthLastDayAsDayOfYear isLeap)[8].2
-  then findValidMonthDay_9 year isLeap yd hl h8 h9
+  then findValidMonthDay_n year isLeap 8 yd hl (by simp) (by simp_all) (by simp_all) h8 h9
   else if h10 : yd.val ≤ (monthLastDayAsDayOfYear isLeap)[9].2
-  then findValidMonthDay_10 year isLeap yd hl h9 h10
+  then findValidMonthDay_n year isLeap 9 yd hl (by simp) (by simp_all) (by simp_all) h9 h10
   else if h11 : yd.val ≤ (monthLastDayAsDayOfYear isLeap)[10].2
-  then findValidMonthDay_11 year isLeap yd hl h10 h11
-  else findValidMonthDay_12 year isLeap yd hl h11 hle
+  then findValidMonthDay_n year isLeap 10 yd hl (by simp) (by simp_all) (by simp_all) h10 h11
+  else
+    have h12 : yd.val ≤  (monthLastDayAsDayOfYear isLeap)[11].2 := by
+      have : (monthLastDayAsDayOfYear isLeap)[11].2 = if isLeap then 366 else 365 := by
+        cases isLeap <;> decide
+      simp_all
+    findValidMonthDay_n year isLeap 11 yd hl (by simp) (by simp_all) (by simp_all) h11 h12
 
 def findValidMonthDay (year : Int) (isLeap : Bool) (yd : Time.Icc 1 366)
   (hl : isLeapYear year = isLeap) (hle : yd.val ≤ if isLeap then 366 else 365)
@@ -335,15 +406,15 @@ def findValidMonthDay (year : Int) (isLeap : Bool) (yd : Time.Icc 1 366)
   if h1 : yd.val ≤ (monthLastDayAsDayOfYear isLeap)[0].2
   then findValidMonthDay_1 year isLeap yd h1
   else if h2 : yd.val ≤ (monthLastDayAsDayOfYear isLeap)[1].2
-  then findValidMonthDay_2 year isLeap yd hl h1 h2
+  then findValidMonthDay_n year isLeap 1 yd hl (by simp) (by simp_all) (by simp_all) h1 h2
   else if h3 : yd.val ≤ (monthLastDayAsDayOfYear isLeap)[2].2
-  then findValidMonthDay_3 year isLeap yd hl h2 h3
+  then findValidMonthDay_n year isLeap 2 yd hl (by simp) (by simp_all) (by simp_all) h2 h3
   else if h4 : yd.val ≤ (monthLastDayAsDayOfYear isLeap)[3].2
-  then findValidMonthDay_4 year isLeap yd hl h3 h4
+  then findValidMonthDay_n year isLeap 3 yd hl (by simp) (by simp_all) (by simp_all) h3 h4
   else if h5 : yd.val ≤ (monthLastDayAsDayOfYear isLeap)[4].2
-  then findValidMonthDay_5 year isLeap yd hl h4 h5
+  then findValidMonthDay_n year isLeap 4 yd hl (by simp) (by simp_all) (by simp_all) h4 h5
   else if h6 : yd.val ≤ (monthLastDayAsDayOfYear isLeap)[5].2
-  then findValidMonthDay_6 year isLeap yd hl h5 h6
+  then findValidMonthDay_n year isLeap 5 yd hl (by simp) (by simp_all) (by simp_all) h5 h6
   else findValidMonthDay_tail year isLeap yd hl hle h6
 
 theorem isLeapYear_false {dt : OrdinalDate} (h : dt.dayOfYear = DayOfYear.common yd)
@@ -392,18 +463,6 @@ theorem monthLength'_le_31 (isLeap : Bool) (month': Fin 12)
   have h : List.get (monthLengths _) _ ∈ monthLengths _ :=
     List.get_mem (monthLengths isLeap) month'
   exact monthLengths_days_le_31 _ _ h
-
-theorem monthAndDayToDayOfYear_gt_zero_of_month_gt (month day k : Int)
-    (hm : 2 < month) (hk : -2 ≤ k) (hd : 0 < day)
-    : 0 < ((367 * month - 362) / 12 + k) + day := by
-  let y := 367 * month - 362
-
-  have ha : 0 ≤ y / 12 + k := by
-    have h1 : 0 <= 2 + k := Int.add_le_add_left hk _
-    have h2 : 2 + k <= y / 12 + k := by omega
-    simp [Int.le_trans h1 h2]
-
-  simp [Int.add_pos_of_nonneg_of_pos ha hd]
 
 theorem exists_month_in_monthLastDayAsDayOfYear' (isleap : Bool) (month : Icc 1 12)
      : ∃ m ∈ monthLastDayAsDayOfYear' isleap, m.1 = month.val := by
@@ -466,17 +525,7 @@ theorem le_dy (isleap : Bool) (month : Icc 1 12) (day : Icc 1 31)
   have := month.property
   have := day.property
   simp [dy]
-  split <;> try simp_all
-  · have hle : (1:Int) ≤ ((367 * month - 362) / 12 + day : Int) := by omega
-    have := Int.toNat_le_toNat hle
-    exact this
-  · split <;> try simp_all
-    · have hle : (1:Int) ≤ ((367 * month - 362) / 12 - 1 + day : Int) := by omega
-      have := Int.toNat_le_toNat hle
-      exact this
-    · have hle : (1:Int) ≤ ((367 * month - 362) / 12 - 2 + day : Int) := by omega
-      have := Int.toNat_le_toNat hle
-      exact this
+  split <;> omega
 
 theorem dy_le (isleap : Bool) (month : Icc 1 12) (day : Icc 1 31)
     : (dy isleap month day) ≤ if isleap then 366 else 365 := by
@@ -484,20 +533,9 @@ theorem dy_le (isleap : Bool) (month : Icc 1 12) (day : Icc 1 31)
   have := day.property
   simp [dy]
   split <;> try simp_all
-  · have hle' : 70 ≤ if isleap then 366 else 365 := by split <;> omega
-    have hle : ((367 * month - 362) / 12 + day : Int) ≤ if isleap then 366 else 365 := by omega
-    have hle := Int.toNat_le_toNat hle
-    have : (if isleap = true then 366 else 365 : Int).toNat
-         = if isleap = true then 366 else 365 := by cases isleap <;> simp_all
-    rw [this] at hle
-    exact hle
-  · split <;> try simp_all
-    · have hle : ((367 * month - 362) / 12 - 1 + day : Int) ≤ 366 := by omega
-      have := Int.toNat_le_toNat hle
-      exact this
-    · have hle : ((367 * month - 362) / 12 - 2 + day : Int) ≤ 365 := by omega
-      have := Int.toNat_le_toNat hle
-      exact this
+  · have : 70 ≤ if isleap then 366 else 365 := by split <;> omega
+    omega
+  · split <;> omega
 
 def monthAndDayToDayOfYearClipped' (year : Int) (month day : Nat)
     (hd1 : 1 <= day) (hd2 : day ≤ 31) (hm1 : 1 ≤ month) (hm2 : month <= 12) : OrdinalDate :=

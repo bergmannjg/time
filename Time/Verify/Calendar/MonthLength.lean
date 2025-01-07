@@ -9,159 +9,6 @@ namespace Verify.MonthLength
 
 open Time
 
-namespace Notation
-
-declare_syntax_cat monthLastDayMonthEq
-syntax num ws num ws num ws num ws num : monthLastDayMonthEq
-syntax "monthLastDayMonthEq%" monthLastDayMonthEq : term
-
-/-- proof of `$m = a.val.fst` -/
-macro_rules
-| `(monthLastDayMonthEq% $m:num $p:num $p':num $n:num $n':num) =>
-    `((fun dt isleap a h1 h2 => by
-  by_contra
-  have : ¬((if isleap then $p else $p') < a.val.snd.fst
-           ∧ a.val.snd.fst ≤ (if isleap then $n else $n')) := by
-    have : ∀ a ∈ monthLastDayAsDayOfYear' isleap, ¬$m = a.1
-        → ¬((if isleap then $p else $p') < a.2.1 ∧ a.2.1 ≤ (if isleap then $n else $n')) := by
-      cases isleap <;> simp [monthLastDayAsDayOfYear']
-    exact this a a.property.left (by omega)
-  have : (if isleap then $p else $p') < a.val.2.1
-         ∧ a.val.2.1 ≤ (if isleap then $n else $n') := And.intro h1 h2
-  contradiction
-    : ∀ (dt : Date) (isleap : Bool)
-        (a : { x // x ∈ monthLastDayAsDayOfYear' isleap ∧ x.fst = dt.Month.val }),
-        (if isleap = true then $p else $p') < a.val.snd.fst →
-        (a.val.snd.fst ≤ if isleap = true then $n else $n') →
-        $m = a.val.fst))
-
---#check monthLastDayMonthEq% 4 61 60 120 119
-
-declare_syntax_cat monthLastDayMonthEq'
-syntax num ws num ws num ws num ws num : monthLastDayMonthEq'
-syntax "monthLastDayMonthEq'%" monthLastDayMonthEq' : term
-
-/-- proof of `($m-1) = a.val.fst ∨ $m = a.val.fst` -/
-macro_rules
-| `(monthLastDayMonthEq'% $m:num $v:num $v':num $p:num $p':num) =>
-    `((fun dt isleap a h1 h2 => by
-  by_contra
-  have : ¬((if isleap then ($p-1) else ($p'-1)) < a.val.snd.fst
-           ∧ a.val.snd.fst ≤ (if isleap then ($v-1) else ($v'-1))) := by
-    have : ∀ a ∈ monthLastDayAsDayOfYear' isleap, ¬(($m-1) = a.1 ∨ $m = a.1)
-        → ¬((if isleap then ($p-1) else ($p'-1)) < a.2.1 ∧ a.2.1 ≤ (if isleap then ($v-1) else ($v'-1))) := by
-      cases isleap <;> simp [monthLastDayAsDayOfYear']
-    exact this a a.property.left (by omega)
-  have : (if isleap then ($p-1) else ($p'-1)) < a.val.2.1
-         ∧ a.val.2.1 ≤ (if isleap then ($v-1) else ($v'-1)) := And.intro h1 h2
-  contradiction
-    : ∀ (dt : Date) (isleap : Bool)
-        (a : { x // x ∈ monthLastDayAsDayOfYear' isleap ∧ x.fst = dt.Month.val }),
-        (if isleap = true then ($p-1) else ($p'-1)) < a.val.snd.fst →
-        (a.val.snd.fst ≤ if isleap = true then ($v-1) else ($v'-1)) →
-        ($m-1) = a.val.fst ∨ $m = a.val.fst))
-
---#check monthLastDayMonthEq'% 5 121 120 92 91
-
-declare_syntax_cat monthLastDayMonthDayEq
-syntax num ws num ws num : monthLastDayMonthDayEq
-syntax "monthLastDayMonthDayEq%" monthLastDayMonthDayEq : term
-
-/-- proof of `(if isleap = true then $v else $v') = a.val.snd.fst` -/
-macro_rules
-| `(monthLastDayMonthDayEq% $m:num $v:num $v':num) =>
-    `((fun dt isleap a h => by
-  by_contra
-  have : ¬a.val.1 = $m := by
-    have : ∀ a ∈ monthLastDayAsDayOfYear' isleap, ¬(if isleap then $v else $v') = a.2.1 → ¬a.1 = $m := by
-      cases isleap <;> simp [monthLastDayAsDayOfYear']
-    exact this a a.property.left (by omega)
-  contradiction
-    : ∀ (dt : Date) (isleap : Bool)
-        (a : { x // x ∈ monthLastDayAsDayOfYear' isleap ∧ x.fst = dt.Month.val }),
-        a.val.fst = $m →
-        (if isleap = true then $v else $v') = a.val.snd.fst))
-
---#check monthLastDayMonthDayEq% 5 122 121
-
-declare_syntax_cat monthIfEq
-syntax num : monthIfEq
-syntax "monthIfEq%" monthIfEq : term
-
-/-- proof of `ml.snd = 30` -/
-macro_rules
-| `(monthIfEq% 2) =>
-    `((fun {ml} isLeap h h' => by
-  have : ∀ ml, ml ∈ monthLengths isLeap ∧ ml.1 = 2 → ml.2 = if isLeap then 29 else 28 := by
-    simp [monthLengths]
-  simp [this ml (And.intro (by simp_all) h')]
-    : ∀ {ml : Nat × Nat} (isLeap : Bool), ml ∈ monthLengths isLeap
-        → ml.fst = 2
-        → ml.snd = if isLeap then 29 else 28))
-| `(monthIfEq% $m:num) =>
-    `((fun {ml} isLeap h h' => by
-  have : ∀ ml, ml ∈ monthLengths isLeap ∧ ml.1 = $m → ml.2 = 30 := by
-    simp [monthLengths]
-  simp [this ml (And.intro (by simp_all) h')]
-    : ∀ {ml : Nat × Nat} (isLeap : Bool), ml ∈ monthLengths isLeap
-        → ml.fst = $m
-        → ml.snd = 30))
-
-declare_syntax_cat monthLastDayEqSndLe
-syntax num ws num ws num ws num ws num: monthLastDayEqSndLe
-syntax "monthLastDayEqSndLe%" monthLastDayEqSndLe : term
-
-/-- proof of `a.val.fst = $m` -/
-macro_rules
-| `(monthLastDayEqSndLe% $m:num $v:num $v':num $n:num $n':num) =>
-    `((fun dt isleap a h1 h2 => by
-  by_contra
-  have : ¬((if isleap then $v else $v') ≤ a.val.snd.snd ∧ a.val.snd.snd ≤ (if isleap then ($n-1) else ($n'-1))) := by
-    have : ∀ a ∈ monthLastDayAsDayOfYear' isleap, ¬($m = a.fst)
-     → ¬((if isleap then $v else $v') ≤ a.2.2 ∧ a.2.2 ≤ (if isleap then ($n-1) else ($n'-1))) := by
-      cases isleap <;> simp [monthLastDayAsDayOfYear']
-    exact this a a.property.left (by omega)
-  have : (if isleap then $v else $v') ≤ a.val.2.2 ∧ a.val.snd.snd ≤ (if isleap then ($n-1) else ($n'-1)) := by
-    cases isleap <;> simp_all
-  contradiction
-    : ∀ (dt : Date) (isleap : Bool)
-        (a : { x // x ∈ monthLastDayAsDayOfYear' isleap ∧ x.fst = dt.Month.val }),
-        (if isleap = true then $v else $v') ≤ a.val.snd.snd →
-        (a.val.snd.snd ≤ if isleap = true then ($n-1) else ($n'-1)) →
-        a.val.fst = $m))
-
---#check monthLastDayEqSndLe% 3 91 90 121 120
-
-declare_syntax_cat monthLastDayEqSnd
-syntax num ws num ws num ws num ws num: monthLastDayEqSnd
-syntax "monthLastDayEqSnd%" monthLastDayEqSnd : term
-
-/-- proof of `a.val.snd.snd = if isleap = true then $v else $v'` -/
-macro_rules
-| `(monthLastDayEqSnd% $m:num $v:num $v':num $n:num $n':num) =>
-    `((fun dt isleap a h1 h2 => by
-  by_contra
-  have : ¬(a.val.1 = $m ∧ (if isleap then $v else $v') ≤ a.val.snd.snd
-           ∧ a.val.snd.snd ≤ (if isleap then $n else $n')) := by
-    have : ∀ a ∈ monthLastDayAsDayOfYear' isleap, ¬(a.2.2 = if isleap then $v else $v')
-      → ¬(a.1 = $m ∧ (if isleap then $v else $v') ≤ a.2.2 ∧ a.2.2 ≤ (if isleap then $n else $n')) := by
-      cases isleap <;> simp [monthLastDayAsDayOfYear']
-    exact this a a.property.left (by omega)
-  have : a.val.1 = $m ∧ (if isleap then $v else $v') ≤ a.val.2.2
-         ∧ a.val.snd.snd ≤ (if isleap then $n else $n') := by
-    cases isleap <;> simp_all
-  contradiction
-    : ∀ (dt : Date) (isleap : Bool)
-        (a : { x // x ∈ monthLastDayAsDayOfYear' isleap ∧ x.fst = dt.Month.val }),
-        a.val.fst = $m →
-        (if isleap = true then $v else $v') ≤ a.val.snd.snd →
-        (a.val.snd.snd ≤ if isleap = true then $n else $n') →
-        a.val.snd.snd = if isleap = true then $v else $v'))
-
---#check monthLastDayEqSnd% 3 91 90 120 119
-
-end Notation
-
 /-- Relation of Date to `Time.monthLengths` list. -/
 @[simp] def monthLengthsOfDate (m : Nat × Nat) (dt : Date) :=
   m ∈ (monthLengths (isLeapYear dt.Year))
@@ -176,7 +23,7 @@ def monthLengths_of_date (dt : Date) : {m // monthLengthsOfDate m dt} :=
       simp
       let ⟨m, hm⟩ := dt.IsValid
       have : (_, _) ∈ monthLengths (isLeapYear dt.Year) := hm.left
-      exact ⟨m.1, by exact ⟨m.2, by simp_all⟩⟩)
+      exact ⟨m.1, by exact ⟨m.2, hm⟩⟩)
   ⟨a.val, by
     have := a.property.right
     simp_all
@@ -218,56 +65,125 @@ theorem monthLastDayAsDayOfYear'_month_lt_12_lt (isleap : Bool) (dt : Date)
 theorem monthLastDayAsDayOfYear'_month_1_eq (dt : Date) (isleap : Bool)
   (a : { x // x ∈ monthLastDayAsDayOfYear' isleap ∧ x.fst = dt.Month.val }) (h : a.val.2.1 ≤ 31)
     : 1 = a.val.1 := by
-  exact (monthLastDayMonthEq% 1 0 0 31 31) dt isleap a
-          (by simp [monthLastDayAsDayOfYear'_snd_fst_lt isleap a.val a.property.left])
-          (by simp [h])
+  have ⟨i', h'⟩ := List.get_of_mem a.property.left
+  have := monthLastDayAsDayOfYear'_fst_eq_of_le_31 isleap i' (by simp_all)
+  simp_all
 
 theorem monthLastDayAsDayOfYear'_day_of_month_1_eq (dt : Date) (isleap : Bool)
   (a : { x // x ∈ monthLastDayAsDayOfYear' isleap ∧ x.fst = dt.Month.val }) (h : a.val.1 = 1)
     : 1 = a.val.2.1 := by
-  have := ( monthLastDayMonthDayEq% 1 1 1) dt isleap a h
+  have ⟨i', h'⟩ := List.get_of_mem a.property.left
+  have := monthLastDayAsDayOfYear'_snd_eq_of_eq_1 isleap i' (by simp_all)
   simp_all
 
-theorem monthLastDayAsDayOfYear'_month_12_eq (dt : Date) (isleap : Bool)
-    (a : { x // x ∈ monthLastDayAsDayOfYear' isleap ∧ x.fst = dt.Month.val })
-  (h : (if isleap then 306 else 305) < a.val.2.1 )
-    : 12 = a.val.1 := by
-  by_contra
-  have : ¬((if isleap then 306 else 305) < a.val.snd.fst) := by
-    have : ∀ a ∈ monthLastDayAsDayOfYear' isleap, ¬12 = a.1
-        → ¬((if isleap then 306 else 305) < a.2.1) := by
-      cases isleap <;> simp [monthLastDayAsDayOfYear']
-    exact this a a.property.left (by omega)
-  have : (if isleap then 306 else 305) < a.val.2.1 := h
-  contradiction
+theorem monthLastDayAsDayOfYear'_index_eq_if_fst_eq
+  (i : Fin (monthLastDayAsDayOfYear' isleap).length)
+  (i' : Fin (monthLengths isleap).length)
+  (h : (monthLastDayAsDayOfYear' isleap)[i.val].fst = (monthLengths isleap)[i'.val].fst)
+    : i.val = i'.val := by
+  have := monthLastDayAsDayOfYear'_fst_eq isleap i
+  rw [this] at h
+  exact monthLengths_index_eq_of_fst_eq isleap i i' h
 
-theorem monthLastDayAsDayOfYear'_month_12_eq' (dt : Date) (isleap : Bool)
-    (a : { x // x ∈ monthLastDayAsDayOfYear' isleap ∧ x.fst = dt.Month.val })
-  (h : (if isleap then 305 else 304) < a.val.2.1 )
-    : 11 = a.val.1 ∨ 12 = a.val.1 := by
-  by_contra
-  have : ¬((if isleap then 305 else 304) < a.val.snd.fst) := by
-    have : ∀ a ∈ monthLastDayAsDayOfYear' isleap, ¬(11 = a.1 ∨ 12 = a.1)
-        → ¬((if isleap then 305 else 304) < a.2.1) := by
-      cases isleap <;> simp [monthLastDayAsDayOfYear']
-    exact this a a.property.left (by omega)
-  have : (if isleap then 305 else 304) < a.val.2.1 := h
-  contradiction
+theorem monthLastDayAsDayOfYear'_sub_eq_incr (i : Fin (monthLastDayAsDayOfYear' isleap).length)
+  (dt : Date)
+  (hl : isLeapYear dt.Year = isleap)
+  {ml : { m // monthLengthsOfDate m dt }}
+  (hml : ml = monthLengths_of_date dt) (h : dt.Day.val = ml.val.snd)
+  (hmonth : ((monthLastDayAsDayOfYear' isleap).get i).fst = dt.Month.val)
+    : dt.Day.val = (monthLastDayAsDayOfYear' isleap)[i.val].snd.snd
+                    - (monthLastDayAsDayOfYear' isleap)[i.val].snd.fst + 1 := by
+  have ⟨i', h'⟩ := List.get_of_mem ml.property.left
+  rw [hl] at h'
+  have h'month : (monthLengths isleap)[i'.val].fst = dt.Month.val := by
+    rw [← ml.property.right.left]
+    simp_all
+  have h'day : dt.Day.val = (monthLengths isleap)[i'.val].snd := by
+    simp_all
 
-theorem monthLastDayAsDayOfYear'_day_of_month_12_eq (dt : Date) (isleap : Bool)
-  (a : { x // x ∈ monthLastDayAsDayOfYear' isleap ∧ x.fst = dt.Month.val }) (h : a.val.1 = 12)
-    : (if isleap then 336 else 335) = a.val.2.1 := by
-  by_contra
-  have : ¬a.val.1 = 12 := by
-    have : ∀ a ∈ monthLastDayAsDayOfYear' isleap, ¬(if isleap then 336 else 335) = a.2.1 → ¬a.1 = 12 := by
-      cases isleap <;> simp [monthLastDayAsDayOfYear']
-    exact this a a.property.left (by omega)
-  contradiction
+  have := monthLastDayAsDayOfYear'_index_eq_if_fst_eq i i' (by simp_all)
+  have h'day : dt.Day.val = (monthLengths isleap)[i.val].snd := by
+    simp_all
 
-theorem month_11_if_eq (isLeap : Bool) (h: ml ∈ monthLengths isLeap)
-    : ml.1 = 11 → ml.2 = 30 := by
-  intro
-  rename_i h
-  have : ∀ ml, ml ∈ monthLengths isLeap ∧ ml.1 = 11 → ml.2 = 30 := by
-    simp [monthLengths]
-  simp [this ml (And.intro (by simp_all) h)]
+  have := monthLastDayAsDayOfYear'_sub_eq isleap i
+  simp_all
+
+theorem monthLastDayAsDayOfYear'_sub_le (i : Fin (monthLastDayAsDayOfYear' isleap).length)
+  (dt : Date)
+  (hl : isLeapYear dt.Year = isleap)
+  {ml : { m // monthLengthsOfDate m dt }}
+  (hml : ml = monthLengths_of_date dt) (h : dt.Day.val < ml.val.snd)
+  (hmonth : ((monthLastDayAsDayOfYear' isleap).get i).fst = dt.Month.val)
+    : dt.Day.val ≤ (monthLastDayAsDayOfYear' isleap)[i].snd.snd
+                    - (monthLastDayAsDayOfYear' isleap)[i].snd.fst := by
+  have ⟨i', h'⟩ := List.get_of_mem ml.property.left
+  rw [hl] at h'
+  have h'month : (monthLengths isleap)[i'.val].fst = dt.Month.val := by
+    rw [← ml.property.right.left]
+    simp_all
+  have h'day : dt.Day.val < (monthLengths isleap)[i'.val].snd := by
+    simp_all
+
+  have := monthLastDayAsDayOfYear'_index_eq_if_fst_eq i i' (by simp_all)
+  have h'day : dt.Day.val < (monthLengths isleap)[i.val].snd := by
+    simp_all
+
+  have := monthLastDayAsDayOfYear'_sub_eq isleap i
+  simp_all
+  omega
+
+theorem monthLastDayAsDayOfYear'_index_eq (i i' : Fin (monthLastDayAsDayOfYear' isleap).length)
+  (dt : Date)
+  (hl : isLeapYear dt.Year = isleap)
+  {ml : { m // monthLengthsOfDate m dt }}
+  (hml : ml = monthLengths_of_date dt) (h : dt.Day.val < ml.val.snd)
+  (hmonth : ((monthLastDayAsDayOfYear' isleap).get i').fst = dt.Month.val)
+  (h1 : (monthLastDayAsDayOfYear' isleap)[i].snd.fst
+        ≤ (monthLastDayAsDayOfYear' isleap)[i'].snd.fst + dt.Day.val)
+  (h2 : (monthLastDayAsDayOfYear' isleap)[i'].snd.fst + dt.Day.val
+        ≤ (monthLastDayAsDayOfYear' isleap)[i].snd.snd)
+    : i = i' := by
+  have := dt.Day.property
+  have : i.val ≤ i'.val := by
+    have h := monthLastDayAsDayOfYear'_sub_le i' dt hl hml h hmonth
+    have := monthLastDayAsDayOfYear'_fst_lt_snd isleap i'
+    have : (monthLastDayAsDayOfYear' isleap)[i].snd.fst
+           ≤ (monthLastDayAsDayOfYear' isleap)[i'].snd.snd := by omega
+    exact monthLastDayAsDayOfYear'_index_le_of_fst_le_snd isleap i' i this
+  have : i'.val ≤ i.val := by
+    have : (monthLastDayAsDayOfYear' isleap)[i'].snd.fst
+         < (monthLastDayAsDayOfYear' isleap)[i].snd.snd := by omega
+    exact monthLastDayAsDayOfYear'_index_le_of_fst_lt_snd isleap i i' this
+  omega
+
+theorem monthLastDayAsDayOfYear'_index_eq_of_last_day_in_month
+  (i i' : Fin (monthLastDayAsDayOfYear' isleap).length)
+  (dt : Date)
+  (hl : isLeapYear dt.Year = isleap)
+  {ml : { m // monthLengthsOfDate m dt }}
+  (hml : ml = monthLengths_of_date dt) (h : dt.Day.val = ml.val.snd)
+  (hmonth : ((monthLastDayAsDayOfYear' isleap).get i').fst = dt.Month.val)
+  (h1 : (monthLastDayAsDayOfYear' isleap)[i.val].snd.fst
+        ≤ (monthLastDayAsDayOfYear' isleap)[i'.val].snd.fst + dt.Day.val)
+  (h2 : (monthLastDayAsDayOfYear' isleap)[i'.val].snd.fst + dt.Day.val
+        ≤ (monthLastDayAsDayOfYear' isleap)[i.val].snd.snd)
+    : i.val - 1 = i'.val := by
+  have := monthLastDayAsDayOfYear'_sub_eq_incr i' dt hl hml h hmonth
+  rw [this] at h1
+  rw [this] at h2
+
+  have : (monthLastDayAsDayOfYear' isleap)[i'.val].snd.fst
+          < (monthLastDayAsDayOfYear' isleap)[i'.val].snd.snd :=
+    monthLastDayAsDayOfYear'_fst_lt_snd isleap i'
+
+  have : i.val ≤  i'.val + 1 := by
+    have h1 : (monthLastDayAsDayOfYear' isleap)[i.val].snd.fst
+            ≤ (monthLastDayAsDayOfYear' isleap)[i'.val].snd.snd + 1 := by  omega
+    exact monthLastDayAsDayOfYear'_index_le_of_fst_le_snd_incr isleap i' i h1
+
+  have : i'.val + 1 ≤ i.val := by
+    have h2 : (monthLastDayAsDayOfYear' isleap)[i'.val].snd.snd + 1
+            ≤ (monthLastDayAsDayOfYear' isleap)[i.val].snd.snd := by omega
+    exact monthLastDayAsDayOfYear'_index_le_of_snd_le_snd_incr isleap i i' h2
+
+  omega

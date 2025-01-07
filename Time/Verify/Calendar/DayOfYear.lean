@@ -19,223 +19,6 @@ namespace DayOfYear
 open Time
 open MonthLength
 
-namespace Notation
-
-declare_syntax_cat dy'MonthEq
-syntax num ws num ws num ws num ws num ws num ws num : dy'MonthEq
-syntax "dy'MonthEq%" dy'MonthEq : term
-
-/-- proof of `$m = dt.Month.val` -/
-macro_rules
-| `(dy'MonthEq% $m:num $v:num $v':num $p:num $p':num $n:num $n':num) =>
-    `((fun dt isleap a h1 h2 => by
-  have monthLastDayMonthEq := monthLastDayMonthEq% $m:num $p $p' $n $n'
-  simp [dy'] at h1
-  simp [dy'] at h2
-  generalize memOfMonth isleap dt.Month = a at h1 h2
-  have := dt.Day.property
-  have := a.property
-  cases isleap <;> simp [] at h2 <;> try simp [] at h1
-  · simp_all [monthLastDayMonthEq dt false a  (by simp; omega) (by simp; omega)]
-  · simp_all [monthLastDayMonthEq dt true a  (by simp; omega) (by simp; omega)]
-    : ∀ (dt : Date) (isleap : Bool),
-    dt.Day.val < 31 →
-    (if isleap = true then $v else $v') < dy' isleap dt.Month dt.Day + 1 →
-    (dy' isleap dt.Month dt.Day ≤ if isleap = true then $n else $n') →
-    $m = dt.Month.val))
-
---#check dy'MonthEq% 4 91 90 61 60 120 119
-
-declare_syntax_cat dy'MonthDayEq
-syntax num ws num ws num ws num ws num ws num ws num  ws num ws num : dy'MonthDayEq
-syntax "dy'MonthDayEq%" dy'MonthDayEq : term
-
-/-- proof of `dt.Day.val + 1 = dy' ...` -/
-macro_rules
-| `(dy'MonthDayEq% $m:num $v:num $v':num $p:num $p':num $n:num $n':num $v1:num $v1':num) =>
-    `((fun dt isleap h h1 h2 => by
-  let dy'MonthEq := dy'MonthEq% $m:num $v $v' $p $p' $n $n'
-  simp [dy']
-  generalize memOfMonth isleap dt.Month = a
-  have := dy'MonthEq dt isleap h h1 h2
-  have := (monthLastDayMonthDayEq% $m:num $v1 $v1') dt isleap a (by omega)
-  cases isleap <;> simp_all <;> omega
-    : ∀ (dt : Date) (isleap : Bool),
-        dt.Day.val < 31 →
-        (if isleap = true then $v else $v') < dy' isleap dt.Month dt.Day + 1 →
-        (dy' isleap dt.Month dt.Day ≤ if isleap = true then $n else $n') →
-        dt.Day.val + 1 = dy' isleap dt.Month dt.Day - if isleap = true then ($v-1) else ($v'-1)))
-
---#check dy'MonthDayEq% 4 91 90 61 60 120 119 92 91
-
-declare_syntax_cat dy'MonthEq'
-syntax num ws num ws num ws num ws num ws num ws num ws num ws num ws num : dy'MonthEq'
-syntax "dy'MonthEq'%" dy'MonthEq' : term
-
-/-- proof of `$m = dt.Month.val` -/
-macro_rules
-| `(dy'MonthEq'% 3 $v:num $v':num $p:num $p':num $n:num $n':num $v1:num $v1':num 2) =>
-    `((fun dt isleap h h' h1 h2 => by
-  have monthEq := monthLastDayMonthEq% 3 $p $p' $n $n'
-  have monthEq' := monthLastDayMonthEq'% 3 $v1 $v1' 31 30
-  simp [dy'] at h1
-  simp [dy'] at h2
-  let a := memOfMonth isleap dt.Month
-  have : a = memOfMonth isleap dt.Month := by simp
-  rw [← this] at h1
-  rw [← this] at h2
-  have := dt.Day.property
-  have := a.property
-  have hmem : a.val.fst = dt.Month.val := a.property.right
-  rw [← hmem] at h'
-  cases isleap <;> simp [] at h1 <;> simp [] at h2 <;> simp [] at h'
-  · have h' : a.val.fst = 2 → 32 < a.val.snd.fst := by omega
-    have := monthEq' dt false a  (by simp; omega) (by simp; omega)
-    cases this
-    · rename_i h''
-      have := monthEq dt false a (h' h''.symm) (by simp; omega)
-      simp_all only [Bool.false_eq_true]
-    · simp_all
-  · have h' : a.val.fst = 2 → 32 < a.val.snd.fst := by omega
-    have := monthEq' dt true a  (by simp; omega) (by simp; omega)
-    cases this
-    · rename_i h''
-      have := monthEq dt true a (h' h''.symm) (by simp; omega)
-      simp_all only [Bool.false_eq_true]
-    · simp_all
-    : ∀ (dt : Date) (isleap : Bool),
-        dt.Day.val < 31 →
-        (dt.Month.val = 2 → dt.Day.val < if isleap then 29 else 28) →
-        (if isleap = true then $v else $v') < dy' isleap dt.Month dt.Day + 1 →
-        (dy' isleap dt.Month dt.Day ≤ if isleap = true then $n else $n') →
-        3 = dt.Month.val))
-| `(dy'MonthEq'% $m:num $v:num $v':num $p:num $p':num $n:num $n':num $v1:num $v1':num $m1:num) =>
-    `((fun dt isleap h h' h1 h2 => by
-  have monthEq := monthLastDayMonthEq% $m:num $p $p' $n $n'
-  have monthEq' := monthLastDayMonthEq'% $m:num $v1 $v1' $p $p'
-  simp [dy'] at h1
-  simp [dy'] at h2
-  generalize memOfMonth isleap dt.Month = a at h1 h2
-  have := dt.Day.property
-  have := a.property
-  have hmem : a.val.fst = dt.Month.val := a.property.right
-  rw [← hmem] at h'
-  cases isleap <;> simp [] at h1 <;> simp [] at h2
-  · have h' : a.val.fst = $m1 → $p' < a.val.snd.fst := by omega
-    have := monthEq' dt false a  (by simp; omega) (by simp; omega)
-    cases this
-    · rename_i h''
-      have := monthEq dt false a (h' h''.symm) (by simp; omega)
-      simp_all only [Bool.false_eq_true]
-    · simp_all
-  · have h' : a.val.fst = $m1 → $p < a.val.snd.fst := by omega
-    have := monthEq' dt true a  (by simp; omega) (by simp; omega)
-    cases this
-    · rename_i h''
-      have := monthEq dt true a (h' h''.symm) (by simp; omega)
-      simp_all only [Bool.false_eq_true]
-    · simp_all
-    : ∀ (dt : Date) (isleap : Bool),
-        dt.Day.val < 31 →
-        (dt.Month.val = $m1 → dt.Day.val < 30) →
-        (if isleap = true then $v else $v') < dy' isleap dt.Month dt.Day + 1 →
-        (dy' isleap dt.Month dt.Day ≤ if isleap = true then $n else $n') →
-        $m:num = dt.Month.val))
-
---#check dy'MonthEq'% 5 121 120 92 91 151 150 152 151 4
-
---#check dy'MonthEq'% 3 60 59 32 32 90 89 91 90 2
-
-declare_syntax_cat dy'MonthDayEq'
-syntax num ws num ws num ws num ws num ws num ws num  ws num ws num ws num ws num ws num ws num : dy'MonthDayEq'
-syntax "dy'MonthDayEq'%" dy'MonthDayEq' : term
-
-/-- proof of `$m = dt.Month.val' ...` -/
-macro_rules
-| `(dy'MonthDayEq'% 3 $v:num $v':num $p:num $p':num $n:num $n':num
-                    $v1:num $v1':num $v2:num $v2':num $v3:num 2) =>
-    `((fun dt isleap h h' h1 h2 =>  by
-  have dy'MonthEq' := dy'MonthEq'% 3 $v $v' $p $p' $n $n' $v1 $v1' 2
-  simp [dy']
-  let a := memOfMonth isleap dt.Month
-  have : a = memOfMonth isleap dt.Month := by simp
-  rw [← this]
-  have := dy'MonthEq' dt isleap h h' h1 h2
-  have monthLastDayMonthDayEq := (monthLastDayMonthDayEq% 3 $v3 $v) dt isleap a (by omega)
-  cases isleap <;> simp_all <;> omega
-    : ∀ (dt : Date) (isleap : Bool),
-        dt.Day.val < 31 →
-        (dt.Month.val = 2 → dt.Day.val < if isleap then 29 else 28) →
-        (if isleap = true then $v else $v') < dy' isleap dt.Month dt.Day + 1 →
-        (dy' isleap dt.Month dt.Day ≤ if isleap = true then $n else $n') →
-        dt.Day.val + 1 = dy' isleap dt.Month dt.Day - if isleap = true then $v2 else $v2'))
-| `(dy'MonthDayEq'% $m:num $v:num $v':num $p:num $p':num $n:num $n':num
-                    $v1:num $v1':num $v2:num $v2':num $v3:num $m1:num) =>
-    `((fun dt isleap h h' h1 h2 =>  by
-  have dy'MonthEq' := dy'MonthEq'% $m:num $v $v' $p $p' $n $n' $v1 $v1' $m1
-  simp [dy']
-  generalize memOfMonth isleap dt.Month = a
-  have := dy'MonthEq' dt isleap h h' h1 h2
-  have monthLastDayMonthDayEq := (monthLastDayMonthDayEq% $m:num $v3 $v) dt isleap a (by omega)
-  cases isleap <;> simp_all <;> omega
-    : ∀ (dt : Date) (isleap : Bool),
-        dt.Day.val < 31 →
-        (dt.Month.val = $m1 → dt.Day.val < 30) →
-        (if isleap = true then $v else $v') < dy' isleap dt.Month dt.Day + 1 →
-        (dy' isleap dt.Month dt.Day ≤ if isleap = true then $n else $n') →
-        dt.Day.val + 1 = dy' isleap dt.Month dt.Day - if isleap = true then $v2 else $v2'))
-
---#check dy'MonthDayEq'% 5 121 120 92 91 151 150 152 151 120 119 122 4
-
---#check dy'MonthDayEq'% 3 60 59 32 32 90 89 91 90 59 58 61 2
-
-declare_syntax_cat monthIfLt
-syntax num : monthIfLt
-syntax "monthIfLt%" monthIfLt : term
-
-/-- proof of `dt.Day.val < 30` -/
-macro_rules
-| `(monthIfLt% 2) =>
-    `((fun {dt} isLeap {ml} hml h hl => by
-  have hp := ml.property
-  simp [monthLengthsOfDate] at hp
-  intro
-  rename_i h
-  rw [← hp.right.left] at h
-  have hm := (monthIfEq% 2) isLeap (by have := ml.property.left; rwa [hl] at this)
-  simp [monthLengths, h] at hm
-  have := ml.property
-  simp_all
-    : ∀ {dt : Date} (isLeap : Bool)
-      {ml : { m // monthLengthsOfDate m dt }},
-      ml = monthLengths_of_date dt →
-      dt.Day.val < ml.val.snd →
-      isLeapYear dt.Year = isLeap →
-      dt.Month.val = 2 →
-      dt.Day.val < if isLeap then 29 else 28))
-| `(monthIfLt% $m:num) =>
-    `((fun {dt} isLeap {ml} hml h hl => by
-  have hp := ml.property
-  simp [monthLengthsOfDate] at hp
-  intro
-  rename_i h
-  rw [← hp.right.left] at h
-  have hm := (monthIfEq% $m:num) isLeap (by have := ml.property.left; rwa [hl] at this)
-  simp [monthLengths, h] at hm
-  have := ml.property
-  simp_all
-    : ∀ {dt : Date} (isLeap : Bool)
-      {ml : { m // monthLengthsOfDate m dt }},
-      ml = monthLengths_of_date dt →
-      dt.Day.val < ml.val.snd →
-      isLeapYear dt.Year = isLeap →
-      dt.Month.val = $m →
-      dt.Day.val < 30))
-
---#check monthIfLt% 4
-
-end Notation
-
 /-- Get day of year of last day of all months by `Time.dy`-/
 def dyOfLastDayOfMonth_map (isleap : Bool) : List Nat :=
   List.range' 1 12 |> List.map (fun m => Time.dyOfLastDayOfMonth isleap m)
@@ -453,55 +236,176 @@ theorem dy'_month_1_day_eq (dt : Date) (isleap : Bool)
   have := monthLastDayAsDayOfYear'_day_of_month_1_eq dt isleap a (by omega)
   omega
 
-theorem month_11_if_lt {dt : Date} (isLeap : Bool)
+theorem dy'_day_n_eq (isleap : Bool)
+  (i : Fin (monthLastDayAsDayOfYear' isleap).length) (hle : 1 ≤ i.val)
+  (a : Nat × Nat × Nat)
+  (h : (monthLastDayAsDayOfYear' isleap)[i.val] = a)
+    : (monthLastDayAsDayOfYear' isleap)[i.val - 1].snd.snd + 1 = a.snd.fst := by
+  rw [← h]
+  exact (monthLastDayAsDayOfYear'_pred_snd_incr_eq_fst isleap i (by omega)).symm
+
+theorem dy'_day_n_eq_incr (isleap : Bool) (dt : Date)
+  (i i' : Fin (monthLastDayAsDayOfYear' isleap).length)
+  (hi : i.val - 1 = i'.val)
+  (a : Nat × Nat × Nat)
+  (h1 : (monthLastDayAsDayOfYear' isleap)[i'.val] = a)
+  (h2 : dt.Day.val = (monthLastDayAsDayOfYear' isleap)[i'.val].snd.snd
+                      - (monthLastDayAsDayOfYear' isleap)[i'.val].snd.fst + 1)
+  : a.snd.fst + dt.Day.val
+    - ((monthLastDayAsDayOfYear isleap).get ⟨i.val - 1, by
+          rw [hi]
+          have := i'.isLt
+          simp_all⟩).snd = 1 := by
+  rw [← h1, h2]
+  have hi : (⟨i.val - 1,
+            by rw [hi]; have := i'.isLt; simp_all⟩ : Fin (monthLastDayAsDayOfYear isleap).length)
+          = i' := by
+    simp [Fin.ext_iff]
+    omega
+  rw [hi]
+  have : (monthLastDayAsDayOfYear' isleap)[i'.val].snd.fst
+          < (monthLastDayAsDayOfYear' isleap)[i'.val].snd.snd :=
+    monthLastDayAsDayOfYear'_fst_lt_snd isleap i'
+
+  suffices h : (monthLastDayAsDayOfYear' isleap)[i'.val].snd.snd + 1
+      - ((monthLastDayAsDayOfYear isleap).get i').snd = 1 by omega
+
+  suffices h : (monthLastDayAsDayOfYear' isleap)[i'.val].snd.snd
+        = ((monthLastDayAsDayOfYear isleap).get i').snd by omega
+
+  exact monthLastDayAsDayOfYear'_snd_eq isleap i'
+
+theorem dy'_month_n_and_day_eq (dt : Date) (isleap : Bool)
+  (i : Fin (monthLastDayAsDayOfYear isleap).length) (hle : 1 ≤ i.val)
+  (hl : isLeapYear dt.Year = isleap)
   {ml : { m // monthLengthsOfDate m dt }}
   (hml : ml = monthLengths_of_date dt) (h : dt.Day.val < ml.val.snd)
-  (hl : isLeapYear dt.Year = isLeap)
-    : dt.Month.val = 11 → dt.Day.val < 30 := by
-  have hp := ml.property
-  simp [monthLengthsOfDate] at hp
-  intro
-  rename_i h
-  rw [← hp.right.left] at h
-  have hm := @month_11_if_eq ml.val isLeap (by have := ml.property.left; rwa [hl] at this)
-  simp [monthLengths, h] at hm
-  have := ml.property
+  (h1 : ((monthLastDayAsDayOfYear isleap).get ⟨i-1, by omega⟩).snd < dy' isleap dt.Month dt.Day + 1)
+  (h2 : dy' isleap dt.Month dt.Day + 1 ≤ ((monthLastDayAsDayOfYear isleap).get i).snd)
+    : i + 1 = dt.Month.val
+    ∧ dt.Day.val + 1
+      = dy' isleap dt.Month dt.Day + 1
+        - ((monthLastDayAsDayOfYear isleap).get ⟨i-1, by omega⟩).snd:= by
+  simp only [dy'] at h1
+  simp only [dy'] at h2
+  simp only [dy']
+  generalize memOfMonth isleap dt.Month = a at *
+  have heq1 := monthLastDayAsDayOfYear_snd_eq isleap ⟨i-1, by omega⟩
+  have heq2  := monthLastDayAsDayOfYear_snd_eq isleap i
+  rw [heq1] at h1
+  rw [heq2] at h2
+
+  simp at h1
+  simp at h2
+
+  have hlt' : i < (monthLastDayAsDayOfYear' isleap).length := by
+    have := monthLastDayAsDayOfYear_length_eq_12 isleap
+    have := monthLastDayAsDayOfYear'_length_eq_12 isleap
+    omega
+
+  have h1 : (monthLastDayAsDayOfYear' isleap)[i.val - 1].snd.snd + 1
+            ≤  a.val.snd.fst + dt.Day.val - 1 + 1 := by omega
+  have := monthLastDayAsDayOfYear'_pred_snd_incr_eq_fst isleap i hle
+  simp at this
+  rw [← this] at h1
+
+  have ⟨i', h'⟩ := List.get_of_mem a.property.left
+  have h'month : ((monthLastDayAsDayOfYear' isleap).get i').fst = dt.Month.val := by
+    rw [← a.property.right]
+    simp_all
+
+  rw [← h'] at h1
+  rw [← h'] at h2
+  have : ⟨i, hlt'⟩ = i' := monthLastDayAsDayOfYear'_index_eq i i' dt hl hml h h'month
+    (by
+      have := dt.Day.property.left
+      have : ((monthLastDayAsDayOfYear' isleap).get i').snd.fst + dt.Day.val - 1 + 1
+           = ((monthLastDayAsDayOfYear' isleap).get i').snd.fst + dt.Day.val := by omega
+      rw [this] at h1
+      simp_all)
+    (by
+      have := dt.Day.property.left
+      have : ((monthLastDayAsDayOfYear' isleap).get i').snd.fst + dt.Day.val - 1 + 1
+           = ((monthLastDayAsDayOfYear' isleap).get i').snd.fst + dt.Day.val := by omega
+      simp_all)
+
+  have h1 : (monthLastDayAsDayOfYear' isleap).get ⟨i, hlt'⟩ = a.val := by simp_all
+  have h2 := monthLastDayAsDayOfYear'_month_eq isleap ⟨i, hlt'⟩
+
   simp_all
 
-theorem dy'_month_12_eq (dt : Date) (isleap : Bool)
-  (h : dt.Day.val < 31)
-  (h' : dt.Month.val = 11 → dt.Day.val < 30)
-  (h1 : (if isleap then 335 else 334) < dy' isleap dt.Month dt.Day + 1)
-    : 12 = dt.Month.val := by
-  simp [dy'] at h1
-  generalize memOfMonth isleap dt.Month = a at h1
-  have := dt.Day.property
-  have := a.property
-  have hmem : a.val.fst = dt.Month.val := a.property.right
-  rw [← hmem] at h'
-  cases isleap <;> simp [] at h1
-  · have h' : a.val.fst = 11 → 305 < a.val.snd.fst := by omega
-    have := monthLastDayAsDayOfYear'_month_12_eq' dt false a  (by simp; omega)
-    cases this
-    · rename_i h''
-      have := monthLastDayAsDayOfYear'_month_12_eq dt false a (h' h''.symm)
-      simp_all only [Bool.false_eq_true]
-    · simp_all
-  · have h' : a.val.fst = 11 → 306 < a.val.snd.fst := by omega
-    have := monthLastDayAsDayOfYear'_month_12_eq' dt true a  (by simp; omega)
-    cases this
-    · rename_i h''
-      have := monthLastDayAsDayOfYear'_month_12_eq dt true a (h' h''.symm)
-      simp_all only [Bool.false_eq_true]
-    · simp_all
+  suffices h : (monthLastDayAsDayOfYear' isleap)[↑i - 1].snd.snd + 1 = a.val.snd.fst by
+    omega
 
-theorem dy'_month_12_day_eq (dt : Date) (isleap : Bool)
-  (h : dt.Day.val < 31)
-  (h' : dt.Month.val = 11 → dt.Day.val < 30)
-  (h1 : (if isleap then 335 else 334) < dy' isleap dt.Month dt.Day + 1)
-    : dt.Day.val + 1 = dy' isleap dt.Month dt.Day - (if isleap then 334 else 333) := by
-  simp [dy']
-  generalize memOfMonth isleap dt.Month = a
-  have := dy'_month_12_eq dt isleap h h' h1
-  have := monthLastDayAsDayOfYear'_day_of_month_12_eq dt isleap a (by omega)
-  cases isleap <;> simp_all <;> omega
+  rw [← this] at h'
+  exact dy'_day_n_eq isleap i (by simp_all) a.val h'
+
+theorem dy'_month_n_and_day_eq_incr (dt : Date) (isleap : Bool)
+  (i : Fin (monthLastDayAsDayOfYear isleap).length) (hle : 1 ≤ i.val)
+  (hl : isLeapYear dt.Year = isleap)
+  {ml : { m // monthLengthsOfDate m dt }}
+  (hml : ml = monthLengths_of_date dt) (h : dt.Day.val = ml.val.snd)
+  (h1 : ((monthLastDayAsDayOfYear isleap).get ⟨i-1, by omega⟩).snd < dy' isleap dt.Month dt.Day + 1)
+  (h2 : dy' isleap dt.Month dt.Day + 1 ≤ ((monthLastDayAsDayOfYear isleap).get i).snd)
+    : i = dt.Month.val
+    ∧ dy' isleap dt.Month dt.Day + 1
+        - ((monthLastDayAsDayOfYear isleap).get ⟨i-1, by omega⟩).snd = 1 := by
+  simp only [dy'] at h1
+  simp only [dy'] at h2
+  simp only [dy']
+  generalize memOfMonth isleap dt.Month = a at *
+  have heq1 := monthLastDayAsDayOfYear_snd_eq isleap ⟨i-1, by omega⟩
+  have heq2  := monthLastDayAsDayOfYear_snd_eq isleap i
+  rw [heq1] at h1
+  rw [heq2] at h2
+
+  simp at h1
+  simp at h2
+
+  have hlt' : i < (monthLastDayAsDayOfYear' isleap).length := by
+    have := monthLastDayAsDayOfYear_length_eq_12 isleap
+    have := monthLastDayAsDayOfYear'_length_eq_12 isleap
+    omega
+
+  have h1 : (monthLastDayAsDayOfYear' isleap)[i.val - 1].snd.snd + 1
+            ≤  a.val.snd.fst + dt.Day.val - 1 + 1 := by omega
+  have := monthLastDayAsDayOfYear'_pred_snd_incr_eq_fst isleap i hle
+  simp at this
+  rw [← this] at h1
+
+  have ⟨i', h'⟩ := List.get_of_mem a.property.left
+  have h'month : ((monthLastDayAsDayOfYear' isleap).get i').fst = dt.Month.val := by
+    rw [← a.property.right]
+    simp_all
+
+  rw [← h'] at h1
+  rw [← h'] at h2
+  have hi : i.val - 1 = i'.val := monthLastDayAsDayOfYear'_index_eq_of_last_day_in_month i i'
+                                dt hl hml h h'month
+    (by
+      have := dt.Day.property.left
+      have : ((monthLastDayAsDayOfYear' isleap).get i').snd.fst + dt.Day.val - 1 + 1
+           = ((monthLastDayAsDayOfYear' isleap).get i').snd.fst + dt.Day.val := by omega
+      rw [this] at h1
+      simp_all)
+    (by
+      have := dt.Day.property.left
+      have : ((monthLastDayAsDayOfYear' isleap).get i').snd.fst + dt.Day.val - 1 + 1
+           = ((monthLastDayAsDayOfYear' isleap).get i').snd.fst + dt.Day.val := by omega
+      simp_all)
+
+  have h1 : (monthLastDayAsDayOfYear' isleap).get i' = a.val := by simp_all
+  have h2 := monthLastDayAsDayOfYear'_month_eq isleap i'
+
+  exact And.intro
+    (by
+      have : i.val = i'.val + 1 := by omega
+      simp_all)
+    (by
+      suffices h : a.val.snd.fst + dt.Day.val
+                     - ((monthLastDayAsDayOfYear isleap).get ⟨i.val - 1, by omega⟩).snd
+                   = 1 by
+        omega
+
+      have := monthLastDayAsDayOfYear'_sub_eq_incr i' dt hl hml h h'month
+      exact dy'_day_n_eq_incr isleap dt i i' hi a.val (by simp_all) this)
