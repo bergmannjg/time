@@ -21,48 +21,48 @@ example : Fixed.toMod ninety sixty (zero_lt_toFixed _ _ _ (by omega))
                   (toFixed_lt_toFixed _ _ _ _ _ (by omega))
               ⟩ := by rfl
 
-example : (toFixed Sign.Nonneg 10 (toDenominator 500 3) : Fixed 3) == ⟨10500⟩ := by native_decide
+example : (toFixed Sign.Nonneg 10 (toDenominator 500 3 (by simp)) : Fixed 3) == ⟨10500⟩ := by native_decide
 
-example : (toFixed Sign.Nonneg 10 (toDenominator 500 3) : Fixed 3)
-          == (toFixed Sign.Nonneg 10 (toDenominator 500 3) : Fixed 3).toParts.fromParts := by native_decide
+example : (toFixed Sign.Nonneg 10 (toDenominator 500 3 (by simp)) : Fixed 3)
+          == (toFixed Sign.Nonneg 10 (toDenominator 500 3 (by simp)) : Fixed 3).toParts.fromParts := by native_decide
 
 example : (⟨-50⟩ : Fixed 3) == (⟨-50⟩ : Fixed 3).toParts.fromParts := by rfl
 
-example : (toFixed Sign.Neg 10 (toDenominator 500 3) : Fixed 3)
-          == (toFixed Sign.Neg 10 (toDenominator 500 3) : Fixed 3).toParts.fromParts := by native_decide
+example : (toFixed Sign.Neg 10 (toDenominator 500 3 (by simp)) : Fixed 3)
+          == (toFixed Sign.Neg 10 (toDenominator 500 3 (by simp)) : Fixed 3).toParts.fromParts := by native_decide
 
-example : (toFixed Sign.Neg 10 (toDenominator 500 3) : Fixed 3) == ⟨-10500⟩ := by native_decide
+example : (toFixed Sign.Neg 10 (toDenominator 500 3 (by simp)) : Fixed 3) == ⟨-10500⟩ := by native_decide
 
-example : (Fixed.zero : Fixed 3) - (toFixed Sign.Nonneg 10 (toDenominator 500 3) : Fixed 3)
+example : (Fixed.zero : Fixed 3) - (toFixed Sign.Nonneg 10 (toDenominator 500 3 (by simp)) : Fixed 3)
             == ⟨-10500⟩ := by native_decide
 
-example : neg (toFixed Sign.Nonneg 10 (toDenominator 500 3) : Fixed 3) == ⟨-10500⟩ := by native_decide
+example : neg (toFixed Sign.Nonneg 10 (toDenominator 500 3 (by simp)) : Fixed 3) == ⟨-10500⟩ := by native_decide
 
-example : (toFixed Sign.Nonneg 0 (toDenominator 500 3) : Fixed 3) == ⟨500⟩ := by native_decide
+example : (toFixed Sign.Nonneg 0 (toDenominator 500 3 (by simp)) : Fixed 3) == ⟨500⟩ := by native_decide
 
-example : neg (toFixed Sign.Nonneg 0 (toDenominator 500 3) : Fixed 3) == ⟨-500⟩ := by native_decide
+example : neg (toFixed Sign.Nonneg 0 (toDenominator 500 3 (by simp)) : Fixed 3) == ⟨-500⟩ := by native_decide
 
-example : (toFixed Sign.Nonneg 10 (toDenominator 500 3) : Fixed 3).toParts.numerator == 10 := by native_decide
+example : (toFixed Sign.Nonneg 10 (toDenominator 500 3 (by simp)) : Fixed 3).toParts.numerator == 10 := by native_decide
 
-example : (toFixed Sign.Nonneg 10 (toDenominator 500 3) : Fixed 3).toParts
+example : (toFixed Sign.Nonneg 10 (toDenominator 500 3 (by simp)) : Fixed 3).toParts
             == ⟨.Nonneg, 10, 500, by omega⟩ := by native_decide
 
-example : (neg (toFixed Sign.Nonneg 0 (toDenominator 500 3) : Fixed 3)).toParts
+example : (neg (toFixed Sign.Nonneg 0 (toDenominator 500 3 (by simp)) : Fixed 3)).toParts
             == ⟨.Neg, 0, 500, by omega⟩ := by native_decide
 
-example : (toFixed Sign.Nonneg 1 (toDenominator 500 3) : Fixed 3)
+example : (toFixed Sign.Nonneg 1 (toDenominator 500 3 (by simp)) : Fixed 3)
             - (toFixed Sign.Nonneg 1 default : Fixed 3) == ⟨500⟩ := by native_decide
 
-example : (toFixed Sign.Nonneg 1 (toDenominator 500 3) : Fixed 3)
+example : (toFixed Sign.Nonneg 1 (toDenominator 500 3 (by simp)) : Fixed 3)
             + (toFixed Sign.Neg 1 default : Fixed 3) == ⟨500⟩ := by native_decide
 
 example : (toFixed Sign.Nonneg 1 default : Fixed 3)
-            - (toFixed Sign.Nonneg 1 (toDenominator 500 3) : Fixed 3) == ⟨-500⟩ := by native_decide
+            - (toFixed Sign.Nonneg 1 (toDenominator 500 3 (by simp)) : Fixed 3) == ⟨-500⟩ := by native_decide
 
 example : (toFixed Sign.Nonneg 1 default : Fixed 3)
             - (toFixed Sign.Nonneg 4 default : Fixed 3) == ⟨-3000⟩ := by rfl
 
-example : toString (toFixed Sign.Nonneg 1 (toDenominator 12300 5) : Fixed 5)
+example : toString (toFixed Sign.Nonneg 1 (toDenominator 12300 5 (by simp)) : Fixed 5)
             == "1.123" := by native_decide
 
 example : toString (toFixed Sign.Nonneg 1 default : Fixed 5) == "1" := by native_decide

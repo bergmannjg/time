@@ -27,6 +27,7 @@ namespace Notation
 declare_syntax_cat date
 /-- Date from numeric literals year, month and day -/
 syntax num noWs "-" noWs num noWs "-" noWs num : date
+syntax "-" noWs num noWs "-" noWs num noWs "-" noWs num : date
 syntax "date%" date : term
 
 /--
@@ -37,6 +38,8 @@ syntax "date%" date : term
 macro_rules
 | `(date% $y:num-$m:num-$d:num) =>
     `(Time.Date.mk $y ⟨$m, by omega⟩ ⟨$d, by omega⟩ (by native_decide))
+| `(date% -$y:num-$m:num-$d:num) =>
+    `(Time.Date.mk (-$y) ⟨$m, by omega⟩ ⟨$d, by omega⟩ (by native_decide))
 
 end Notation
 

@@ -87,20 +87,8 @@ def Parts.fromParts (parts : Fixed.Parts p) : Fixed p :=
 def toSign (n : Int) : Sign :=
   if n < 0 then Sign.Neg else Sign.Nonneg
 
-/-- remove trailing digits untill n < 10 ^ p -/
-def toDenominator (n : Nat) (p : Nat) : Fixed.Denominator p :=
-  have h : 0 < 10 ^ p := Int.pos_pow_of_pos _ (by omega)
-  let s := clip_denom n (10 ^ p) h
-  ⟨s.val, s.property⟩
-  where clip_denom (n : Nat) (p : Nat) (hp : 0 < p) : { n // n < p } :=
-    if h : 0 < n then
-      if h1 : n ≥ p then
-        clip_denom (n / 10) p hp
-      else
-        ⟨n, Nat.lt_of_not_le h1⟩
-    else
-      ⟨0, hp⟩
-    decreasing_by exact Nat.div_lt_self h (by decide)
+def toDenominator (n : Nat) (p : Nat) (h : n < 10 ^ p) : Fixed.Denominator p :=
+  ⟨n, h⟩
 
 def denominatorValueToString (d : Int) (p : Nat) : String :=
     let dropped := (toZeroPadded d p).toSubstring.dropRightWhile (λ c => c == '0')

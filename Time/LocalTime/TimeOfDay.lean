@@ -48,7 +48,8 @@ private def divMod (n : Int) (d : Nat) (hd : 0 < d) : Int ×  Time.Ico 0 d :=
 
 def timeOfDayToTime (tod : TimeOfDay) : DiffTime :=
   let p := tod.Second.val.toParts
-  DiffTime.fromSecNsec Sign.Nonneg ((tod.Hour.val * 60 + tod.Minute.val) * 60 + p.numerator) p.denominator
+  DiffTime.fromSecNsec Sign.Nonneg ((tod.Hour.val * 60 + tod.Minute.val) * 60 + p.numerator)
+      p.denominator p.lt
 
 def timeToDaysAndTimeOfDay (secsOfTime : DiffTime) : Int × TimeOfDay :=
   let m := secsOfTime.val / Second.sixty
@@ -73,10 +74,11 @@ def utcToLocalTimeOfDay (zone : TimeZone) (tod : TimeOfDay) : Int × TimeOfDay :
 def localToUTCTimeOfDay (zone : TimeZone) (tod : TimeOfDay) : Int × TimeOfDay :=
   utcToLocalTimeOfDay (TimeZone.minutesToTimeZone (Neg.neg (zone.timeZoneMinutes))) tod
 
-def toSecond (secs : Int) (nanoSecs : Nat) (h1: 0 ≤ secs) (h2: secs < 60) : Ico.Second :=
+def toSecond (secs : Int) (nanoSecs : Nat) (h1: 0 ≤ secs) (h2: secs < 60)
+  (h3 : nanoSecs < 10 ^ 9)  : Ico.Second :=
   if h : 0 = secs then ⟨Second.zero, And.intro (LeRefl.le_refl Fixed.zero) zero_lt_sixty⟩
   else
-    let d_nanoSecs := Fixed.toDenominator nanoSecs Nano
+    let d_nanoSecs := Fixed.toDenominator nanoSecs Nano h3
     have h1 : 0 < secs := Int.lt_iff_le_and_ne.mpr (And.intro h1 (by simpa))
     have h1' : 0 < secs.toNat := Int.toNat_lt_toNat h1 h1
     have h2' : secs.toNat < 60 := Int.toNat_lt_toNat h2 (by omega)
@@ -88,6 +90,7 @@ def toSecond (secs : Int) (nanoSecs : Nat) (h1: 0 ≤ secs) (h2: secs < 60) : Ic
 
 def toSecond' (s : NonemptyIco 0 60) : Ico.Second :=
   toSecond s.ico.val 0 (Int.ofNat_le.2 s.ico.property.left) (Int.ofNat_lt.2 s.ico.property.right)
+    (by simp)
 
 namespace Time.Notation
 
@@ -116,10 +119,10 @@ macro_rules
       let sec := mantissa / (10^decimalExponent)
       let nsec := (mantissa % (10^decimalExponent)) * (10^(Nano-decimalExponent))
       `(Time.TimeOfDay.mk ⟨$h, by omega⟩ ⟨$m, by omega⟩
-        (Time.TimeOfDay.toSecond $(Lean.Quote.quote sec) $(Lean.Quote.quote nsec) (by omega) (by omega)))
+        (Time.TimeOfDay.toSecond $(Lean.Quote.quote sec) $(Lean.Quote.quote nsec) (by omega) (by omega) (by omega)))
 | `(time% $h:num:$m:num$[:$s:num]?) =>
     `(Time.TimeOfDay.mk ⟨$h, by omega⟩ ⟨$m, by omega⟩
-      (Time.TimeOfDay.toSecond $(s.getD (Lean.Quote.quote 0)) 0 (by omega) (by omega)))
+      (Time.TimeOfDay.toSecond $(s.getD (Lean.Quote.quote 0)) 0 (by omega) (by omega) (by omega)))
 
 end Time.Notation
 

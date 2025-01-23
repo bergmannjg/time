@@ -38,6 +38,12 @@ def dtTimeOfDay2 : TimeOfDay := time% 12:24:30.1234
 
 def dtTimeOfDay3 : TimeOfDay := time% 12:24:30.000000020
 
+/--
+error: expected decimalExponent ≤ 9
+-/
+#guard_msgs in
+#eval time% 12:24:30.1234567890
+
 example : dtTimeOfDay2.Second.val.val = 30123400000 := by native_decide
 
 example : dtTimeOfDay3.Second.val.val = 30000000020 := by native_decide

@@ -304,14 +304,20 @@ instance : ParseTime TimeOfDay where
         some { tod with Second := TimeOfDay.toSecond' a }
       | .q => do
         let n : Int ← readMaybe pair.2
-        let val := tod.Second.val + (Fixed.toFixed Sign.Nonneg 0 (Fixed.toDenominator n.toNat Nano) : Fixed Nano)
-        let second ← Clip.clipToIco? Second.zero Second.sixty val
-        some { tod with Second := second }
+        if h : n.toNat < 10 ^ 9
+        then
+          let val := tod.Second.val + (Fixed.toFixed Sign.Nonneg 0 (Fixed.toDenominator n.toNat Nano h) : Fixed Nano)
+          let second ← Clip.clipToIco? Second.zero Second.sixty val
+          some { tod with Second := second }
+        else none
       | .Q => do
         let n : Int ← readMaybe (zeroRPad pair.2 Nano)
-        let val := tod.Second.val + (Fixed.toFixed Sign.Nonneg 0 (Fixed.toDenominator n.toNat Nano) : Fixed Nano)
-        let second ← Clip.clipToIco? Second.zero Second.sixty val
-        some { tod with Second := second }
+        if h : n.toNat < 10 ^ 9
+        then
+          let val := tod.Second.val + (Fixed.toFixed Sign.Nonneg 0 (Fixed.toDenominator n.toNat Nano h) : Fixed Nano)
+          let second ← Clip.clipToIco? Second.zero Second.sixty val
+          some { tod with Second := second }
+        else none
       | _ => some tod
 
 instance : ParseTime LocalTime where

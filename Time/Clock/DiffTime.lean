@@ -13,8 +13,8 @@ structure DiffTime where
 
 namespace DiffTime
 
-def fromSecNsec (sign : Sign) (sec : Nat) (nsec : Nat) : DiffTime :=
-  ⟨Fixed.toFixed sign sec (Fixed.toDenominator nsec Nano)⟩
+def fromSecNsec (sign : Sign) (sec : Nat) (nsec : Nat) (h : nsec < 10 ^ 9) : DiffTime :=
+  ⟨Fixed.toFixed sign sec (Fixed.toDenominator nsec Nano h)⟩
 
 def fromSec (sec : Int) : DiffTime := ⟨Fixed.toFixed (Fixed.toSign sec) (Int.natAbs sec) default⟩
 
