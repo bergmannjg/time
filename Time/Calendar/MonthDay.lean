@@ -546,7 +546,7 @@ def monthAndDayToDayOfYearClipped' (year : Int) (month day : Nat)
     let dayOfYear : DayOfYear := .leap ⟨(dy true month day), And.intro
           (le_dy true month day)
           (by exact dy_le true month day)⟩
-    ⟨year, dayOfYear, by simp [dy, h]⟩
+    ⟨year, dayOfYear, h⟩
   else
     let dy : DayOfYear := .common ⟨(dy false month day), And.intro
           (le_dy false month day)
@@ -591,9 +591,9 @@ def dateToOrdinalDate (dt : Date) : OrdinalDate :=
     let dayOfYear : DayOfYear := .leap ⟨(dy true dt.Month dt.Day), And.intro
           (le_dy true dt.Month dt.Day)
           (by exact dy_le true dt.Month dt.Day)⟩
-    ⟨dt.Year, dayOfYear, by simp [dy, h]⟩
+    ⟨dt.Year, dayOfYear, h⟩
   else
     let dy : DayOfYear := .common ⟨(dy false dt.Month dt.Day), And.intro
           (le_dy false dt.Month dt.Day)
           (by exact dy_le false dt.Month dt.Day)⟩
-    ⟨dt.Year, dy, by simp [dy, h]⟩
+    ⟨dt.Year, dy, eq_false_of_ne_true h⟩

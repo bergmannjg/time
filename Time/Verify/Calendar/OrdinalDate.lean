@@ -244,7 +244,7 @@ theorem days_since_1_1_1_mod_146097_lt (dt : OrdinalDate)
   have hlt : (dt.year - 1) / 4 - (dt.year - 1) / 400 * 96 - (dt.year - 1) / 100 - 1 + a.val
           < 365 * (400 - (dt.year - 1) % 400) + 96 + 1 := by
     simp_all [instCoeDayOfYearIccOfNat]
-    have h : a = dt.dayOfYear := by simp
+    have h : a = dt.dayOfYear := rfl
     split at h
     · rename_i a _
       have h1 : (dt.year - 1) / 4 - (dt.year - 1) / 400 * 96 - (dt.year - 1) / 100 - 1 + a.val

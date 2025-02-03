@@ -69,10 +69,10 @@ theorem next_date_of_day_lt_eq' {dt : Date} {dy : Nat}
           have := Time.dy'_le false dt.Month dt.Day
           split at this <;> simp_all
           omega⟩
-  simp [findValidMonthDay_month_eq false yd hml h (by simp [heq]) hl (by
+  simp +zetaDelta [findValidMonthDay_month_eq false yd hml h heq hl (by
           have := dy'_add_one_hle h
           simp [hl] at this
-          simp_all)]
+          simp_all +zetaDelta)]
 
 theorem next_date_of_day_lt_eq'' {dt : Date} {dy : Nat}
   {ml : { m // monthLengthsOfDate m dt }}
@@ -91,10 +91,10 @@ theorem next_date_of_day_lt_eq'' {dt : Date} {dy : Nat}
           simp [Time.le_dy' true dt.Month dt.Day]
           have := Time.dy'_le true dt.Month dt.Day
           split at this <;> simp_all⟩
-  simp [findValidMonthDay_month_eq true yd hml h (by simp [heq]) hl (by
+  simp +zetaDelta [findValidMonthDay_month_eq true yd hml h heq hl (by
           have := dy'_add_one_hle h
           simp [hl] at this
-          simp_all)]
+          simp_all +zetaDelta)]
 
 theorem next_date_of_day_lt_eq (dt : Date)
   (ml : { m // monthLengthsOfDate m dt })
@@ -141,7 +141,12 @@ theorem next_date_of_last_day_of_month_eq' {dt : Date} {dy : Nat}
           have := Time.dy'_le false dt.Month dt.Day
           split at this <;> simp_all
           omega⟩
-  simp [findValidMonthDay_month_eq_incr false yd hml h hm (by simp [heq]) hl]
+  simp +zetaDelta [findValidMonthDay_month_eq_incr false yd hml h hm heq hl
+    (by
+      have := dy'_lt_of_month_lt hm
+      simp [hl] at this
+      simp_all +zetaDelta
+      exact Nat.le_of_lt_succ this)]
 
 theorem next_date_of_last_day_of_month_eq'' {dt : Date} {dy : Nat}
   {ml : { m // monthLengthsOfDate m dt }}
@@ -165,7 +170,12 @@ theorem next_date_of_last_day_of_month_eq'' {dt : Date} {dy : Nat}
           simp [Time.le_dy' true dt.Month dt.Day]
           have := Time.dy'_le true dt.Month dt.Day
           split at this <;> simp_all⟩
-  simp [findValidMonthDay_month_eq_incr true yd hml h hm (by simp [heq]) hl]
+  simp +zetaDelta [findValidMonthDay_month_eq_incr true yd hml h hm heq hl
+    (by
+      have := dy'_lt_of_month_lt hm
+      simp [hl] at this
+      simp_all +zetaDelta
+      exact Nat.le_of_lt_succ this)]
 
 theorem next_date_of_last_day_of_month_eq (dt : Date)
   (ml : { m // monthLengthsOfDate m dt })
@@ -281,12 +291,12 @@ theorem next_date_eq_next_date (dt : Date)
   simp [next_date]
   split
   · rename_i h
-    exact next_date_of_day_lt_eq dt ml (by simp) h
+    exact next_date_of_day_lt_eq dt ml rfl h
   · split
     · rename_i h' h
-      exact next_date_of_last_day_of_month_eq dt ml (by simp) h' h
+      exact next_date_of_last_day_of_month_eq dt ml rfl h' h
     · rename_i h' h
-      exact next_date_of_last_day_of_year_eq dt ml (by simp) h' h
+      exact next_date_of_last_day_of_year_eq dt ml rfl h' h
 
 /-- `Verify.Gregorian.next_date` transforms to `Time.Day.addDays` 1. -/
 theorem next_date_eq_mjd_add_one (dt : Date)

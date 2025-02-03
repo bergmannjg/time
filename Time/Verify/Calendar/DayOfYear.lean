@@ -8,8 +8,8 @@ import Time.Verify.Calendar.MonthLength
 Main theorems:
 
 * `Verify.DayOfYear.dy_eq_dy'`
-* `Verify.DayOfYear.Notation.«termDy'MonthEq%_»`
-* `Verify.DayOfYear.Notation.«termDy'MonthDayEq%_»`
+* `Verify.DayOfYear.dy'_month_n_and_day_eq`
+* `Verify.DayOfYear.dy'_month_n_and_day_eq_incr`
 
 -/
 

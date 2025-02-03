@@ -66,7 +66,7 @@ def toDayOfYear (year: Int) (d': Int) : OrdinalDate :=
 
   have h2 : yd <= 365 := by
     have ha : d' % 365 < 365 := by simp_arith [Int.emod_lt_of_pos _]
-    have hb : yd' <= 365 := by simp [Int.add_one_le_iff.mpr ha]
+    have hb : yd' <= 365 := ha
     exact Int.toNat_le_toNat hb
 
   if h : isLeapYear year
@@ -136,7 +136,7 @@ def toOrdinalDate (mjd : Day) : OrdinalDate :=
       have hcent₃ (h2 : quad = 24) : cent = 3 := by omega
 
       let year := quadcent * 400 + cent * 100 + quad * 4 + 4
-      have hyear : year = quadcent * 400 + cent * 100 + quad * 4 + 4 := by simp
+      have hyear : year = quadcent * 400 + cent * 100 + quad * 4 + 4 := rfl
       ⟨year, .leap ⟨366, (by omega)⟩, (by simp [isLeapYear_of_sum hyear hquad₁ hquad₂ hcent₃])⟩
 
 def toModifiedJulianDay (year : Int) (dayOfYear : Nat) : Int :=
