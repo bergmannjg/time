@@ -46,7 +46,7 @@ jobs:
           lake build Verify
       - name: Build Doc
         run: |
-          lake -R -Kenv=dev update
+          lake -R -Kenv=dev update doc-gen4
           lake -R -Kenv=dev build Time:docs
           lake -R -Kenv=dev build Verify:docs
       - name: Build book
