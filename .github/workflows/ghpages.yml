@@ -24,17 +24,8 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Install Alectryon
-        run: |
-          curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
-          python3 get-pip.py
-          python3 -m pip install git+https://github.com/cpitclaudel/alectryon.git
       - name: Checkout
         uses: actions/checkout@v3
-      - name: Setup mdBook
-        uses: peaceiris/actions-mdbook@v1
-        with:
-          mdbook-version: '0.4.43'
       - name: Build and test
         uses: leanprover/lean-action@v1
         with:
@@ -46,17 +37,16 @@ jobs:
           lake build Verify
       - name: Build Doc
         run: |
-          lake -R -Kenv=dev update doc-gen4
-          lake -R -Kenv=dev build Time:docs
-          lake -R -Kenv=dev build Verify:docs
-      - name: Build book
-        run: mdbook build doc
+          cd docbuild
+          lake update doc-gen4
+          lake build Time:docs
+          lake build Verify:docs
       - name: Setup Pages
         uses: actions/configure-pages@v5
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: './.lake/build/doc'
+          path: './docbuild/.lake/build/doc'
 
   deploy:
     needs: build

@@ -6,9 +6,6 @@ package time {
   precompileModules := if get_config? env = some "noprecompile" then false else true
 }
 
-meta if get_config? env = some "dev" then
-require «doc-gen4» from  git "https://github.com/leanprover/doc-gen4" @ "v4.16.0"
-
 require batteries from git "https://github.com/leanprover-community/batteries" @ "v4.16.0"
 
 require tryAtEachStep from git "https://github.com/dwrensha/tryAtEachStep" @ "main"
