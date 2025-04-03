@@ -33,7 +33,7 @@ def addDays (n : Int) (dt : Date) : Date :=
 
 /-- The number of days in a given month according to the proleptic Gregorian calendar. -/
 def monthLength (year: Int) (month : Int) : Int :=
-  let month' := clipToNonemptyIcc 1 12 month (by simp_arith)
+  let month' := clipToNonemptyIcc 1 12 month (by simp +arith)
   let month'' : Fin 12 := month'
   ((monthLengths (isLeapYear year)).get month'').2
 

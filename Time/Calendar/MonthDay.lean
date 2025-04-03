@@ -64,15 +64,15 @@ def monthLastDayAsDayOfYear' (isleap : Bool) :=
       (7, 182, 212), (8, 213, 243), (9, 244, 273), (10, 274, 304), (11, 305, 334), (12, 335, 365)]
 
 @[simp] theorem monthLengths_length_eq_12 (isleap : Bool) : (monthLengths isleap).length = 12 := by
-  cases isleap <;> simp_arith
+  cases isleap <;> simp +arith +decide
 
 @[simp] theorem monthLastDayAsDayOfYear_length_eq_12 (isleap : Bool)
     : (monthLastDayAsDayOfYear isleap).length = 12 := by
-  cases isleap <;> simp_arith
+  cases isleap <;> simp +arith +decide
 
 @[simp] theorem monthLastDayAsDayOfYear'_length_eq_12 (isleap : Bool)
     : (monthLastDayAsDayOfYear' isleap).length = 12 := by
-  cases isleap <;> simp_arith
+  cases isleap <;> simp +arith +decide
 
 instance : Coe (Fin (monthLengths isleap).length)
     (Fin (monthLastDayAsDayOfYear' isleap).length) where
@@ -118,7 +118,7 @@ theorem monthLastDayAsDayOfYear'_snd_eq_of_eq_1 (isleap : Bool)
 theorem monthLastDayAsDayOfYear'_month_eq (isleap : Bool)
   : ∀ a : Fin (monthLastDayAsDayOfYear' isleap).length,
     (monthLastDayAsDayOfYear' isleap)[a].1 = a.val + 1 := by
-  cases isleap <;> simp_arith
+  cases isleap <;> simp +arith +decide
 
 theorem monthLastDayAsDayOfYear_sub_pred_le (isleap : Bool)
   : ∀ i : Fin (monthLastDayAsDayOfYear isleap).length,
@@ -236,7 +236,7 @@ theorem monthLastDayAsDayOfYear'_val_in (isLeap : Bool) (yd : Nat)
   : 1 ≤ yd - (monthLastDayAsDayOfYear' isLeap)[i].2.1 + 1 ∧
     yd - (monthLastDayAsDayOfYear' isLeap)[i].2.1 + 1 ≤ 31 := by
   have hle := monthLastDayAsDayOfYear'_sub_days_le isLeap i
-  simp_arith
+  simp +arith
   exact Int.le_of_sub_le h2 hle
 
 theorem monthLastDayAsDayOfYear_val_le (isleap : Bool)
@@ -272,7 +272,7 @@ def monthLengths_sum_le_map_pair' (isleap : Bool)  :=
 theorem monthLengths_sum_le_eq_monthLastDayAsDayOfYear (isleap : Bool)
     : monthLengths_sum_le_map isleap
     = (monthLastDayAsDayOfYear isleap |> List.map (fun x => x.2)) := by
-  cases isleap <;> simp_arith
+  cases isleap <;> simp +arith +decide
 
 def monthLengths' (isleap : Bool) :=
   (monthLengths isleap).lookup
@@ -282,22 +282,22 @@ def monthLengths_sum (isleap : Bool) : Nat :=
 
 theorem monthLengths_sum_eq (isleap : Bool) :
   monthLengths_sum isleap == if isleap then 366 else 365 := by
-  cases isleap <;> simp_arith
+  cases isleap <;> simp +arith +decide
 
 theorem monthLengths_length_gt_0 (isleap : Bool) : 0 < (monthLengths isleap).length := by
-  cases isleap <;> simp_arith
+  cases isleap <;> simp +arith
 
 theorem monthLengths_month_in (isleap : Bool)
   : ∀ a ∈ (monthLengths isleap), 1 ≤ a.1 ∧ a.1 ≤ 12 := by
-  cases isleap <;> simp_arith
+  cases isleap <;> simp +arith +decide
 
 theorem monthLengths_days_in (isleap : Bool)
   : ∀ a ∈ (monthLengths isleap), 1 ≤ a.2 ∧ a.2 ≤ 31 := by
-  cases isleap <;> simp_arith
+  cases isleap <;> simp +arith +decide
 
 theorem monthLengths_month_eq (isleap : Bool)
   : ∀ a : Fin (monthLengths isleap).length, (monthLengths isleap)[a].1 = a.val + 1 := by
-  cases isleap <;> simp_arith
+  cases isleap <;> simp +arith +decide
 
 theorem monthLastDayAsDayOfYear_sub_pred_eq_monthLengths (isleap : Bool)
   : ∀ i : Fin (monthLastDayAsDayOfYear isleap).length,
@@ -309,11 +309,11 @@ theorem monthLastDayAsDayOfYear_sub_pred_eq_monthLengths (isleap : Bool)
             rw [monthLengths_length_eq_12 isleap]
             have := i.is_lt
             simp_all⟩).2 := by
-  cases isleap <;> simp_arith
+  cases isleap <;> simp +arith +decide
 
 theorem monthLengths_eq (isleap : Bool)
     : (monthLengths isleap).length = (monthLastDayAsDayOfYear isleap).length := by
-  cases isleap <;> simp_arith
+  cases isleap <;> simp +arith
 
 theorem month_le_val_exists (isleap : Bool) (i v : Nat) (hle : 1 ≤ i)
   (hlt : i < (monthLengths isleap).length)
@@ -349,7 +349,7 @@ theorem list_foldl_init_add (l : List α) (init v : Nat) (f : α → Nat)
     simp [*]
     have hy : List.foldl (fun acc v => f v + acc) ((f h + init) + v) t
               = List.foldl (fun acc v => f v + acc) (f h + (init + v)) t := by
-      have : (f h + init) + v = f h + (init + v) := by simp_arith
+      have : (f h + init) + v = f h + (init + v) := by simp +arith
       rw [this]
     rw [hy]
 
@@ -439,13 +439,13 @@ def ordinalDateToDate (dt : OrdinalDate) : Date :=
 
 theorem monthLengths_month_le_12 (isleap : Bool)
   : ∀ a ∈ (monthLengths isleap), 1 ≤ a.1 ∧ a.1 ≤ 12 := by
-  cases isleap <;> simp_arith
+  cases isleap <;> simp +arith +decide
 
 theorem monthLengths_days_ge_28 (isleap : Bool) : ∀ a ∈ (monthLengths isleap), 28 <= a.2 := by
-  cases isleap <;> simp_arith
+  cases isleap <;> simp +arith +decide
 
 theorem monthLengths_days_le_31 (isleap : Bool) : ∀ a ∈ (monthLengths isleap), a.2 <= 31 := by
-  cases isleap <;> simp_arith
+  cases isleap <;> simp +arith +decide
 
 /-- The length of a given month in the Gregorian or Julian calendars. -/
 def monthLength' (isLeap : Bool) (month': Fin 12) :=
@@ -569,7 +569,7 @@ theorem days_le_31 (isLeap : Bool) (m : Fin 12) (day : NonemptyIcc 1 (monthLengt
 
 /-- Convert month and day in the Gregorian or Julian calendars to day of year. -/
 def monthAndDayToDayOfYear (year : Int) (month : Int) (day : Int) : OrdinalDate :=
-  let month' := clipToNonemptyIcc 1 12 month (by simp_arith)
+  let month' := clipToNonemptyIcc 1 12 month (by simp +arith)
   let month'' : Fin 12 := month'
   let isLeap := isLeapYear year
   let day' := clipToNonemptyIcc 1 (monthLength' isLeap month'') day (monthLength'_ge_1 isLeap month'')
@@ -580,7 +580,7 @@ def monthAndDayToDayOfYear (year : Int) (month : Int) (day : Int) : OrdinalDate 
 /-- Convert month and day in the Gregorian or Julian calendars to day of year option. -/
 def monthAndDayToDayOfYearValid (year : Int) (month : Int) (day : Int)
     : Option  $ OrdinalDate := do
-  let month' ← clipToNonemptyIcc? 1 12 month (by simp_arith)
+  let month' ← clipToNonemptyIcc? 1 12 month (by simp +arith)
   let month'' : Fin 12 :=  month'
   let isLeap := isLeapYear year
   let day' ← clipToNonemptyIcc? 1 (monthLength' isLeap month'') day (monthLength'_ge_1 isLeap month'')

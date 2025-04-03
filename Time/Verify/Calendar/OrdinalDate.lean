@@ -111,14 +111,14 @@ theorem  mjd_incr_eq_next_date (dt : OrdinalDate)
         simp [] at hv
         have : 1 = a.val := Subtype.ext_iff.mp heq
         rw [← this]
-        simp_arith
+        simp +arith
         omega
     · split <;> try simp_all
       split <;> try simp_all
       rename_i a _ heq _
       have : 1 = a.val := Subtype.ext_iff.mp heq
       rw [← this]
-      simp_arith
+      simp +arith
       omega
   · split <;> try simp_all
     · split <;> try simp_all
@@ -126,7 +126,7 @@ theorem  mjd_incr_eq_next_date (dt : OrdinalDate)
       rename_i dy _ _ _ a _ heq _
       have : 1 = a.val := Subtype.ext_iff.mp heq
       rw [← this]
-      simp_arith
+      simp +arith
       have hv := dt.isValid
       split at hv <;> try simp_all
       unfold isLeapYear at hv
@@ -141,7 +141,7 @@ theorem  mjd_incr_eq_next_date (dt : OrdinalDate)
         rename_i a _ heq _
         have : 1 = a.val := Subtype.ext_iff.mp heq
         rw [← this]
-        simp_arith
+        simp +arith
         have hv := dt.isValid
         split at hv <;> try simp_all
         unfold isLeapYear at hv

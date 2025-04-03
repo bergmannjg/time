@@ -217,7 +217,7 @@ theorem dy'_of_last_day_of_year (dt : Date)
   have heq : a.val.fst = 12 := by omega
   have hv : a.val.snd.fst = if isLeapYear dt.Year = true then 336 else 335 := by
     have hp := a.property.left
-    simp_arith [monthLastDayAsDayOfYear'] at hp
+    simp +arith [monthLastDayAsDayOfYear'] at hp
     split at hp
     · simp_all
       have : a.val = (12, 336, 366) := by
@@ -243,7 +243,7 @@ theorem dy'_of_last_day_of_year (dt : Date)
     generalize monthLengths_of_date dt = a at h1
     simp [monthLengthsOfDate] at a
     have hp := a.property.left
-    simp_arith [monthLengths, Prod.ext_iff] at hp
+    simp +arith [monthLengths, Prod.ext_iff] at hp
     have heq : a.val.fst = 12 := by omega
     rw [heq] at hp
     simp at hp
@@ -257,7 +257,7 @@ theorem next_date_of_last_day_of_year_eq (dt : Date)
   (hml : ml = monthLengths_of_date dt) (h1 : ¬dt.Day.val < ml.val.snd)
   (h2 : ¬dt.Month.val < 12)
     : {dt with Year := dt.Year + 1, Month := ⟨1, by simp⟩, Day := ⟨1, by simp⟩,
-               IsValid := ⟨(1, 31), by simp_arith [monthLengths]⟩}
+               IsValid := ⟨(1, 31), by simp +arith [monthLengths]⟩}
     = ordinalDateToDate (OrdinalDate.next_date (dateToOrdinalDate dt)) := by
   simp [dateToOrdinalDate, monthAndDayToDayOfYearClipped, monthAndDayToDayOfYearClipped']
   have : isLeapYear dt.Year = true ∨ ¬isLeapYear dt.Year = true := by simp

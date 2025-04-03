@@ -28,12 +28,12 @@ example : toGregorian ⟨50449⟩ == dt_1997_1_1 := by rfl
 
 example : toGregorian (fromGregorian dt_2023_2_3) == dt_2023_2_3 := by rfl
 
-example : toOrdinalDate default == ⟨1, .common ⟨1, by simp_arith⟩, (by simp_arith)⟩ := by rfl
+example : toOrdinalDate default == ⟨1, .common ⟨1, by simp +arith⟩, (by simp +arith +decide)⟩ := by rfl
 
-example : toOrdinalDate ⟨0⟩  == ⟨1858, .common ⟨321, by simp_arith⟩, by simp_arith⟩ := by rfl
+example : toOrdinalDate ⟨0⟩  == ⟨1858, .common ⟨321, by simp +arith⟩, by simp +arith +decide⟩ := by rfl
 
-example : (toOrdinalDate <| fromOrdinalDate ⟨2023, .common ⟨50, by simp_arith⟩, (by simp_arith)⟩)
-  == ⟨2023, .common ⟨50, by simp_arith⟩, (by simp_arith)⟩ := by rfl
+example : (toOrdinalDate <| fromOrdinalDate ⟨2023, .common ⟨50, by simp +arith⟩, (by simp +arith +decide)⟩)
+  == ⟨2023, .common ⟨50, by simp +arith⟩, (by simp +arith +decide)⟩ := by rfl
 
 def dt_2023_1_17 : Date := date% 2023-1-17
 
@@ -41,7 +41,7 @@ example : fromWeekDate 2023 3 2 == fromGregorian dt_2023_1_17 := by rfl
 
 example : fromWeekDateValid 2023 3 2 == some (fromGregorian dt_2023_1_17) := by rfl
 
-example : (NonemptyIcc.toFin <| clipToNonemptyIcc 1 12 3 (by simp_arith)) == Fin.ofNat' 12 2 := by rfl
+example : (NonemptyIcc.toFin <| clipToNonemptyIcc 1 12 3 (by simp +arith)) == Fin.ofNat' 12 2 := by rfl
 
 def dt_2023_2_11 : Date := date% 2023-2-11
 
@@ -63,16 +63,16 @@ example : Gregorian.addMonthsClip 1 (fromGregorianClipped 2005 1 30) == fromGreg
 example : Gregorian.addMonthsRollOver 1 (fromGregorianClipped 2005 1 30) == fromGregorianClipped 2005 3 2 := by rfl
 
 example : (toOrdinalDate <| fromGregorianClipped 2004 2 29) ==
-  ⟨2004, .leap ⟨60, And.intro (by simp_arith) (by simp_arith)⟩, (by simp_arith)⟩ := by rfl
+  ⟨2004, .leap ⟨60, And.intro (by simp +arith) (by simp +arith)⟩, (by simp +arith +decide)⟩ := by rfl
 
 example : (toOrdinalDate <| fromGregorianClipped 2004 12 31) ==
-  ⟨2004, .leap ⟨366, And.intro (by simp_arith) (by simp)⟩, (by simp_arith)⟩ := by rfl
+  ⟨2004, .leap ⟨366, And.intro (by simp +arith) (by simp)⟩, (by simp +arith +decide)⟩ := by rfl
 
 example : (toOrdinalDate <| fromGregorianClipped 2006 2 28) ==
-  ⟨2006, .common ⟨59, And.intro (by simp_arith) (by simp_arith)⟩, (by simp_arith)⟩ := by rfl
+  ⟨2006, .common ⟨59, And.intro (by simp +arith) (by simp +arith)⟩, (by simp +arith +decide)⟩ := by rfl
 
 example : (toOrdinalDate <| fromGregorianClipped 2006 12 31) ==
-  ⟨2006, .common ⟨365, And.intro (by simp_arith) (by simp)⟩, (by simp_arith)⟩ := by rfl
+  ⟨2006, .common ⟨365, And.intro (by simp +arith) (by simp)⟩, (by simp +arith +decide)⟩ := by rfl
 
 example : Gregorian.addYearsClip 2 (fromGregorianClipped 2004 2 29) == fromGregorianClipped 2006 2 28 := by rfl
 

@@ -31,7 +31,7 @@ structure Fixed.Parts (precision : Nat) where
 
 def Fixed.zero : (Fixed p) := ⟨0⟩
 
-def Fixed.Denominator.zero : (Fixed.Denominator p) := ⟨0, (Int.pos_pow_of_pos _ (by omega))⟩
+def Fixed.Denominator.zero : (Fixed.Denominator p) := ⟨0, (Nat.pow_pos (by omega))⟩
 
 instance : Inhabited (Fixed p) where
   default := Fixed.zero
@@ -72,7 +72,7 @@ def toParts (f : Fixed p) : Fixed.Parts p :=
   let n := f.val.natAbs
   let pow_p := 10 ^ p
   let n' := n / pow_p
-  have h1 : 0 < (pow_p : Int) := Int.ofNat_lt.mpr (Int.pos_pow_of_pos _ (by omega))
+  have h1 : 0 < (pow_p : Int) := Int.ofNat_lt.mpr (Nat.pow_pos (by omega))
   have h2 : n % pow_p < pow_p := Int.toNat_lt_toNat (Int.emod_lt_of_pos n h1) h1
   ⟨if f.val < 0 then .Neg else .Nonneg, n', n % pow_p, h2⟩
 
@@ -192,7 +192,7 @@ private theorem toFixed_of_lt_zero (p : Nat) (n : Nat) (denom :  Fixed.Denominat
   simp [toFixed]
 
 private theorem pos_pow_of_pos_cast {n : Nat} (m : Nat) (h : 0 < n) : 0 < (n:Int) ^ m := by
-  have hp : 0 < n ^ m := @Int.pos_pow_of_pos n m h
+  have hp : 0 < n ^ m := @Nat.pow_pos n m h
   have : ((n ^ m : Nat) : Int) = (n : Int) ^ m := Int.natCast_pow n m
   rw [← this]
   exact Int.ofNat_le.mpr hp
@@ -255,10 +255,11 @@ theorem zero_le_toFixed (p : Nat) (m : Nat) (m_denom : Fixed.Denominator p) (hnm
 
 private theorem le_of_div_pow (val : Int) (p : Nat) (h : 0 ≤ val)
     : 0 ≤ val / (((10 ^ p) : Nat) : Int) := by
-  have : 0 ≤ (((10 ^ p) : Nat) : Int) :=
-    Int.le_of_lt <| Int.ofNat_lt.mpr <| Int.pos_pow_of_pos _ (by omega)
-  rw [← Int.tdiv_eq_ediv h this]
-  simp [Int.tdiv_nonneg h this]
+  have := @Int.tdiv_eq_ediv val (((10 ^ p) : Nat) : Int)
+  simp_all only [true_or, ite_true, Int.add_zero, ge_iff_le]
+  rw [← this]
+  have : 0 ≤ (((10 ^ p) : Nat) : Int) := Int.le_of_lt <| Int.ofNat_lt.mpr <| Nat.pow_pos (by omega)
+  simp [@Int.tdiv_nonneg val (((10 ^ p) : Nat) : Int) h this]
 
 theorem fixed_eq_toParts_fromParts (f : Fixed p) : f = f.toParts.fromParts := by
   simp [Fixed.toParts, Parts.fromParts, toFixed]
@@ -283,8 +284,6 @@ theorem fixed_eq_toParts_fromParts (f : Fixed p) : f = f.toParts.fromParts := by
       have hf : Int.negSucc m = f.val := by rw [hm, (Int.negSucc_eq m)]
       rw [hf]
   · rename_i h
-    have : ¬¬f.val < 0 ↔ f.val < 0 := Classical.not_not
-    rw [← this] at h
     have hf : Int.natAbs f.val = f.val := by omega
     rw [hf]
     have : ((10 ^ p : Nat) : Int) = (10 : Int) ^ p := Int.natCast_pow 10 p

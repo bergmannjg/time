@@ -24,7 +24,7 @@ def dayOfWeekDiff (a : DayOfWeek) (b : DayOfWeek) : Int :=
 
 /-- `dayOfWeekDiff a b = a - b` in range 0 to 6. -/
 theorem dayOfWeekDiff_range (a b : DayOfWeek) : 0 <= dayOfWeekDiff a b ∧ dayOfWeekDiff a b <= 6
- := by cases a <;> cases b <;> simp_arith
+ := by cases a <;> cases b <;> simp +arith +decide
 
 /-- The first day-of-week on or after some day -/
 def firstDayOfWeekOnAfter (dw : DayOfWeek) (d : Day) : Day :=

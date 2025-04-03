@@ -65,7 +65,7 @@ def toDayOfYear (year: Int) (d': Int) : OrdinalDate :=
     exact Int.toNat_lt_toNat hb (by omega)
 
   have h2 : yd <= 365 := by
-    have ha : d' % 365 < 365 := by simp_arith [Int.emod_lt_of_pos _]
+    have ha : d' % 365 < 365 := by simp +arith [Int.emod_lt_of_pos _]
     have hb : yd' <= 365 := ha
     exact Int.toNat_le_toNat hb
 
@@ -161,22 +161,22 @@ def clipDayOfYear (b : YearBase) (year : Int) (dayOfYear : Int) : Nat :=
   | .Zero => Clip.clip 0 (if isLeapYear year then 365 else 364) dayOfYear
               (ite_ge _ _ _ _ 0 (Nat.zero_le _) (Nat.zero_le _))
   | .One => Clip.clip 1 (if isLeapYear year then 366 else 365) dayOfYear
-              (ite_ge _ _ _ _ 1 (by simp_arith) (by simp_arith))
+              (ite_ge _ _ _ _ 1 (by simp +arith) (by simp +arith))
 
 private def clipDayOfYearValid (b : YearBase) (year : Int) (dayOfYear : Int) : Option Nat :=
   match b with
   | .Zero => Clip.clip? 0 (if isLeapYear year then 365 else 364) dayOfYear
               (ite_ge _ _ _ _ 0 (Nat.zero_le _) (Nat.zero_le _))
   | .One => Clip.clip? 1 (if isLeapYear year then 366 else 365) dayOfYear
-              (ite_ge _ _ _ _ 1 (by simp_arith) (by simp_arith))
+              (ite_ge _ _ _ _ 1 (by simp +arith) (by simp +arith))
 
 def firstDayOfYear (year : Int) : DayOfYear :=
-    if isLeapYear year then .leap ⟨1, (by simp_arith)⟩ else .common ⟨1, (by simp_arith)⟩
+    if isLeapYear year then .leap ⟨1, (by simp +arith)⟩ else .common ⟨1, (by simp +arith)⟩
 
 def firstDayOfYearDate (year : Int) : OrdinalDate :=
   let firstDay : DayOfYear := if isLeapYear year
-                       then .leap ⟨1, (by simp_arith)⟩
-                       else .common ⟨1, (by simp_arith)⟩
+                       then .leap ⟨1, (by simp +arith)⟩
+                       else .common ⟨1, (by simp +arith)⟩
   let isValid : match firstDay with
             | .common _ => isLeapYear year = false
             | .leap _ => isLeapYear year = true := by
@@ -209,7 +209,7 @@ the number of the Monday-starting week, and the day of the week.
 The first Monday is the first day of week 1, any earlier days in the year
 are week 0 (as @%W@ in 'Data.Time.Format.formatTime'). -/
 def fromMondayStartWeekValid (year : Int) (w : Int) (d : Int) : Option Day := do
-  let d' ←  Clip.clip? 1 7 d (by simp_arith)
+  let d' ←  Clip.clip? 1 7 d (by simp +arith)
 
   -- first day of the year
   let firstDay := fromOrdinalDate (firstDayOfYearDate year)

@@ -31,15 +31,15 @@ def monthLengths_of_date (dt : Date) : {m // monthLengthsOfDate m dt} :=
 
 theorem monthLengths_days_le (isleap : Bool)
   : ∀ a ∈ (monthLengths isleap), (if isleap then 29 else 28) ≤ a.2 := by
-  cases isleap <;> simp_arith
+  cases isleap <;> simp +arith +decide
 
 theorem monthLastDayAsDayOfYear'_days_sub_lt (isleap : Bool)
   : ∀ a ∈ (monthLastDayAsDayOfYear' isleap), a.2.1 < a.2.2 := by
-  cases isleap <;> simp_arith
+  cases isleap <;> simp +arith +decide
 
 theorem monthLastDayAsDayOfYear'_sub_le_31 (isleap : Bool)
     : ∀ a ∈ (monthLastDayAsDayOfYear' isleap), a.2.2 - a.2.1 ≤ 31 := by
-  cases isleap <;> simp_arith
+  cases isleap <;> simp +arith +decide
 
 theorem monthLastDayAsDayOfYear'_sub_of_monthLengths (isleap : Bool)
     : ∀ a b, a ∈ monthLastDayAsDayOfYear' isleap →  b ∈ monthLengths isleap
@@ -48,7 +48,7 @@ theorem monthLastDayAsDayOfYear'_sub_of_monthLengths (isleap : Bool)
 
 theorem monthLastDayAsDayOfYear'_snd_fst_lt (isleap : Bool)
     : ∀ a ∈ (monthLastDayAsDayOfYear' isleap), 0 < a.2.1 := by
-  cases isleap <;> simp_arith
+  cases isleap <;> simp +arith +decide
 
 private theorem monthLastDayAsDayOfYear'_month_lt_12_lt_not (isleap : Bool)
     : ∀ a ∈ monthLastDayAsDayOfYear' isleap,

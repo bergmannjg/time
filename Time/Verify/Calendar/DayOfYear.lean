@@ -47,35 +47,35 @@ def dy'_map (isleap : Bool) : List Nat :=
 /-
 set_option maxRecDepth 1200 in
 theorem dy'_map_eq_dy_map (isleap : Bool) : dy'_map isleap = dy_map isleap := by
-  cases isleap <;> simp_arith
+  cases isleap <;> simp +arith
 
 set_option maxRecDepth 1200 in
 theorem dy_map_eq (isleap : Bool)
     : dy_map isleap = List.range' 1 (if isleap then 366 else 365) := by
-  cases isleap <;> simp_arith
+  cases isleap <;> simp +arith
 
 set_option maxRecDepth 1500 in
 theorem dy_map_size_eq (isleap : Bool)
     : List.length (dy_map isleap) = if isleap then 366 else 365 := by
-  cases isleap <;> simp_arith
+  cases isleap <;> simp +arith
 -/
 
 /-- Get first day of month as day of year by lookup in `monthLastDayAsDayOfYear`
     is equal to compute by `Time.dy` -/
 theorem monthFirstDayAsDayOfYear_eq_dy (isleap : Bool)
     : ∀ a ∈ monthLastDayAsDayOfYear' isleap, a.2.1 = Time.dy isleap a.1 1 := by
-  cases isleap <;> simp_arith
+  cases isleap <;> simp +arith +decide
 
 /-- Get last day of month as day of year by lookup in `monthLastDayAsDayOfYear`
     is equal to compute by `Time.dy` -/
 theorem monthLastDayAsDayOfYear_eq_dy (isleap : Bool)
     : ∀ a ∈ monthLastDayAsDayOfYear' isleap, a.2.2 = Time.dyOfLastDayOfMonth isleap a.1 := by
-  cases isleap <;> simp_arith
+  cases isleap <;> simp +arith +decide
 
 theorem dy_eq_incr (isleap : Bool) (m : Icc 1 12) (d : Icc 1 31)
     : Time.dy isleap m.val d.val = (Time.dy isleap m.val 1) + d.val - 1 := by
   unfold Time.dy
-  simp_arith
+  simp +arith
   have := d.property.left
   have := m.property.left
   omega
