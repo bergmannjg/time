@@ -239,7 +239,7 @@ def makeDayComponent (l : TimeLocale) (c : Specifier) (s : String) : Option <| L
     return [.DCYearDay a]
   | _ => return [] where
   indexOf? {α : Type} (p : α -> Bool) (l : List α) : Option Int :=
-      if let some (i, _) := l.enum |>.find? (λ x => p x.2) then some i
+      if let some (_, i) := l.zipIdx |>.find? (λ x => p x.1) then some i
       else none
 
 def makeDayComponents (l : TimeLocale) (pairs : List (Specifier × String))
