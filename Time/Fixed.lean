@@ -73,7 +73,7 @@ def toParts (f : Fixed p) : Fixed.Parts p :=
   let pow_p := 10 ^ p
   let n' := n / pow_p
   have h1 : 0 < (pow_p : Int) := Int.ofNat_lt.mpr (Nat.pow_pos (by omega))
-  have h2 : n % pow_p < pow_p := Int.toNat_lt_toNat (Int.emod_lt_of_pos n h1) h1
+  have h2 : n % pow_p < pow_p := (Int.toNat_lt_toNat h1).mpr (Int.emod_lt_of_pos n h1)
   ⟨if f.val < 0 then .Neg else .Nonneg, n', n % pow_p, h2⟩
 
 def toFixed (sign : Sign) (num : Nat) (denom : Fixed.Denominator p) : Fixed p :=
@@ -284,11 +284,12 @@ theorem fixed_eq_toParts_fromParts (f : Fixed p) : f = f.toParts.fromParts := by
       have hf : Int.negSucc m = f.val := by rw [hm, (Int.negSucc_eq m)]
       rw [hf]
   · rename_i h
-    have hf : Int.natAbs f.val = f.val := by omega
-    rw [hf]
-    have : ((10 ^ p : Nat) : Int) = (10 : Int) ^ p := Int.natCast_pow 10 p
-    rw [this]
-    have : f.val / (10 ^ p : Int) * 10 ^ p + f.val % (10 ^ p) = f.val := by
+    have : f.val = f.val.natAbs / (10 ^ p) * 10 ^ p + f.val.natAbs % (10 ^ p) := by
       rw [Int.add_comm]
-      exact Int.emod_add_ediv' f.val (10 ^ p)
-    rw [this]
+      have := Int.emod_add_ediv' f.val.natAbs (10 ^ p)
+      norm_cast at this
+      norm_cast
+      omega
+    norm_cast at this
+    norm_cast
+    exact Fixed.ext this

@@ -35,7 +35,7 @@ namespace TimeOfDay
 private def toIco (v : Int) (a b : Nat) (h1 : a ≤ v) (h2 : v < b) (h3 : 0 < b) : Time.Ico a b :=
   let v' := v.toNat
   have h1' : a ≤ v' := Int.toNat_le_toNat h1
-  have h2' : v' < b := Int.toNat_lt_toNat h2 (by omega)
+  have h2' : v' < b := (Int.toNat_lt_toNat (by omega)).mpr h2
 
   ⟨v', And.intro h1' h2'⟩
 
@@ -80,8 +80,8 @@ def toSecond (secs : Int) (nanoSecs : Nat) (h1: 0 ≤ secs) (h2: secs < 60)
   else
     let d_nanoSecs := Fixed.toDenominator nanoSecs Nano h3
     have h1 : 0 < secs := Int.lt_iff_le_and_ne.mpr (And.intro h1 (by simpa))
-    have h1' : 0 < secs.toNat := Int.toNat_lt_toNat h1 h1
-    have h2' : secs.toNat < 60 := Int.toNat_lt_toNat h2 (by omega)
+    have h1' : 0 < secs.toNat := (Int.toNat_lt_toNat h1).mpr h1
+    have h2' : secs.toNat < 60 := (Int.toNat_lt_toNat (by omega)).mpr h2
     ⟨Fixed.toFixed Sign.Nonneg secs.toNat d_nanoSecs,
       And.intro
         (Fixed.toFixed_le_toFixed_of_lt Nano 0 default secs.toNat d_nanoSecs h1')

@@ -62,7 +62,7 @@ def toDayOfYear (year: Int) (d': Int) : OrdinalDate :=
   have h1 : 0 < yd := by
     have ha : 0 <= d' % 365 := by simp [Int.emod_nonneg _]
     have hb : 0 < yd' := Int.lt_add_one_iff.mpr ha
-    exact Int.toNat_lt_toNat hb (by omega)
+    exact (Int.toNat_lt_toNat (by omega)).mpr hb
 
   have h2 : yd <= 365 := by
     have ha : d' % 365 < 365 := by simp +arith [Int.emod_lt_of_pos _]

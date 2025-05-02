@@ -6,9 +6,9 @@ package time {
   precompileModules := if get_config? env = some "noprecompile" then false else true
 }
 
-require batteries from git "https://github.com/leanprover-community/batteries" @ "v4.18.0"
+require batteries from git "https://github.com/leanprover-community/batteries" @ "v4.19.0"
 
-require tryAtEachStep from git "https://github.com/dwrensha/tryAtEachStep" @ "lean-v4.18.0"
+require tryAtEachStep from git "https://github.com/dwrensha/tryAtEachStep" @ "lean-v4.19.0"
 
 @[default_target]
 lean_lib Time
@@ -22,7 +22,7 @@ target localtime.o pkg : FilePath := do
 extern_lib libleanlocaltime pkg := do
   let name := nameToStaticLib "leanlocaltime"
   let localtime ← localtime.o.fetch
-  buildStaticLib (pkg.nativeLibDir / name) #[localtime]
+  buildStaticLib (pkg.staticLibDir / name) #[localtime]
 
 lean_lib Test where
   srcDir := "test"
