@@ -253,14 +253,6 @@ theorem zero_le_toFixed (p : Nat) (m : Nat) (m_denom : Fixed.Denominator p) (hnm
   rw [← toFixed_eq_zero p]
   simp [this]
 
-private theorem le_of_div_pow (val : Int) (p : Nat) (h : 0 ≤ val)
-    : 0 ≤ val / (((10 ^ p) : Nat) : Int) := by
-  have := @Int.tdiv_eq_ediv val (((10 ^ p) : Nat) : Int)
-  simp_all only [true_or, ite_true, Int.add_zero, ge_iff_le]
-  rw [← this]
-  have : 0 ≤ (((10 ^ p) : Nat) : Int) := Int.le_of_lt <| Int.ofNat_lt.mpr <| Nat.pow_pos (by omega)
-  simp [@Int.tdiv_nonneg val (((10 ^ p) : Nat) : Int) h this]
-
 theorem fixed_eq_toParts_fromParts (f : Fixed p) : f = f.toParts.fromParts := by
   simp [Fixed.toParts, Parts.fromParts, toFixed]
   split <;> simp_all

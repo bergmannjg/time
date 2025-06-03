@@ -237,7 +237,7 @@ theorem monthLastDayAsDayOfYear'_val_in (isLeap : Bool) (yd : Nat)
     yd - (monthLastDayAsDayOfYear' isLeap)[i].2.1 + 1 ≤ 31 := by
   have hle := monthLastDayAsDayOfYear'_sub_days_le isLeap i
   simp +arith
-  exact Int.le_of_sub_le h2 hle
+  exact Nat.sub_le_iff_le_add'.mp (Int.le_of_sub_le h2 hle)
 
 theorem monthLastDayAsDayOfYear_val_le (isleap : Bool)
   (i : Fin (monthLastDayAsDayOfYear isleap).length) (val : Nat)
@@ -317,8 +317,6 @@ theorem monthLengths_eq (isleap : Bool)
 
 theorem month_le_val_exists (isleap : Bool) (i v : Nat) (hle : 1 ≤ i)
   (hlt : i < (monthLengths isleap).length)
-  (h1 : ((monthLastDayAsDayOfYear isleap).get ⟨i-1, by
-        rw [monthLengths_eq isleap] at hlt; omega⟩).2 < v)
   (h2 : v ≤ ((monthLastDayAsDayOfYear isleap).get ⟨i, by
         rwa [monthLengths_eq isleap] at hlt⟩).2)
     : ∃ m ∈ monthLengths isleap, m.1 = i + 1
@@ -377,8 +375,7 @@ def findValidMonthDay_n (year : Int) (isLeap : Bool) (i : Nat) (yd : Time.Icc 1 
           (by simp_all)
           hn h⟩,
     by
-      have := month_le_val_exists (isLeap) i yd.val hle hlt
-                (by simp at hn; exact hn) (by omega)
+      have := month_le_val_exists (isLeap) i yd.val hle hlt (by omega)
       rw [hl]
       exact this⟩
 

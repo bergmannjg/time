@@ -297,7 +297,7 @@ theorem days_since_1_1_1_mod_eq (dt : OrdinalDate)
     = days_since_1_1_1_mod_146097 dt dt.dayOfYear :=  by
   rw [days_since_1_1_1_mul_mod dt]
   simp only [Int.add_comm ((dt.year - 1) / 400 * 146097)]
-  simp [Int.add_mul_emod_self]
+  simp [Int.add_mul_emod_self_right]
   have := days_since_1_1_1_mod_146097_le dt
   exact Int.emod_eq_of_lt
           (days_since_1_1_1_mod_146097_le dt)
@@ -553,7 +553,7 @@ theorem d'_add_eq (dt : OrdinalDate)
     omega
   rw [this]
 
-  simp [Int.add_mul_emod_self]
+  simp [Int.add_mul_emod_self_right]
   have := (dt.dayOfYear:Icc 1 366).property
   exact Int.emod_eq_of_lt (by omega) (by omega)
 
