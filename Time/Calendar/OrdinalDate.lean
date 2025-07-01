@@ -124,20 +124,15 @@ def toOrdinalDate (mjd : Day) : OrdinalDate :=
     let quad := c / 1461
     let d' := c % 1461
 
-    have hquad₁ : 0 ≤ quad := by omega
-    have hquad₂ : quad ≤ 24 := by omega
-
     if h : d' < 4*365
     then
       let y := d' / 365
       let year := quadcent * 400 + cent * 100 + quad * 4 + y + 1
       toDayOfYear year d'
     else
-      have hcent₃ (h2 : quad = 24) : cent = 3 := by omega
-
       let year := quadcent * 400 + cent * 100 + quad * 4 + 4
-      have hyear : year = quadcent * 400 + cent * 100 + quad * 4 + 4 := rfl
-      ⟨year, .leap ⟨366, (by omega)⟩, (by simp [isLeapYear_of_sum hyear hquad₁ hquad₂ hcent₃])⟩
+      ⟨year, .leap ⟨366, (by omega)⟩, (by simp [@isLeapYear_of_sum quadcent cent quad year
+                                          (by omega) (by omega) (by omega) (by omega)])⟩
 
 def toModifiedJulianDay (year : Int) (dayOfYear : Nat) : Int :=
   /- Gregorian serial date minus difference to modified julian date. -/
