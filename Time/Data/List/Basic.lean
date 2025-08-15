@@ -10,7 +10,7 @@ def findExisting {α : Type } (p : α → Bool)
     exact List.length_pos_iff_exists_mem.mpr this
   match l with
   | a::as =>
-    have hmem : a ∈ a :: as := by simp [List.mem_cons_self]
+    have hmem : a ∈ a :: as := by simp
     match hm : p a with
     | true  => ⟨a, And.intro hmem hm⟩
     | false =>

@@ -109,14 +109,14 @@ theorem next_date_of_day_lt_eq (dt : Date)
   split
   · rename_i dy hdy heq
     split at heq
-    · simp [Icc, Subtype.ext_iff] at heq
+    · simp at heq
     · simp [Icc, Subtype.ext_iff] at heq
       exact next_date_of_day_lt_eq' hml h heq (by simp_all)
   · rename_i dy hdy heq
     split at heq
     · simp [Icc, Subtype.ext_iff] at heq
       exact next_date_of_day_lt_eq'' hml h heq (by simp_all)
-    · simp [Icc, Subtype.ext_iff] at heq
+    · simp at heq
 
 theorem next_date_of_last_day_of_month_eq' {dt : Date} {dy : Nat}
   {ml : { m // monthLengthsOfDate m dt }}
@@ -194,14 +194,14 @@ theorem next_date_of_last_day_of_month_eq (dt : Date)
   split
   · rename_i dy hdy heq
     split at heq
-    · simp [Icc, Subtype.ext_iff] at heq
+    · simp at heq
     · simp [Icc, Subtype.ext_iff] at heq
       exact next_date_of_last_day_of_month_eq' hml h hm heq (by simp_all)
   · rename_i dy hdy heq
     split at heq
     · simp [Icc, Subtype.ext_iff] at heq
       exact next_date_of_last_day_of_month_eq'' hml h hm heq (by simp_all)
-    · simp [Icc, Subtype.ext_iff] at heq
+    · simp at heq
 
 theorem dy'_of_last_day_of_year (dt : Date)
   (ml : { m //monthLengthsOfDate m dt })
@@ -259,7 +259,7 @@ theorem next_date_of_last_day_of_year_eq (dt : Date)
     : {dt with Year := dt.Year + 1, Month := ⟨1, by simp⟩, Day := ⟨1, by simp⟩,
                IsValid := ⟨(1, 31), by simp +arith [monthLengths]⟩}
     = ordinalDateToDate (OrdinalDate.next_date (dateToOrdinalDate dt)) := by
-  simp [dateToOrdinalDate, monthAndDayToDayOfYearClipped, monthAndDayToDayOfYearClipped']
+  simp [dateToOrdinalDate]
   have : isLeapYear dt.Year = true ∨ ¬isLeapYear dt.Year = true := by simp
   cases this
   · rename_i h

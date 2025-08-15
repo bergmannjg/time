@@ -243,7 +243,7 @@ theorem days_since_1_1_1_mod_146097_lt (dt : OrdinalDate)
 
   have hlt : (dt.year - 1) / 4 - (dt.year - 1) / 400 * 96 - (dt.year - 1) / 100 - 1 + a.val
           < 365 * (400 - (dt.year - 1) % 400) + 96 + 1 := by
-    simp_all [instCoeDayOfYearIccOfNat]
+    simp_all
     have h : a = dt.dayOfYear := rfl
     split at h
     · rename_i a _
@@ -388,7 +388,7 @@ def c_value_factor (dt : OrdinalDate) :=
 theorem c_value_factor_eq (dt dt': OrdinalDate) (h : dt.year = dt'.year)
     : c_value_factor dt = c_value_factor dt' := by
   simp [c_value_factor]
-  split <;> simp_all [h]
+  split <;> simp_all
 
 def c_value (dt : OrdinalDate) :=
   ((dt.year-1)%4)*365 + (c_value_factor dt)*1461 - 1 + (dt.dayOfYear:Icc 1 366).val
@@ -439,7 +439,7 @@ theorem c_value_of_dt_with_day_one_eq (dt : OrdinalDate)
 theorem c_value_add_eq (dt : OrdinalDate)
     : c_value dt = c_value (dt_with_day_one dt) + (dt.dayOfYear:Icc 1 366).val - 1 := by
   rw [c_value_of_dt_with_day_one_eq]
-  simp [c_value, c_value_factor, dt_with_day_one]
+  simp [c_value, c_value_factor]
   split <;> try simp_all
   · split <;> try simp_all
     · omega
@@ -578,7 +578,7 @@ theorem day_eq_if_days_eq_1460 (dt : OrdinalDate) (hmod : d' dt = 1460)
 
 theorem year_eq_if_days_eq_1460 (dt : OrdinalDate) (hmod : d' dt = 1460)
     : (quadcent dt)*400 + (cent dt)*100 + (quad dt)*4 + 4 = dt.year := by
-  simp [quadcent, cent, quad, d']
+  simp [quadcent, cent, quad]
   have : dt.year % 4 = 0 ∨ ¬(dt.year % 4 = 0) := by omega
   cases this
   · omega
@@ -689,10 +689,10 @@ theorem d'_lt_1460_eq_day_common (dt : OrdinalDate) (h : dt.dayOfYear = DayOfYea
   have : (dt.year - 1) % 4 * 365 + a.val - 1 = a.val - 1 + (dt.year - 1) % 4 * 365 := by
     omega
   rw [this]
-  simp [Int.add_mul_ediv_right]
+  simp
   have := a.property
   have : ((a.val:Int) - 1) % 365 = ↑a.val - 1 := Int.emod_eq_of_lt (by omega) (by omega)
-  simp_all [this]
+  simp_all
 
 theorem d'_lt_1460_eq_day_leap (dt : OrdinalDate) (h : dt.dayOfYear = DayOfYear.leap a)
   (hlt : d' dt < 1460)
@@ -704,7 +704,7 @@ theorem d'_lt_1460_eq_day_leap (dt : OrdinalDate) (h : dt.dayOfYear = DayOfYear.
   have : (dt.year - 1) % 4 * 365 + a.val - 1 = a.val - 1 + (dt.year - 1) % 4 * 365 := by
     omega
   rw [this]
-  simp [Int.add_mul_ediv_right]
+  simp
 
   have := d'_lt_1460_lt dt hlt
   simp [heq] at this
@@ -821,7 +821,7 @@ theorem toOrdinalDate_fromOrdinalDate_eq_id (dt : OrdinalDate)
               rw [← days_since_1_1_1, d'_eq dt hNot]
               rw [heq]
               rw [heq']
-              simp [DayOfYear, Icc, Subtype.ext_iff]
+              simp [Icc, Subtype.ext_iff]
               rw [val_eq' dt a heq] at hlt
               exact d'_lt_1460_eq_day_leap dt heq
                 (by rwa [← days_since_1_1_1, d'_eq dt hNot] at hlt)

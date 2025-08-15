@@ -25,8 +25,8 @@ open DayOfYear
 theorem incr_of_yd_in (yd : Time.Icc 1 366) (isLeap : Bool)
   (hle : yd.val+1 ≤ if isLeap then 366 else 365)
      : 1 ≤ yd.val + 1 ∧ yd.val + 1 ≤ 366 := by
-  simp [yd.property.left]
-  cases isLeap <;> simp_all [hle]
+  simp
+  cases isLeap <;> simp_all
   omega
 
 theorem incr_of_day_in_intervall (dt : Date) (ml : { m // monthLengthsOfDate m dt })
@@ -78,7 +78,7 @@ theorem incr_of_day_is_valid (dt : Date) (ml : { m // monthLengthsOfDate m dt })
 
 theorem incr_of_month_is_valid (dt : Date) (h : dt.Month.1 < 12)
   : ∃ a ∈ (monthLengths (isLeapYear dt.Year)),
-      a.1 = (⟨dt.Month.1 + 1, by simp [dt.Month.property.left, (Nat.add_one_le_of_lt h)]⟩
+      a.1 = (⟨dt.Month.1 + 1, by simp [(Nat.add_one_le_of_lt h)]⟩
               : Icc 1 12).val
       ∧ (⟨1, by simp⟩ : Icc 1 31).val ≤ a.2 := by
   cases (isLeapYear dt.Year) <;> simp_all [monthLengths] <;> omega
@@ -171,7 +171,7 @@ theorem next_date_of_day_lt_eq_incr' {dt : Date} {dt' : OrdinalDate}
       rw [← heq'] at h_dt_dayOfYear_common
       have : dy = dy' := by
         rw [h_dt_dayOfYear_common] at h_dt'_dayOfYear_common
-        simp [Subtype] at h_dt'_dayOfYear_common
+        simp at h_dt'_dayOfYear_common
         exact  Subtype.ext_iff.mp h_dt'_dayOfYear_common
       split <;> simp_all
     · rename_i heq' _ _ _ h_dt'_dayOfYear_leap
@@ -188,7 +188,7 @@ theorem next_date_of_day_lt_eq_incr' {dt : Date} {dt' : OrdinalDate}
       rw [← heq'] at h_dt_dayOfYear_leap
       have : dy = dy' := by
         rw [h_dt_dayOfYear_leap] at h_dt'_dayOfYear_leap
-        simp [Subtype] at h_dt'_dayOfYear_leap
+        simp at h_dt'_dayOfYear_leap
         exact  Subtype.ext_iff.mp h_dt'_dayOfYear_leap
       split <;> simp_all
 
@@ -198,16 +198,16 @@ theorem findValidMonthDay_year_eq (year : Int) (isLeap : Bool) (yd : Time.Icc 1 
   unfold findValidMonthDay
   split <;> try simp [findValidMonthDay_1]
   split <;> try simp [findValidMonthDay_n]
-  split <;> try simp [findValidMonthDay_n]
-  split <;> try simp [findValidMonthDay_n]
-  split <;> try simp [findValidMonthDay_n]
-  split <;> try simp [findValidMonthDay_n]
+  split <;> try simp
+  split <;> try simp
+  split <;> try simp
+  split <;> try simp
   unfold findValidMonthDay_tail
   split <;> try simp [findValidMonthDay_n]
-  split <;> try simp [findValidMonthDay_n]
-  split <;> try simp [findValidMonthDay_n]
-  split <;> try simp [findValidMonthDay_n]
-  split <;> try simp [findValidMonthDay_n]
+  split <;> try simp
+  split <;> try simp
+  split <;> try simp
+  split <;> try simp
 
 theorem findValidMonthDay_1_month_eq {dt : Date} (isLeap : Bool) (yd : Time.Icc 1 366)
   {ml : { m // monthLengthsOfDate m dt }} (h : dt.Day.val < ml.val.snd)
@@ -383,7 +383,7 @@ theorem yd_add_one_lt {dt : Date} (isLeap : Bool) (yd : Time.Icc 1 366)
   (heq : Time.dy' isLeap dt.Month dt.Day = yd.val)
   (hl : isLeapYear dt.Year = isLeap) (hle : yd.val+1 ≤ if isLeap then 366 else 365)
     : 1 ≤ yd.val + 1 ∧ yd.val + 1 ≤ 366 := by
-  simp [hle]
+  simp
   have := @dy'_lt_of_month_lt dt hm
   simp [heq, hl] at this
   cases isLeap <;> simp_all
@@ -415,7 +415,7 @@ theorem findValidMonthDay_month_eq_incr {dt : Date} (isLeap : Bool) (yd : Time.I
     have : ¬yd.val ≤ 30 := by
       have h := dy'_month_1_eq dt isLeap (by rw [heq]; omega)
       have := monthLengths_month_1_eq_31 isLeap
-            ⟨ml.val, by have := ml.property.left; simp_all [hl]⟩
+            ⟨ml.val, by have := ml.property.left; simp_all⟩
             (by have := ml.property.right.left; simp [← h] at this; simp_all)
       have := dy'_month_1_day_eq dt isLeap (by rw [heq]; omega)
       simp_all

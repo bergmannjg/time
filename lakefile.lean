@@ -6,7 +6,7 @@ package time {
   precompileModules := if get_config? env = some "noprecompile" then false else true
 }
 
-require batteries from git "https://github.com/leanprover-community/batteries" @ "v4.21.0"
+require batteries from git "https://github.com/leanprover-community/batteries" @ "v4.22.0"
 
 @[default_target]
 lean_lib Time
