@@ -10,7 +10,7 @@ inductive DayOfWeek
   | Friday
   | Saturday
   | Sunday
-  deriving Repr, BEq
+  deriving BEq
 
 namespace DayOfWeek
 

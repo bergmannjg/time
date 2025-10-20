@@ -10,7 +10,7 @@ It consists of the day number, and a time offset from midnight.
 structure UTCTime where
   utctDay : Day
   utctDayTime : DiffTime
-  deriving Repr, BEq
+  deriving BEq
 
 namespace UTCTime
 

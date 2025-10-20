@@ -39,7 +39,7 @@ instance (α : Type) : MonadFail Option α where
   fail _ := none
 
 instance (α : Type) : MonadFail Parser α where
-  fail s := λ it => Parsec.ParseResult.error it s
+  fail _ := λ it => Parsec.ParseResult.error it Error.eof
 
 instance : ReadMaybe String where
   readMaybe s := some s
@@ -55,7 +55,7 @@ inductive WeekType where
   | ISOWeek
   | SundayWeek
   | MondayWeek
-  deriving Repr, BEq
+  deriving BEq
 
 inductive DayComponent where
   | DCCentury (y : Int) -- century of all years
@@ -65,7 +65,7 @@ inductive DayComponent where
   | DCYearDay (dy : Int) -- 1-366
   | DCWeekDay (d : Int) -- 1-7 (mon-sun)
   | DCYearWeek (wt : WeekType) (wk : Int) -- 1-53 or 0-53
-  deriving Repr, BEq
+  deriving BEq
 
 def DCCentury? : DayComponent -> Option Int | .DCCentury y => some y | _ => none
 def DCCenturyYear? : DayComponent -> Option Int | .DCCenturyYear y => some y | _ => none

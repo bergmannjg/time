@@ -11,7 +11,7 @@ namespace Time
 structure ZonedTime where
   localTime : LocalTime
   timeZone : TimeZone
-  deriving Repr, BEq
+  deriving BEq
 
 instance : ToString ZonedTime where
   toString a := s!"{a.localTime}, {a.timeZone}"

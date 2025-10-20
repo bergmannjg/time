@@ -11,7 +11,7 @@ namespace Time
 inductive DayOfYear where
   | common : Time.Icc 1 365 -> DayOfYear
   | leap : Time.Icc 1 366 -> DayOfYear
-  deriving Repr, BEq
+  deriving BEq
 
 instance : BEq DayOfYear where
   beq a b :=
@@ -39,7 +39,6 @@ def isLeapYear (year : Int) :=
   isValid : match dayOfYear with
             | .common _ => isLeapYear year = false
             | .leap _ => isLeapYear year = true
-  deriving Repr
 
 instance : BEq OrdinalDate where
   beq a b := a.year == b.year && decide (a.dayOfYear == b.dayOfYear)
@@ -149,7 +148,7 @@ theorem ite_ge {α : Type} (f : α → Bool) (v : α) (a b c : Nat) (h₁ : c <=
 private inductive YearBase where
   | Zero
   | One
-  deriving Repr, BEq
+  deriving BEq
 
 def clipDayOfYear (b : YearBase) (year : Int) (dayOfYear : Int) : Nat :=
   match b with

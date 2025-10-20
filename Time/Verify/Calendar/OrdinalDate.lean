@@ -163,7 +163,7 @@ theorem transform_of_next_date_eq_add_one (dt : OrdinalDate)
 theorem Int.self_mul_ediv_le {x k : Int} (h : k ≠ 0) : (x / k) * k ≤ x :=
   calc (x / k) * k
     _ ≤ (x / k) * k + x % k := Int.le_add_of_nonneg_right (Int.emod_nonneg x h)
-    _ = x                   := Int.ediv_add_emod' _ _
+    _ = x                   := Int.ediv_mul_add_emod _ _
 
 theorem Icc.minus_one_add_le {b : Nat} (x : Time.Icc 1 b) : 0 ≤ (-1) + (x.val : Int) := by
   have := x.property.left

@@ -16,7 +16,7 @@ open Clip
 inductive FirstWeekType
   |  FirstWholeWeek
   |  FirstMostWeek
-  deriving Repr, BEq
+  deriving BEq
 
 /-- The number of days from b to the next a. -/
 def dayOfWeekDiff (a : DayOfWeek) (b : DayOfWeek) : Int :=

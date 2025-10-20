@@ -3,7 +3,7 @@ namespace Time
 structure CalendarDiffDays  where
   months : Int
   days : Int
-  deriving Repr, BEq
+  deriving BEq
 
 instance : Inhabited CalendarDiffDays where
   default := ⟨0, 0⟩

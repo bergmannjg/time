@@ -8,18 +8,18 @@ namespace Time
 /--  fixed-point representation of a fractional number -/
 @[ext] structure Fixed (precision : Nat) where
   val : Int
-  deriving Repr, BEq, DecidableEq
+  deriving BEq, DecidableEq
 
 inductive Sign where
   | Nonneg
   | Neg
-  deriving Repr, BEq, DecidableEq
+  deriving BEq, DecidableEq
 
 /--  denominator of Fixed p -/
 structure Fixed.Denominator (precision : Nat) where
   val : Nat
   lt : val < 10 ^ precision
-  deriving Repr, BEq, DecidableEq
+  deriving BEq, DecidableEq
 
 /--  parts of Fixed p -/
 structure Fixed.Parts (precision : Nat) where
@@ -27,7 +27,7 @@ structure Fixed.Parts (precision : Nat) where
   numerator : Nat
   denominator : Nat
   lt : denominator < 10 ^ precision
-  deriving Repr, BEq, DecidableEq
+  deriving BEq, DecidableEq
 
 def Fixed.zero : (Fixed p) := ⟨0⟩
 
@@ -170,7 +170,7 @@ theorem emod_add_ediv (a b : Fixed p) : a % b + (a / b) * b = a := by
   simp [mod_def, div_def, add_def]
   simp [Fixed.add, Fixed.mod, Fixed.div]
   simp [Fixed.ext_iff]
-  exact Int.emod_add_ediv' a.val b.val
+  exact Int.emod_add_ediv_mul a.val b.val
 
 /-- toMod computes n % d : { m : Fixed p // zero ≤ m ∧ m < d } -/
 def toMod (n d : Fixed p) (h : zero < d) : { m // zero ≤ m ∧ m < d } :=
@@ -278,7 +278,7 @@ theorem fixed_eq_toParts_fromParts (f : Fixed p) : f = f.toParts.fromParts := by
   · rename_i h
     have : f.val = f.val.natAbs / (10 ^ p) * 10 ^ p + f.val.natAbs % (10 ^ p) := by
       rw [Int.add_comm]
-      have := Int.emod_add_ediv' f.val.natAbs (10 ^ p)
+      have := Int.emod_add_ediv_mul f.val.natAbs (10 ^ p)
       norm_cast at this
       norm_cast
       omega

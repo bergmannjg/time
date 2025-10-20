@@ -9,7 +9,7 @@ def Nano := 9
 /-- This is a length of time in nsecs, as measured by a clock.  -/
 structure DiffTime where
   val : Fixed Nano
-  deriving Repr, BEq
+  deriving BEq
 
 namespace DiffTime
 

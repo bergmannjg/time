@@ -115,7 +115,7 @@ inductive Specifier
   | U
   /-- week of year where weeks start on Monday (as `mondayStartWeek`), 0-padded to two chars, `00` - `53` -/
   | W
-  deriving Repr, BEq
+  deriving BEq
 
 inductive SubstituteSpecifier
   /-- as 'dateTimeFmt' of  `Time.TimeLocale` -/

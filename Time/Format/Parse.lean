@@ -14,7 +14,7 @@ def parse {α : Type} {m : Type -> Type v} [Monad m] [MonadFail m α] [ParseTime
   match (parseTime l fmt : Parser α) s.mkIterator with
   | Parsec.ParseResult.success it res =>
     if it.hasNext then fail s!"remainingBytes {it.remainingBytes}" else return res
-  | Parsec.ParseResult.error _ err => fail err
+  | Parsec.ParseResult.error _ _ => fail ""
 
 end Time
 

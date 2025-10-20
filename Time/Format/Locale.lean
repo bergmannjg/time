@@ -19,7 +19,7 @@ structure TimeLocale where
   time12Fmt : String
   /-- time zones known by name -/
   knownTimeZones : List TimeZone
-  deriving Repr, BEq
+  deriving BEq
 
 private def encS (s : String) := "\"" ++ s ++ "\""
 

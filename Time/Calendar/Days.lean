@@ -5,7 +5,7 @@ Modified Julian Day is a standard count of days, with zero being the day 1858-11
 -/
 structure Day where
   modifiedJulianDay : Int
-  deriving Repr, BEq
+  deriving BEq
 
 instance : ToString Day where
   toString a := s!"mjd : {a.modifiedJulianDay}"

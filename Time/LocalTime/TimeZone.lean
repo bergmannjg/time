@@ -4,7 +4,7 @@ structure TimeZone where
   timeZoneMinutes : Int
   timeZoneSummerOnly : Bool
   timeZoneName : String
-  deriving Repr, BEq
+  deriving BEq
 
 instance : Inhabited TimeZone where
   default := ⟨0,false,""⟩

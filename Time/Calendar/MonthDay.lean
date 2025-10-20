@@ -19,7 +19,6 @@ def monthLengths (isleap : Bool) :=
   Month : Time.Icc 1 12
   Day : Time.Icc 1 31
   IsValid : ∃ m ∈ monthLengths (isLeapYear Year), m.1 = Month.val ∧ Day.val ≤ m.2
-  deriving Repr
 
 namespace Notation
 
@@ -273,9 +272,6 @@ theorem monthLengths_sum_le_eq_monthLastDayAsDayOfYear (isleap : Bool)
     : monthLengths_sum_le_map isleap
     = (monthLastDayAsDayOfYear isleap |> List.map (fun x => x.2)) := by
   cases isleap <;> simp +arith +decide
-
-def monthLengths' (isleap : Bool) :=
-  (monthLengths isleap).lookup
 
 def monthLengths_sum (isleap : Bool) : Nat :=
   (monthLengths isleap).foldl (fun acc m => acc + m.2) 0

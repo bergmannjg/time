@@ -10,7 +10,7 @@ namespace Time
 structure LocalTime where
   localDay : Day
   localTimeOfDay : TimeOfDay
-  deriving Repr, BEq
+  deriving BEq
 
 namespace Notation
 

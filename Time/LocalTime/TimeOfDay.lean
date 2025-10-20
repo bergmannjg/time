@@ -25,7 +25,7 @@ structure TimeOfDay where
   Hour : Time.Ico 0 24
   Minute : Time.Ico 0 60
   Second : Ico.Second
-  deriving Repr, BEq
+  deriving BEq
 
 instance : ToString TimeOfDay where
   toString a := s!"tod : ({a.Hour.val}, {a.Minute.val}, {a.Second.val})"
