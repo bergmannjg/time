@@ -96,10 +96,10 @@ def defaultTimeLocale := deDETimeLocale
 /-- get locale-specific information with [locale](https://man7.org/linux/man-pages/man1/locale.1.html) command -/
 def getLocaleData := do
   let s ← IO.Process.run { cmd := "locale", args := #["abday", "day", "abmon", "mon", "d_t_fmt", "d_fmt", "t_fmt", "t_fmt_ampm"] }
-  return s.split (λ c => c == '\n')
+  return s.splitToList (λ c => c == '\n')
 
 private def split (s : String) :=
-  s.split (λ c => c == ';')
+  s.splitToList (λ c => c == ';')
 
 /-- get current locale with `getLocaleData` -/
 def currentLocale : IO <| TimeLocale := do
