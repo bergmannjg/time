@@ -26,13 +26,18 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
-      - name: Build and test
-        uses: leanprover/lean-action@v1
-        with:
-          auto-config: false
-          test: true
-          lint: true
-          use-mathlib-cache: false
+      - name: install elan
+        run: |
+          curl https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -sSf |
+            sh -s -- -y --default-toolchain none
+          rm -f elan-init
+          echo "$HOME/.elan/bin" >> $GITHUB_PATH
+          "$HOME"/.elan/bin/lake --version
+      - name: build and test
+        run: |
+          lake update
+          lake build
+          lake test
       - name: build Verify
         run: |
           lake build Verify
@@ -40,6 +45,7 @@ jobs:
         run: |
           cd docbuild
           lake update doc-gen4
+
           lake build Time:docs
           lake build Verify:docs
       - name: Setup Pages
