@@ -29,6 +29,7 @@ jobs:
       - name: Build and test
         uses: leanprover/lean-action@v1
         with:
+          auto-config: false
           test: true
           lint: true
           use-mathlib-cache: false
